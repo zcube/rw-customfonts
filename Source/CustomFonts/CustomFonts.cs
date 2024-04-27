@@ -102,7 +102,8 @@ namespace CustomFonts
             string[] specimen =
             {
                 "RimWorld is a sci-fi colony sim driven by an intelligent AI storyteller.",
-                "RimWorldは、知性のあるAIストーリーテラーによって織りなされるSFコロニーシミュレーションゲームです。"
+                "RimWorldは、知性のあるAIストーリーテラーによって織りなされるSFコロニーシミュレーションゲームです。",
+                "RimWorld는 지능적인 AI 스토리텔러에 의해 주도되는 SF 콜로니 시뮬레이션 게임입니다.",
             };
             listingStandard.Label(String.Join("\n", specimen));
             listingStandard.GapLine();
@@ -112,7 +113,7 @@ namespace CustomFonts
             var fontListLeftRect = new Rect();
             var fontListRightRect = new Rect();
             listingStandard.LineRectSpilter(out fontListLeftRect, out fontListRightRect, height: scrollHeight);
-            
+
             var leftFontListScrollOuter = new Rect(fontListLeftRect.x, fontListLeftRect.y + 30f,
                 fontListLeftRect.width - 20f, fontListLeftRect.height - 30f);
             var leftFontListScrollInner = new Rect(leftFontListScrollOuter.x, leftFontListScrollOuter.y,
@@ -231,7 +232,8 @@ namespace CustomFonts
 
             foreach (var font in cab.LoadAllAssets<Font>())
             {
-                BundledFonts.Add($"(Bundled) {font.fontNames[0]}", font);
+                var lastFontName = font.fontNames[font.fontNames.Length - 1];
+                BundledFonts.Add($"(Bundled) {lastFontName}", font);
             }
         }
 
@@ -342,7 +344,7 @@ namespace CustomFonts
 #endif
             }
         }
-        
+
         [HarmonyPatch(typeof(GenScene), nameof(GenScene.GoToMainMenu))]
         class GoToMainMenuPatcher
         {
@@ -352,7 +354,7 @@ namespace CustomFonts
                 CustomFonts.UpdateFont();
             }
         }
-        
+
         [HarmonyPatch(typeof(WorldFeatures), "HasCharacter")]
         private class WorldMapHasCharacterPatcher
         {
@@ -373,7 +375,7 @@ namespace CustomFonts
             public static void Prefix()
             {
                 TMP_FontAsset fontAsset;
-                
+
                 if (CustomFonts.BundledFonts.ContainsKey(FontSettings.CurrentWorldFontName))
                 {
                     fontAsset = TMP_FontAsset.CreateFontAsset(

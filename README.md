@@ -22,3 +22,10 @@ task build
     SIL Open Font License 1.1
     https://github.com/be5invis/Sarasa-Gothic
     ```
+
+* Nanum Fonts
+    ```
+    Copyright (c) 2010, NAVER Corporation (https://www.navercorp.com/).
+    SIL Open Font License 1.1
+    https://help.naver.com/service/30016/contents/18088?osType=PC&lang=ko
+    ```
