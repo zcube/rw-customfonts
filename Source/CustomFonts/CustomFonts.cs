@@ -77,7 +77,7 @@ namespace CustomFonts
 
             _content = content;
 
-            MyHarmony = new Harmony("nmkj.customfonts");
+            MyHarmony = new Harmony("zcubekr.customfonts");
             MyHarmony.PatchAll();
         }
 
@@ -232,8 +232,12 @@ namespace CustomFonts
 
             foreach (var font in cab.LoadAllAssets<Font>())
             {
-                var lastFontName = font.fontNames[font.fontNames.Length - 1];
-                BundledFonts.Add($"(Bundled) {lastFontName}", font);
+                var asset = TMP_FontAsset.CreateFontAsset(font);
+                var fontName = $"(Bundled) {asset.faceInfo.familyName} ({asset.faceInfo.styleName})";
+                if (!BundledFonts.ContainsKey(fontName))
+                {
+                    BundledFonts.Add(fontName, font);
+                }
             }
         }
 
