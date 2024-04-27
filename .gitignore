@@ -39,3 +39,4 @@ msbuild.wrn
 Assemblies/CustomFonts.pdb
 HarmonyMod.zip
 rimfonts-decompressed
+*.tar.gz
