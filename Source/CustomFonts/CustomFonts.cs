@@ -6,6 +6,7 @@ using Verse;
 using UnityEngine;
 using HarmonyLib;
 using RimWorld.Planet;
+using RimWorld;
 using SettingsHelper;
 using TMPro;
 using UnityEngine.TextCore;
@@ -408,6 +409,17 @@ namespace CustomFonts
                     1.75f * FontSettings.ScaleFactor;
             }
 
+        }
+
+        [HarmonyPatch(typeof(Dialog_FileList), nameof(Dialog_FileList.DrawDateAndVersion))]
+        class DrawDateAndVersionPatcher
+        {
+            [HarmonyPrefix]
+            public static void Prefix(Dialog_FileList __instance, SaveFileInfo sfi, ref Rect rect)
+            {
+                rect.x -= 20f;
+                rect.width += 20f;
+            }
         }
     }
 }
