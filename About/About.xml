@@ -5,6 +5,7 @@
   <packageId>zcubekr.customfonts</packageId>
   <url>https://github.com/zcube/rw-customfonts</url>
   <supportedVersions>
+    <li>1.4</li>
     <li>1.5</li>
   </supportedVersions>
   <loadBefore>
