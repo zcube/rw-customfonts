@@ -22,6 +22,7 @@ namespace CustomFonts
         public static string CurrentWorldFontName;
         public static float ScaleFactor = 1.0f;
         public static int VerticalOffset = 0;
+        public static float FontWidthScaleFactor = 1.0f;
 
         public override void ExposeData() // Writing settings to the mod file
         {
@@ -29,6 +30,7 @@ namespace CustomFonts
             Scribe_Values.Look(ref CurrentWorldFontName, "CurrentWorldFontName", DefaultFontName);
             Scribe_Values.Look(ref ScaleFactor, "ScaleFactor", 1.0f);
             Scribe_Values.Look(ref VerticalOffset, "VerticalOffset", 0);
+            Scribe_Values.Look(ref FontWidthScaleFactor, "FontWidthScaleFactor", 1.0f);
             base.ExposeData();
         }
     }
@@ -65,6 +67,16 @@ namespace CustomFonts
             base(content) // A mandatory constructor which resolves the reference to the mod settings.
         {
             _settings = GetSettings<FontSettings>();
+
+            if (float.IsNaN(FontSettings.ScaleFactor))
+            {
+                FontSettings.ScaleFactor = 1.0f;
+            }
+
+            if (float.IsNaN(FontSettings.FontWidthScaleFactor))
+            {
+                FontSettings.FontWidthScaleFactor = 1.0f;
+            }
 
             foreach (GameFont value in Enum.GetValues(typeof(GameFont)))
             {
@@ -110,7 +122,7 @@ namespace CustomFonts
             listingStandard.GapLine();
 
             var heightAdjustValue = Math.Max(30f * (FontSettings.ScaleFactor - 1.0f) * 4, 0);
-            var scrollHeight = inRect.height - 210f - heightAdjustValue;
+            var scrollHeight = inRect.height - 210f - 50f - heightAdjustValue;
             var fontListLeftRect = new Rect();
             var fontListRightRect = new Rect();
             listingStandard.LineRectSpilter(out fontListLeftRect, out fontListRightRect, height: scrollHeight);
@@ -184,6 +196,17 @@ namespace CustomFonts
                 FontSettings.ScaleFactor = fontSizeScale;
                 UpdateFont();
             }
+
+            var widthScaleValue = FontSettings.FontWidthScaleFactor;
+            listingStandard.AddLabeledSlider($"Font Width Scaling Factor: {FontSettings.FontWidthScaleFactor:F1}", ref widthScaleValue,
+                0.5f, 2.0f);
+            var widthScale = (float)Math.Round(widthScaleValue, 1);
+            if (Math.Abs(FontSettings.FontWidthScaleFactor - widthScale) > 0.01)
+            {
+                FontSettings.FontWidthScaleFactor = widthScale;
+                UpdateFont();
+            }
+
 
             listingStandard.End();
 
@@ -417,8 +440,8 @@ namespace CustomFonts
             [HarmonyPrefix]
             public static void Prefix(Dialog_FileList __instance, SaveFileInfo sfi, ref Rect rect)
             {
-                rect.x -= 20f;
-                rect.width += 20f;
+                rect.x -= rect.width * (FontSettings.FontWidthScaleFactor - 1.0f + 0.01f);
+                rect.width += rect.width * (FontSettings.FontWidthScaleFactor - 1.0f + 0.01f);
             }
         }
     }
