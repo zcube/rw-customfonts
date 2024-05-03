@@ -3,13 +3,16 @@ version: "3"
 dotenv: [".env"]
 
 env:
-  STEAM_OS: '{{if eq OS "windows"}}Win64_Data{{else}}Linux_Data{{end}}'
+  STEAM_OS: '{{if eq OS "windows"}}Win64_Data{{else}}{{if eq OS "linux"}}Linux_Data{{else}}Mac.app/Contents/Resources/Data{{end}}{{end}}'
 
 tasks:
   prepare:
     cmds:
       - curl -LO https://github.com/pardeike/HarmonyRimWorld/releases/latest/download/HarmonyMod.zip
-      - 7z x -y HarmonyMod.zip -opackages
+      - cmd: 7z x -y HarmonyMod.zip -opackages
+        platforms: [windows/amd64, linux]
+      - cmd: 7zz x -y HarmonyMod.zip -opackages
+        platforms: [darwin]
 
   build:
     cmds:
@@ -23,8 +26,14 @@ tasks:
 
   export:
     cmds:
-      - cp -rf 1.4/Assemblies/* "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.4/Assemblies/"
-      - cp -rf 1.5/Assemblies/* "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.5/Assemblies/"
+      - cmd: cp -rf 1.4/Assemblies/* "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.4/Assemblies/"
+        platforms: [windows/amd64, linux]
+      - cmd: cp -rf 1.5/Assemblies/* "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.5/Assemblies/"
+        platforms: [windows/amd64, linux]
+      - cmd: cp -rf 1.4/Assemblies/* "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/1.4/Assemblies/"
+        platforms: [darwin]
+      - cmd: cp -rf 1.5/Assemblies/* "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/1.5/Assemblies/"
+        platforms: [darwin]
 
   release:
     cmds:
