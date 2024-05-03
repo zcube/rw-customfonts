@@ -1,7 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build"
-  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project DefaultTargets="Build" Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,9 +8,11 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CustomFonts</RootNamespace>
     <AssemblyName>CustomFonts</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFramework>net472</TargetFramework>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <IsPublishable>false</IsPublishable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -44,7 +44,7 @@
     <When Condition=" '$(Configuration)'=='Release 1.4' ">
       <ItemGroup>
         <Reference Include="0Harmony, Version=2.2.2.0, Culture=neutral, processorArchitecture=MSIL">
-          <HintPath>$(ProjectDir)\..\..\packages\HarmonyMod\1.4\Assemblies\0Harmony.dll</HintPath>
+          <HintPath>$(ProjectDir)/../../packages/HarmonyMod/1.4/Assemblies/0Harmony.dll</HintPath>
           <Private>False</Private>
         </Reference>
       </ItemGroup>
@@ -52,7 +52,7 @@
     <Otherwise>
       <ItemGroup>
         <Reference Include="0Harmony, Version=2.3.3.0, Culture=neutral, processorArchitecture=MSIL">
-          <HintPath>$(ProjectDir)\..\..\packages\HarmonyMod\Current\Assemblies\0Harmony.dll</HintPath>
+          <HintPath>$(ProjectDir)/../../packages/HarmonyMod/Current/Assemblies/0Harmony.dll</HintPath>
           <Private>False</Private>
         </Reference>
       </ItemGroup>
@@ -60,59 +60,46 @@
   </Choose>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>$(STEAM_APPS)\common\RimWorld\RimWorld$(STEAM_OS)\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(STEAM_APPS)/common/RimWorld/RimWorld$(STEAM_OS)/Managed/Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="mscorlib" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
+    <Reference Include="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+    <Reference Include="System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+    <Reference Include="System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"/>
     <Reference Include="Unity.TextMeshPro">
-      <HintPath>$(STEAM_APPS)\common\RimWorld\RimWorld$(STEAM_OS)\Managed\Unity.TextMeshPro.dll</HintPath>
+      <HintPath>$(STEAM_APPS)/common/RimWorld/RimWorld$(STEAM_OS)/Managed/Unity.TextMeshPro.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>$(STEAM_APPS)\common\RimWorld\RimWorld$(STEAM_OS)\Managed\UnityEngine.dll</HintPath>
+      <HintPath>$(STEAM_APPS)/common/RimWorld/RimWorld$(STEAM_OS)/Managed/UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.AssetBundleModule">
-      <HintPath>$(STEAM_APPS)\common\RimWorld\RimWorld$(STEAM_OS)\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
+      <HintPath>$(STEAM_APPS)/common/RimWorld/RimWorld$(STEAM_OS)/Managed/UnityEngine.AssetBundleModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>$(STEAM_APPS)\common\RimWorld\RimWorld$(STEAM_OS)\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(STEAM_APPS)/common/RimWorld/RimWorld$(STEAM_OS)/Managed/UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>$(STEAM_APPS)\common\RimWorld\RimWorld$(STEAM_OS)\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>$(STEAM_APPS)/common/RimWorld/RimWorld$(STEAM_OS)/Managed/UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.TextCoreModule">
-      <HintPath>$(STEAM_APPS)\common\RimWorld\RimWorld$(STEAM_OS)\Managed\UnityEngine.TextCoreModule.dll</HintPath>
+      <HintPath>$(STEAM_APPS)/common/RimWorld/RimWorld$(STEAM_OS)/Managed/UnityEngine.TextCoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>$(STEAM_APPS)\common\RimWorld\RimWorld$(STEAM_OS)\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>$(STEAM_APPS)/common/RimWorld/RimWorld$(STEAM_OS)/Managed/UnityEngine.TextRenderingModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>$(STEAM_APPS)\common\RimWorld\RimWorld$(STEAM_OS)\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(STEAM_APPS)/common/RimWorld/RimWorld$(STEAM_OS)/Managed/UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="CustomFonts.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SettingsHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-         Other similar extension points exist, see Microsoft.Common.targets.
-    <Target Name="BeforeBuild">
-    </Target>
-    <Target Name="AfterBuild">
-    </Target>
-    -->
 </Project>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Verse;
 using UnityEngine;
 using HarmonyLib;
@@ -51,6 +52,8 @@ namespace CustomFonts
         private static bool _hasInstalledFontNames;
         private static bool _hasBundledFonts;
         private static bool _hasOSFontAssets;
+        private static bool _hasUnityPlayerSo;
+        private static bool _hasRunHostFonts;
         public static bool ForceLegacyText;
         public static readonly Dictionary<string, Font> BundledFonts = new Dictionary<string, Font>();
         public static readonly Dictionary<GameFont, Font> DefaultFonts = new Dictionary<GameFont, Font>();
@@ -102,6 +105,7 @@ namespace CustomFonts
 
             var listingStandard = new Listing_Standard();
             listingStandard.Begin(inRect);
+            GUILayout.BeginHorizontal();
             if (GUILayout.Button("Reset to default", GUILayout.Width(200)))
             {
                 FontSettings.ScaleFactor = 1.0f;
@@ -110,7 +114,27 @@ namespace CustomFonts
                 SaveWorldFont(FontSettings.DefaultFontName);
             }
 
-            listingStandard.Gap(30f);
+            if (_hasUnityPlayerSo)
+            {
+                GUILayout.Space(50);
+                GUILayout.Label("SteamDeck (Steam Linux Runtime)\nHost Font Patch (Restart needed)", GUILayout.Width(300));
+                GUI.enabled = _hasUnityPlayerSo && _hasRunHostFonts;
+                if (GUILayout.Button("Apply", GUILayout.Width(100)))
+                {
+                    string UnityPlayerSoPath = Path.GetFullPath("UnityPlayer.so");
+                    ReplaceStringInBinaryFile(UnityPlayerSoPath, "/usr/share/fonts", "/run/host/fonts/");
+                }
+                GUI.enabled = true;
+
+                if (GUILayout.Button("Revert", GUILayout.Width(100)))
+                {
+                    string UnityPlayerSoPath = Path.GetFullPath("UnityPlayer.so");
+                    ReplaceStringInBinaryFile(UnityPlayerSoPath, "/run/host/fonts/", "/usr/share/fonts");
+                }
+            }
+            GUILayout.EndHorizontal();
+
+            listingStandard.Gap(40f);
             listingStandard.Label($"[Current Font] Interface: {FontSettings.CurrentUIFontName}, World: {FontSettings.CurrentWorldFontName}");
             string[] specimen =
             {
@@ -236,6 +260,9 @@ namespace CustomFonts
                     OSFontPaths.Add(fontName, path);
                 }
             }
+            string UnityPlayerSoPath = Path.GetFullPath("UnityPlayer.so");
+            _hasUnityPlayerSo = File.Exists(UnityPlayerSoPath);
+            _hasRunHostFonts = Directory.Exists("/run/host/fonts");
         }
 
         public static void SetupBundledFonts()
@@ -294,19 +321,33 @@ namespace CustomFonts
             // if (FontSettings.CurrentFontName == FontSettings.PreviousFontName && !forceUpdate) return;
 
             var isBundled = BundledFonts.ContainsKey(FontSettings.CurrentUIFontName);
-            Font font;
+            Font font = null;
 
             var fontSize = (int)Math.Round(DefaultFonts[fontIndex].fontSize * FontSettings.ScaleFactor);
 
-            if (isBundled)
+            try
             {
-                font = BundledFonts[FontSettings.CurrentUIFontName];
+                if (isBundled)
+                {
+                    font = BundledFonts[FontSettings.CurrentUIFontName];
+                }
+                else
+                {
+                    font = FontSettings.CurrentUIFontName != FontSettings.DefaultFontName
+                        ? Font.CreateDynamicFontFromOSFont(FontSettings.CurrentUIFontName, fontSize)
+                        : DefaultFonts[fontIndex];
+                }
             }
-            else
+            catch (Exception ex)
             {
-                font = FontSettings.CurrentUIFontName != FontSettings.DefaultFontName
-                    ? Font.CreateDynamicFontFromOSFont(FontSettings.CurrentUIFontName, fontSize)
-                    : DefaultFonts[fontIndex];
+                Log.Message($"[Custom Fonts] error: {ex.Message}");
+            }
+
+            if (font == null)
+            {
+                Log.Message($"[Custom Fonts] Font {FontSettings.CurrentUIFontName} not found, using default font");
+                FontSettings.CurrentUIFontName = FontSettings.DefaultFontName;
+                font = DefaultFonts[fontIndex];
             }
 
 #if DEBUG
@@ -345,6 +386,59 @@ namespace CustomFonts
             Text.textAreaStyles[(int)fontType].contentOffset = offsetVector;
             // Text.textAreaReadOnlyStyles[(int)fontType].clipping = TextClipping.Clip;
             Text.textAreaReadOnlyStyles[(int)fontType].contentOffset = offsetVector;
+        }
+
+        public static int IndexOf(byte[] array, byte[] pattern)
+        {
+            if (pattern.Length > array.Length)
+                return -1;
+
+            for (int i = 0; i <= array.Length - pattern.Length; i++)
+            {
+                bool found = true;
+                for (int j = 0; j < pattern.Length; j++)
+                {
+                    if (array[i + j] != pattern[j])
+                    {
+                        found = false;
+                        break;
+                    }
+                }
+                if (found)
+                    return i;
+            }
+            return -1;
+        }
+
+        public static void ReplaceStringInBinaryFile(string filePath, string searchString, string replaceString)
+        {
+            try
+            {
+                byte[] searchStringBytes = Encoding.UTF8.GetBytes(searchString);
+                byte[] replaceStringBytes = Encoding.UTF8.GetBytes(replaceString);
+
+                using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    byte[] data = new byte[fileStream.Length];
+                    fileStream.Read(data, 0, (int)fileStream.Length);
+                    int index = IndexOf(data, searchStringBytes);
+                    if (index != -1)
+                    {
+                        Array.Copy(replaceStringBytes, 0, data, index, replaceStringBytes.Length);
+                        fileStream.Seek(0, SeekOrigin.Begin);
+                        fileStream.Write(data, 0, data.Length);
+                        Log.Message($"[Custom Fonts] Updating UnityPlayer.so fonts path from {searchString} to {replaceString}");
+                    }
+                    else
+                    {
+                        Log.Message($"[Custom Fonts] {searchString} not found");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Message($"[Custom Fonts] error: {ex.Message}");
+            }
         }
     }
 
@@ -404,19 +498,27 @@ namespace CustomFonts
             {
                 TMP_FontAsset fontAsset;
 
-                if (CustomFonts.BundledFonts.ContainsKey(FontSettings.CurrentWorldFontName))
+                try
                 {
-                    fontAsset = TMP_FontAsset.CreateFontAsset(
-                        CustomFonts.BundledFonts[FontSettings.CurrentWorldFontName]);
+                    if (CustomFonts.BundledFonts.ContainsKey(FontSettings.CurrentWorldFontName))
+                    {
+                        fontAsset = TMP_FontAsset.CreateFontAsset(
+                            CustomFonts.BundledFonts[FontSettings.CurrentWorldFontName]);
+                    }
+                    else if (FontSettings.CurrentWorldFontName == FontSettings.DefaultFontName)
+                    {
+                        fontAsset = CustomFonts.DefaultTMPFontAsset;
+                    }
+                    else
+                    {
+                        fontAsset = TMP_FontAsset.CreateFontAsset(
+                            new Font(CustomFonts.OSFontPaths[FontSettings.CurrentWorldFontName]));
+                    }
                 }
-                else if (FontSettings.CurrentWorldFontName == FontSettings.DefaultFontName)
+                catch (Exception ex)
                 {
-                    fontAsset = CustomFonts.DefaultTMPFontAsset;
-                }
-                else
-                {
-                    fontAsset = TMP_FontAsset.CreateFontAsset(
-                        new Font(CustomFonts.OSFontPaths[FontSettings.CurrentWorldFontName]));
+                    Log.Message($"[Custom Fonts] error: {ex.Message}");
+                    fontAsset = null;
                 }
 
                 if (fontAsset == null)

@@ -6,17 +6,31 @@ env:
   STEAM_OS: '{{if eq OS "windows"}}Win64_Data{{else}}Linux_Data{{end}}'
 
 tasks:
+  prepare:
+    cmds:
+      - curl -LO https://github.com/pardeike/HarmonyRimWorld/releases/latest/download/HarmonyMod.zip
+      - 7z x -y HarmonyMod.zip -opackages
+
   build:
     cmds:
-      - curl -k -LO https://github.com/pardeike/HarmonyRimWorld/releases/latest/download/HarmonyMod.zip
-      - 7z x -y HarmonyMod.zip -opackages
-      - dotnet build ./Source/CustomFonts/CustomFonts.sln -c "Release 1.5"
+      - echo ${STEAM_OS}
+      - |
+        export STEAM_APPS=${STEAM_APPS_1_4}
+        dotnet build ./Source/CustomFonts/CustomFonts.sln -c "Release 1.4"
+      - |
+        export STEAM_APPS=${STEAM_APPS_1_5}
+        dotnet build ./Source/CustomFonts/CustomFonts.sln -c "Release 1.5"
+
+  export:
+    cmds:
+      - cp -rf 1.4/Assemblies/* "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.4/Assemblies/"
+      - cp -rf 1.5/Assemblies/* "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.5/Assemblies/"
 
   release:
     cmds:
       - git archive --format=tar.gz HEAD -o custom-fonts.tar.gz
-      - tar zxvf custom-fonts.tar.gz -C "${STEAM_APPS}/Common/RimWorld/Mods/rw-customfonts/"
+      - tar zxvf custom-fonts.tar.gz -C "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/"
       - |
-        cd "${STEAM_APPS}/Common/RimWorld/Mods/rw-customfonts/"
+        cd "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/"
         rm Taskfile.*
         rm .git*
