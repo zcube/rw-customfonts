@@ -545,11 +545,11 @@ namespace CustomFonts
                 string str = "0000-00-00 00:00";
 
                 var backup = Text.Font;
-                Text.Font = GameFont.Small;
+                Text.Font = GameFont.Tiny;
                 var size = Text.CalcSize(str);
 
                 rect.x -= size.x - rect.width + 2.0f;
-                rect.width += size.x + 2.0f;
+                rect.width = size.x + 2.0f;
                 Text.Font = backup;
             }
         }
