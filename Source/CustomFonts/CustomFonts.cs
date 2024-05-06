@@ -542,8 +542,15 @@ namespace CustomFonts
             [HarmonyPrefix]
             public static void Prefix(Dialog_FileList __instance, SaveFileInfo sfi, ref Rect rect)
             {
-                rect.x -= rect.width * (FontSettings.FontWidthScaleFactor - 1.0f + 0.01f);
-                rect.width += rect.width * (FontSettings.FontWidthScaleFactor - 1.0f + 0.01f);
+                string str = "0000-00-00 00:00";
+
+                var backup = Text.Font;
+                Text.Font = GameFont.Small;
+                var size = Text.CalcSize(str);
+
+                rect.x -= size.x - rect.width + 2.0f;
+                rect.width += size.x + 2.0f;
+                Text.Font = backup;
             }
         }
     }
