@@ -22,4 +22,5 @@
     <CustomFonts.ToRunHostFonts>Patch to /run/host/fonts</CustomFonts.ToRunHostFonts>
     <CustomFonts.Patch>Patch</CustomFonts.Patch>
     <CustomFonts.Etc>etc</CustomFonts.Etc>
+    <CustomFonts.Search>Search</CustomFonts.Search>
 </LanguageData>

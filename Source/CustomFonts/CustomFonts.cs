@@ -349,34 +349,62 @@ namespace CustomFonts
 
             listingStandard.GapLine();
 
-            searchText = listingStandard.TextEntryLabeled("Search", searchText).Trim();
-
             Rect remainRect = listingStandard.GetRect(0);
-            var scrollHeight = inRect.height - remainRect.y - 50f;
+            var scrollHeight = inRect.height - remainRect.y - 10f;
             Log.Message($"scrollHeight: {scrollHeight} remainRect: {remainRect} inRect: {inRect}");
             var listRect = new Rect();
+            var listScrollRect = new Rect();
             var propertyRect = new Rect();
             var fullRect = new Rect();
+            var leftListingStandard = new Listing_Standard();
             switch (toolbarInt)
             {
                 case 0:
                     listingStandard.LineRectSpilter(out listRect, out propertyRect, height: scrollHeight);
-                    DrawFontSettings(GameFont.Tiny, listRect);
+                    listRect = Padding(listRect, 10);
+                    propertyRect = Padding(propertyRect, 10);
+                    leftListingStandard.Begin(listRect);
+                    searchText = leftListingStandard.TextEntryLabeled("CustomFonts.Search".Translate(), searchText).Trim();
+                    remainRect = leftListingStandard.GetRect(0);
+                    listScrollRect = new Rect(listRect.x, remainRect.y, listRect.width, listRect.height - remainRect.y);
+                    DrawFontSettings(GameFont.Tiny, listScrollRect);
+                    leftListingStandard.End();
                     DrawPropertySettings(toolbarInt, propertyRect);
                     break;
                 case 1:
                     listingStandard.LineRectSpilter(out listRect, out propertyRect, height: scrollHeight);
-                    DrawFontSettings(GameFont.Small, listRect);
+                    listRect = Padding(listRect, 10);
+                    propertyRect = Padding(propertyRect, 10);
+                    leftListingStandard.Begin(listRect);
+                    searchText = leftListingStandard.TextEntryLabeled("CustomFonts.Search".Translate(), searchText).Trim();
+                    remainRect = leftListingStandard.GetRect(0);
+                    listScrollRect = new Rect(listRect.x, remainRect.y, listRect.width, listRect.height - remainRect.y);
+                    DrawFontSettings(GameFont.Small, listScrollRect);
+                    leftListingStandard.End();
                     DrawPropertySettings(toolbarInt, propertyRect);
                     break;
                 case 2:
                     listingStandard.LineRectSpilter(out listRect, out propertyRect, height: scrollHeight);
-                    DrawFontSettings(GameFont.Medium, listRect);
+                    listRect = Padding(listRect, 10);
+                    propertyRect = Padding(propertyRect, 10);
+                    leftListingStandard.Begin(listRect);
+                    searchText = leftListingStandard.TextEntryLabeled("CustomFonts.Search".Translate(), searchText).Trim();
+                    remainRect = leftListingStandard.GetRect(0);
+                    listScrollRect = new Rect(listRect.x, remainRect.y, listRect.width, listRect.height - remainRect.y);
+                    DrawFontSettings(GameFont.Medium, listScrollRect);
+                    leftListingStandard.End();
                     DrawPropertySettings(toolbarInt, propertyRect);
                     break;
                 case 3:
                     listingStandard.LineRectSpilter(out listRect, out propertyRect, height: scrollHeight);
-                    DrawWorldFontSettings(listRect);
+                    listRect = Padding(listRect, 10);
+                    propertyRect = Padding(propertyRect, 10);
+                    leftListingStandard.Begin(listRect);
+                    searchText = leftListingStandard.TextEntryLabeled("CustomFonts.Search".Translate(), searchText).Trim();
+                    remainRect = leftListingStandard.GetRect(0);
+                    listScrollRect = new Rect(listRect.x, remainRect.y, listRect.width, listRect.height - remainRect.y);
+                    DrawWorldFontSettings(listScrollRect);
+                    leftListingStandard.End();
                     DrawPropertySettings(toolbarInt, propertyRect);
                     break;
                 case 4:
@@ -390,6 +418,12 @@ namespace CustomFonts
 
             base.DoSettingsWindowContents(inRect);
         }
+
+        public Rect Padding(Rect rect, float padding)
+        {
+            return new Rect(rect.x + padding, rect.y + padding, rect.width - padding * 2, rect.height - padding * 2);
+        }
+
         public void DrawFontSettings(GameFont fontIndex, Rect inRect)
         {
             var bundledFontsCount = 0;
@@ -408,8 +442,8 @@ namespace CustomFonts
                     fontNameCount++;
                 }
             }
-            var fontListScrollOuter = new Rect(inRect.x, inRect.y + 30f,
-                inRect.width - 20f, inRect.height - 30f);
+            var fontListScrollOuter = new Rect(inRect.x, inRect.y,
+                inRect.width - 10f, inRect.height);
             var fontListScrollInner = new Rect(fontListScrollOuter.x, fontListScrollOuter.y,
                 fontListScrollOuter.width - 24f,
                 23.6f * (3 + bundledFontsCount + fontNameCount));
@@ -474,8 +508,8 @@ namespace CustomFonts
                     osFontPathsCount++;
                 }
             }
-            var fontListScrollOuter = new Rect(inRect.x, inRect.y + 30f,
-                inRect.width - 20f, inRect.height - 30f);
+            var fontListScrollOuter = new Rect(inRect.x, inRect.y,
+                inRect.width - 10f, inRect.height);
             var fontListScrollInner = new Rect(fontListScrollOuter.x, fontListScrollOuter.y,
                 fontListScrollOuter.width - 24f,
                 23.6f * (3 + BundledFonts.Count + OSFontPaths.Count));

@@ -21,4 +21,5 @@
     <CustomFonts.ToRunHostFonts>/run/host/fontsへのパッチ</CustomFonts.ToRunHostFonts>
     <CustomFonts.Patch>パッチ</CustomFonts.Patch>
     <CustomFonts.Etc>その他</CustomFonts.Etc>
+    <CustomFonts.Search>検索</CustomFonts.Search>
 </LanguageData>
