@@ -34,6 +34,15 @@ tasks:
         platforms: [darwin]
       - cmd: cp -rf 1.5/Assemblies/* "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/1.5/Assemblies/"
         platforms: [darwin]
+      - cmd: cp -rf Languages/* "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/Languages/"
+        platforms: [windows/amd64, linux]
+      - cmd: cp -rf Languages/* "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/Languages/"
+        platforms: [darwin]
+
+  build_and_export:
+    cmds:
+      - task: build
+      - task: export
 
   release:
     cmds:

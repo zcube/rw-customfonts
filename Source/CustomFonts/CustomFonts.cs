@@ -19,19 +19,184 @@ namespace CustomFonts
     {
         // Setting values
         public const string DefaultFontName = "Default";
-        public static string CurrentUIFontName;
+        // public static ref string CurrentUIFontName = CurrentUIFontNameMedium;
+        // public static ref float ScaleFactor = ScaleFactorMedium;
+        // public static ref int VerticalOffset = VerticalOffsetMedium;
+        // public static ref float FontWidthScaleFactor = FontWidthScaleFactorMedium;
         public static string CurrentWorldFontName;
-        public static float ScaleFactor = 1.0f;
-        public static int VerticalOffset = 0;
-        public static float FontWidthScaleFactor = 1.0f;
+        public static float WorldScaleFactor = 1.0f;
+
+        public static string CurrentUIFontNameTiny = "Default";
+        public static string CurrentUIFontNameSmall = "Default";
+        public static string CurrentUIFontNameMedium = "Default";
+
+        public static float ScaleFactorTiny = 1.0f;
+        public static float ScaleFactorSmall = 1.0f;
+        public static float ScaleFactorMedium = 1.0f;
+
+        public static int VerticalOffsetTiny = 0;
+        public static int VerticalOffsetSmall = 0;
+        public static int VerticalOffsetMedium = 0;
+
+        public static float FontWidthScaleFactorTiny = 1.0f;
+        public static float FontWidthScaleFactorSmall = 1.0f;
+        public static float FontWidthScaleFactorMedium = 1.0f;
+
+        public static bool UniformUIfonts = false;
+
+        public static string GetCurrentUIFontName(GameFont fontIndex)
+        {
+            switch (fontIndex)
+            {
+                case GameFont.Tiny:
+                    return CurrentUIFontNameTiny;
+                case GameFont.Small:
+                    return CurrentUIFontNameSmall;
+                case GameFont.Medium:
+                    return CurrentUIFontNameMedium;
+                default:
+                    return CurrentUIFontNameMedium;
+            }
+        }
+
+        public static void SetCurrentUIFontName(GameFont fontIndex, string fontName)
+        {
+            switch (fontIndex)
+            {
+                case GameFont.Tiny:
+                    CurrentUIFontNameTiny = fontName;
+                    break;
+                case GameFont.Small:
+                    CurrentUIFontNameSmall = fontName;
+                    break;
+                case GameFont.Medium:
+                    CurrentUIFontNameMedium = fontName;
+                    break;
+            }
+        }
+
+        public static float GetScaleFactor(GameFont fontIndex)
+        {
+            switch (fontIndex)
+            {
+                case GameFont.Tiny:
+                    return ScaleFactorTiny;
+                case GameFont.Small:
+                    return ScaleFactorSmall;
+                case GameFont.Medium:
+                    return ScaleFactorMedium;
+                default:
+                    return ScaleFactorMedium;
+            }
+        }
+
+        public static void SetScaleFactor(GameFont fontIndex, float value)
+        {
+            switch (fontIndex)
+            {
+                case GameFont.Tiny:
+                    ScaleFactorTiny = value;
+                    break;
+                case GameFont.Small:
+                    ScaleFactorSmall = value;
+                    break;
+                case GameFont.Medium:
+                    ScaleFactorMedium = value;
+                    break;
+            }
+        }
+
+        public static int GetVerticalOffset(GameFont fontIndex)
+        {
+            switch (fontIndex)
+            {
+                case GameFont.Tiny:
+                    return VerticalOffsetTiny;
+                case GameFont.Small:
+                    return VerticalOffsetSmall;
+                case GameFont.Medium:
+                    return VerticalOffsetMedium;
+                default:
+                    return VerticalOffsetMedium;
+            }
+        }
+
+        public static void SetVerticalOffset(GameFont fontIndex, int value)
+        {
+            switch (fontIndex)
+            {
+                case GameFont.Tiny:
+                    VerticalOffsetTiny = value;
+                    break;
+                case GameFont.Small:
+                    VerticalOffsetSmall = value;
+                    break;
+                case GameFont.Medium:
+                    VerticalOffsetMedium = value;
+                    break;
+            }
+        }
+
+        public static float GetFontWidthScaleFactor(GameFont fontIndex)
+        {
+            switch (fontIndex)
+            {
+                case GameFont.Tiny:
+                    return FontWidthScaleFactorTiny;
+                case GameFont.Small:
+                    return FontWidthScaleFactorSmall;
+                case GameFont.Medium:
+                    return FontWidthScaleFactorMedium;
+                default:
+                    return FontWidthScaleFactorMedium;
+            }
+        }
+
+        public static void SetFontWidthScaleFactor(GameFont fontIndex, float value)
+        {
+            switch (fontIndex)
+            {
+                case GameFont.Tiny:
+                    FontWidthScaleFactorTiny = value;
+                    break;
+                case GameFont.Small:
+                    FontWidthScaleFactorSmall = value;
+                    break;
+                case GameFont.Medium:
+                    FontWidthScaleFactorMedium = value;
+                    break;
+            }
+        }
+
 
         public override void ExposeData() // Writing settings to the mod file
         {
-            Scribe_Values.Look(ref CurrentUIFontName, "CurrentUIFontName", DefaultFontName);
+            Scribe_Values.Look(ref CurrentUIFontNameMedium, "CurrentUIFontName", DefaultFontName);
+            Scribe_Values.Look(ref ScaleFactorMedium, "ScaleFactor", 1.0f);
+            Scribe_Values.Look(ref VerticalOffsetMedium, "VerticalOffset", 0);
+            Scribe_Values.Look(ref FontWidthScaleFactorMedium, "FontWidthScaleFactor", 1.0f);
+
+            Scribe_Values.Look(ref UniformUIfonts, "UniformUIfonts", true);
+
             Scribe_Values.Look(ref CurrentWorldFontName, "CurrentWorldFontName", DefaultFontName);
-            Scribe_Values.Look(ref ScaleFactor, "ScaleFactor", 1.0f);
-            Scribe_Values.Look(ref VerticalOffset, "VerticalOffset", 0);
-            Scribe_Values.Look(ref FontWidthScaleFactor, "FontWidthScaleFactor", 1.0f);
+
+            Scribe_Values.Look(ref CurrentUIFontNameTiny, "CurrentUITinyFontName", CurrentUIFontNameMedium);
+            Scribe_Values.Look(ref CurrentUIFontNameSmall, "CurrentUISmallFontName", CurrentUIFontNameMedium);
+            // Scribe_Values.Look(ref CurrentUIFontNameMedium, "CurrentUIMediumFontName", DefaultFontName);
+
+            Scribe_Values.Look(ref CurrentWorldFontName, "CurrentWorldFontName", DefaultFontName);
+            Scribe_Values.Look(ref WorldScaleFactor, "WorldScaleFactor", 1.0f);
+            Scribe_Values.Look(ref ScaleFactorTiny, "ScaleFactorTiny", ScaleFactorMedium);
+            Scribe_Values.Look(ref ScaleFactorSmall, "ScaleFactorSmall", ScaleFactorMedium);
+            // Scribe_Values.Look(ref ScaleFactorMedium, "ScaleFactorMedium", 1.0f);
+
+            Scribe_Values.Look(ref VerticalOffsetTiny, "VerticalOffsetTiny", VerticalOffsetMedium);
+            Scribe_Values.Look(ref VerticalOffsetSmall, "VerticalOffsetSmall", VerticalOffsetMedium);
+            // Scribe_Values.Look(ref VerticalOffsetMedium, "VerticalOffsetMedium", 0);
+
+            Scribe_Values.Look(ref FontWidthScaleFactorTiny, "FontWidthScaleFactorTiny", FontWidthScaleFactorMedium);
+            Scribe_Values.Look(ref FontWidthScaleFactorSmall, "FontWidthScaleFactorSmall", FontWidthScaleFactorMedium);
+            // Scribe_Values.Look(ref FontWidthScaleFactorMedium, "FontWidthScaleFactorMedium", 1.0f);
             base.ExposeData();
         }
     }
@@ -61,28 +226,33 @@ namespace CustomFonts
         public static readonly Dictionary<GameFont, GUIStyle> DefaultFontStyle = new Dictionary<GameFont, GUIStyle>();
         public static readonly Dictionary<string, string> OSFontPaths = new Dictionary<string, string>();
         public static TMP_FontAsset DefaultTMPFontAsset;
-        private Vector2 _leftScrollPosition = Vector2.zero;
-        private Vector2 _rightScrollPosition = Vector2.zero;
+        private Vector2 scrollPosition = Vector2.zero;
         public static Harmony MyHarmony { get; private set; }
         private static ModContentPack _content;
+        private static string searchText = "";
 
         public CustomFonts(ModContentPack content) :
             base(content) // A mandatory constructor which resolves the reference to the mod settings.
         {
             _settings = GetSettings<FontSettings>();
 
-            if (float.IsNaN(FontSettings.ScaleFactor))
-            {
-                FontSettings.ScaleFactor = 1.0f;
-            }
-
-            if (float.IsNaN(FontSettings.FontWidthScaleFactor))
-            {
-                FontSettings.FontWidthScaleFactor = 1.0f;
-            }
-
             foreach (GameFont value in Enum.GetValues(typeof(GameFont)))
             {
+                if (float.IsNaN(FontSettings.GetScaleFactor(value)))
+                {
+                    FontSettings.SetScaleFactor(value, 1.0f);
+                }
+
+                if (float.IsNaN(FontSettings.GetFontWidthScaleFactor(value)))
+                {
+                    FontSettings.SetFontWidthScaleFactor(value, 1.0f);
+                }
+
+                if (float.IsNaN(FontSettings.GetVerticalOffset(value)))
+                {
+                    FontSettings.SetVerticalOffset(value, 0);
+                }
+
                 DefaultFonts[value] = Text.fontStyles[(int)value].font;
                 DefaultFontStyle[value] = Text.fontStyles[(int)value];
             }
@@ -97,6 +267,7 @@ namespace CustomFonts
             MyHarmony.PatchAll();
         }
 
+        public int toolbarInt = 0;
         public override void DoSettingsWindowContents(Rect inRect) // The GUI part to edit the mod settings.
         {
             SetupOSInstalledFontNames();
@@ -105,130 +276,113 @@ namespace CustomFonts
 
             var listingStandard = new Listing_Standard();
             listingStandard.Begin(inRect);
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Reset to default", GUILayout.Width(200)))
+            if (listingStandard.ButtonTextLabeled("CustomFonts.ResetToDefault".Translate(), "CustomFonts.Apply".Translate()))
             {
-                FontSettings.ScaleFactor = 1.0f;
-                FontSettings.VerticalOffset = 0;
-                SaveFont(FontSettings.DefaultFontName, true);
+                foreach (GameFont value in Enum.GetValues(typeof(GameFont)))
+                {
+                    FontSettings.SetScaleFactor(value, 1.0f);
+                    FontSettings.SetVerticalOffset(value, 0);
+                    FontSettings.SetFontWidthScaleFactor(value, 1.0f);
+                    SaveFont(value, FontSettings.DefaultFontName, true);
+                }
+                // FontSettings.ScaleFactor = 1.0f;
+                // FontSettings.VerticalOffset = 0;
+                // FontSettings.FontWidthScaleFactor = 1.0f;
+                // FontSettings.CurrentUIFontName = FontSettings.DefaultFontName;
+                FontSettings.UniformUIfonts = true;
+                FontSettings.WorldScaleFactor = 1.0f;
                 SaveWorldFont(FontSettings.DefaultFontName);
             }
+            listingStandard.CheckboxLabeled("CustomFonts.UniformUIfonts".Translate(), ref FontSettings.UniformUIfonts, "CustomFonts.UniformUIfonts".Translate());
 
-            if (_hasUnityPlayerSo)
+            string[] toolbarStrings = new string[] {
+                "CustomFonts.FontTiny".Translate(FontSettings.GetCurrentUIFontName(GameFont.Tiny)),
+                "CustomFonts.FontSmall".Translate(FontSettings.GetCurrentUIFontName(GameFont.Small)),
+                "CustomFonts.FontMedium".Translate(FontSettings.GetCurrentUIFontName(GameFont.Medium)),
+                "CustomFonts.FontWorld".Translate(FontSettings.CurrentWorldFontName),
+                "CustomFonts.Etc".Translate(),
+            };
+
+            Rect toolbarRect = listingStandard.GetRect(30);
+            toolbarInt = GUI.Toolbar(toolbarRect, toolbarInt, toolbarStrings);
+
+            switch (toolbarInt)
             {
-                GUILayout.Space(50);
-                GUILayout.Label("SteamDeck (Steam Linux Runtime)\nHost Font Patch (Restart needed)", GUILayout.Width(300));
-                GUI.enabled = _hasUnityPlayerSo && _hasRunHostFonts;
-                if (GUILayout.Button("Apply", GUILayout.Width(100)))
-                {
-                    string UnityPlayerSoPath = Path.GetFullPath("UnityPlayer.so");
-                    ReplaceStringInBinaryFile(UnityPlayerSoPath, "/usr/share/fonts", "/run/host/fonts/");
-                }
-                GUI.enabled = true;
-
-                if (GUILayout.Button("Revert", GUILayout.Width(100)))
-                {
-                    string UnityPlayerSoPath = Path.GetFullPath("UnityPlayer.so");
-                    ReplaceStringInBinaryFile(UnityPlayerSoPath, "/run/host/fonts/", "/usr/share/fonts");
-                }
+                case 0:
+                    listingStandard.Label("CustomFonts.CurrentFont".Translate(FontSettings.GetCurrentUIFontName(GameFont.Tiny)));
+                    break;
+                case 1:
+                    listingStandard.Label("CustomFonts.CurrentFont".Translate(FontSettings.GetCurrentUIFontName(GameFont.Small)));
+                    break;
+                case 2:
+                    listingStandard.Label("CustomFonts.CurrentFont".Translate(FontSettings.GetCurrentUIFontName(GameFont.Medium)));
+                    break;
+                case 3:
+                    listingStandard.Label("CustomFonts.CurrentFont".Translate(FontSettings.CurrentWorldFontName));
+                    break;
+                case 4:
+                    listingStandard.Label("CustomFonts.Etc".Translate(FontSettings.CurrentWorldFontName));
+                    break;
             }
-            GUILayout.EndHorizontal();
 
-            listingStandard.Gap(40f);
-            listingStandard.Label($"[Current Font] Interface: {FontSettings.CurrentUIFontName}, World: {FontSettings.CurrentWorldFontName}");
             string[] specimen =
             {
-                "RimWorld is a sci-fi colony sim driven by an intelligent AI storyteller.",
-                "RimWorldは、知性のあるAIストーリーテラーによって織りなされるSFコロニーシミュレーションゲームです。",
-                "RimWorld는 지능적인 AI 스토리텔러에 의해 주도되는 SF 콜로니 시뮬레이션 게임입니다.",
+                "CustomFonts.Specimen".Translate(),
             };
-            listingStandard.Label(String.Join("\n", specimen));
+
+            Rect fontViewRect = listingStandard.GetRect(100);
+            {
+                var fontViewListingStandard = new Listing_Standard();
+                fontViewListingStandard.Begin(fontViewRect);
+
+                var backup = Text.Font;
+                Text.Font = GameFont.Tiny;
+                fontViewListingStandard.Label(String.Join("\n", specimen));
+                Text.Font = GameFont.Small;
+                fontViewListingStandard.Label(String.Join("\n", specimen));
+                Text.Font = GameFont.Medium;
+                fontViewListingStandard.Label(String.Join("\n", specimen));
+                // TODO: world font specimen
+                Text.Font = backup;
+                fontViewListingStandard.End();
+            }
+
             listingStandard.GapLine();
 
-            var heightAdjustValue = Math.Max(30f * (FontSettings.ScaleFactor - 1.0f) * 4, 0);
-            var scrollHeight = inRect.height - 210f - 50f - heightAdjustValue;
-            var fontListLeftRect = new Rect();
-            var fontListRightRect = new Rect();
-            listingStandard.LineRectSpilter(out fontListLeftRect, out fontListRightRect, height: scrollHeight);
+            searchText = listingStandard.TextEntryLabeled("Search", searchText).Trim();
 
-            var leftFontListScrollOuter = new Rect(fontListLeftRect.x, fontListLeftRect.y + 30f,
-                fontListLeftRect.width - 20f, fontListLeftRect.height - 30f);
-            var leftFontListScrollInner = new Rect(leftFontListScrollOuter.x, leftFontListScrollOuter.y,
-                leftFontListScrollOuter.width - 24f,
-                23.6f * (3 + BundledFonts.Count + _fontNames.Count));
-            Widgets.Label(fontListLeftRect, "---- General Interface ----");
-            Widgets.BeginScrollView(leftFontListScrollOuter, ref _leftScrollPosition, leftFontListScrollInner);
-            var leftListingStandard = leftFontListScrollInner.BeginListingStandard();
-            if (leftListingStandard.RadioButton(FontSettings.DefaultFontName, FontSettings.CurrentUIFontName == FontSettings.DefaultFontName))
-                SaveFont(FontSettings.DefaultFontName);
-            leftListingStandard.GapLine();
-            foreach (var name in BundledFonts.Keys.OrderBy(x => x))
+            Rect remainRect = listingStandard.GetRect(0);
+            var scrollHeight = inRect.height - remainRect.y - 50f;
+            Log.Message($"scrollHeight: {scrollHeight} remainRect: {remainRect} inRect: {inRect}");
+            var listRect = new Rect();
+            var propertyRect = new Rect();
+            var fullRect = new Rect();
+            switch (toolbarInt)
             {
-                if (leftListingStandard.RadioButton(name, FontSettings.CurrentUIFontName == name))
-                    SaveFont(name);
-            }
-            leftListingStandard.GapLine();
-            foreach (var name in _fontNames)
-            {
-                if (leftListingStandard.RadioButton(name, FontSettings.CurrentUIFontName == name))
-                    SaveFont(name);
-            }
-            leftListingStandard.End();
-            Widgets.EndScrollView();
-
-            var rightFontListScrollOuter = new Rect(fontListRightRect.x, fontListRightRect.y + 30f,
-                fontListRightRect.width - 20f, fontListRightRect.height - 30f);
-            var rightFontListScrollInner = new Rect(rightFontListScrollOuter.x, rightFontListScrollOuter.y,
-                rightFontListScrollOuter.width - 24f,
-                23.6f * (3 + BundledFonts.Count + OSFontPaths.Count));
-            Widgets.Label(fontListRightRect, "---- World Map ---- (Reload Save to Apply)");
-            Widgets.BeginScrollView(rightFontListScrollOuter, ref _rightScrollPosition, rightFontListScrollInner);
-            var rightListingStandard = rightFontListScrollInner.BeginListingStandard();
-            if (rightListingStandard.RadioButton(FontSettings.DefaultFontName, FontSettings.CurrentWorldFontName == FontSettings.DefaultFontName))
-                SaveWorldFont(FontSettings.DefaultFontName);
-            rightListingStandard.GapLine();
-            foreach (var name in BundledFonts.Keys.OrderBy(x => x))
-            {
-                if (rightListingStandard.RadioButton(name, FontSettings.CurrentWorldFontName == name))
-                    SaveWorldFont(name);
-            }
-            rightListingStandard.GapLine();
-            foreach (var name in OSFontPaths.Keys.OrderBy(x => x))
-            {
-                if (rightListingStandard.RadioButton(name, FontSettings.CurrentWorldFontName == name))
-                    SaveWorldFont(name);
-            }
-            rightListingStandard.End();
-            Widgets.EndScrollView();
-
-            var offsetValue = (float)FontSettings.VerticalOffset;
-            listingStandard.AddLabeledSlider($"Vertical Position Offset: {(FontSettings.VerticalOffset > 0 ? "+" : "")}{FontSettings.VerticalOffset}",
-                ref offsetValue, -20.0f, 20.0f);
-            var newOffset = (int)Math.Round(offsetValue);
-            if (newOffset != FontSettings.VerticalOffset)
-            {
-                FontSettings.VerticalOffset = newOffset;
-                RecalcCustomLineHeights();
-            }
-
-            var scaleValue = FontSettings.ScaleFactor;
-            listingStandard.AddLabeledSlider($"Font Scaling Factor: {FontSettings.ScaleFactor:F1}", ref scaleValue,
-                0.5f, 2.0f);
-            var fontSizeScale = (float)Math.Round(scaleValue, 1);
-            if (Math.Abs(FontSettings.ScaleFactor - fontSizeScale) > 0.01)
-            {
-                FontSettings.ScaleFactor = fontSizeScale;
-                UpdateFont();
-            }
-
-            var widthScaleValue = FontSettings.FontWidthScaleFactor;
-            listingStandard.AddLabeledSlider($"Font Width Scaling Factor: {FontSettings.FontWidthScaleFactor:F1}", ref widthScaleValue,
-                0.5f, 2.0f);
-            var widthScale = (float)Math.Round(widthScaleValue, 1);
-            if (Math.Abs(FontSettings.FontWidthScaleFactor - widthScale) > 0.01)
-            {
-                FontSettings.FontWidthScaleFactor = widthScale;
-                UpdateFont();
+                case 0:
+                    listingStandard.LineRectSpilter(out listRect, out propertyRect, height: scrollHeight);
+                    DrawFontSettings(GameFont.Tiny, listRect);
+                    DrawPropertySettings(toolbarInt, propertyRect);
+                    break;
+                case 1:
+                    listingStandard.LineRectSpilter(out listRect, out propertyRect, height: scrollHeight);
+                    DrawFontSettings(GameFont.Small, listRect);
+                    DrawPropertySettings(toolbarInt, propertyRect);
+                    break;
+                case 2:
+                    listingStandard.LineRectSpilter(out listRect, out propertyRect, height: scrollHeight);
+                    DrawFontSettings(GameFont.Medium, listRect);
+                    DrawPropertySettings(toolbarInt, propertyRect);
+                    break;
+                case 3:
+                    listingStandard.LineRectSpilter(out listRect, out propertyRect, height: scrollHeight);
+                    DrawWorldFontSettings(listRect);
+                    DrawPropertySettings(toolbarInt, propertyRect);
+                    break;
+                case 4:
+                    fullRect = listingStandard.GetRect(scrollHeight);
+                    DrawLinuxSettings(fullRect);
+                    break;
             }
 
 
@@ -236,8 +390,220 @@ namespace CustomFonts
 
             base.DoSettingsWindowContents(inRect);
         }
+        public void DrawFontSettings(GameFont fontIndex, Rect inRect)
+        {
+            var bundledFontsCount = 0;
+            var fontNameCount = 0;
+            foreach (var name in BundledFonts.Keys)
+            {
+                if (name.ToLower().Contains(searchText.ToLower()))
+                {
+                    bundledFontsCount++;
+                }
+            }
+            foreach (var name in _fontNames)
+            {
+                if (name.ToLower().Contains(searchText.ToLower()))
+                {
+                    fontNameCount++;
+                }
+            }
+            var fontListScrollOuter = new Rect(inRect.x, inRect.y + 30f,
+                inRect.width - 20f, inRect.height - 30f);
+            var fontListScrollInner = new Rect(fontListScrollOuter.x, fontListScrollOuter.y,
+                fontListScrollOuter.width - 24f,
+                23.6f * (3 + bundledFontsCount + fontNameCount));
+            Widgets.BeginScrollView(fontListScrollOuter, ref scrollPosition, fontListScrollInner);
+            var listingStandard = fontListScrollInner.BeginListingStandard();
 
-        public override string SettingsCategory() => "Custom Fonts";
+            if (listingStandard.RadioButton(FontSettings.DefaultFontName, FontSettings.GetCurrentUIFontName(fontIndex) == FontSettings.DefaultFontName))
+            {
+                if (FontSettings.UniformUIfonts)
+                    SaveFontAll(fontIndex, FontSettings.DefaultFontName);
+                else
+                    SaveFont(fontIndex, FontSettings.DefaultFontName);
+            }
+            listingStandard.GapLine();
+            foreach (var name in BundledFonts.Keys.OrderBy(x => x))
+            {
+                if (name.ToLower().Contains(searchText.ToLower()))
+                {
+                    if (listingStandard.RadioButton(name, FontSettings.GetCurrentUIFontName(fontIndex) == name))
+                    {
+                        if (FontSettings.UniformUIfonts)
+                            SaveFontAll(fontIndex, name);
+                        else
+                            SaveFont(fontIndex, name);
+                    }
+                }
+            }
+            listingStandard.GapLine();
+            foreach (var name in _fontNames)
+            {
+                if (name.ToLower().Contains(searchText.ToLower()))
+                {
+                    if (listingStandard.RadioButton(name, FontSettings.GetCurrentUIFontName(fontIndex) == name))
+                    {
+                        if (FontSettings.UniformUIfonts)
+                            SaveFontAll(fontIndex, name);
+                        else
+                            SaveFont(fontIndex, name);
+                    }
+                }
+            }
+
+            listingStandard.End();
+            Widgets.EndScrollView();
+        }
+
+        public void DrawWorldFontSettings(Rect inRect)
+        {
+            var bundledFontsCount = 0;
+            var osFontPathsCount = 0;
+            foreach (var name in BundledFonts.Keys)
+            {
+                if (name.ToLower().Contains(searchText.ToLower()))
+                {
+                    bundledFontsCount++;
+                }
+            }
+            foreach (var name in OSFontPaths.Keys)
+            {
+                if (name.ToLower().Contains(searchText.ToLower()))
+                {
+                    osFontPathsCount++;
+                }
+            }
+            var fontListScrollOuter = new Rect(inRect.x, inRect.y + 30f,
+                inRect.width - 20f, inRect.height - 30f);
+            var fontListScrollInner = new Rect(fontListScrollOuter.x, fontListScrollOuter.y,
+                fontListScrollOuter.width - 24f,
+                23.6f * (3 + BundledFonts.Count + OSFontPaths.Count));
+            Widgets.BeginScrollView(fontListScrollOuter, ref scrollPosition, fontListScrollInner);
+            var listingStandard = fontListScrollInner.BeginListingStandard();
+
+            if (listingStandard.RadioButton(FontSettings.DefaultFontName, FontSettings.CurrentWorldFontName == FontSettings.DefaultFontName))
+                SaveWorldFont(FontSettings.DefaultFontName);
+            listingStandard.GapLine();
+            foreach (var name in BundledFonts.Keys.OrderBy(x => x))
+            {
+                if (name.ToLower().Contains(searchText.ToLower()))
+                {
+                    if (listingStandard.RadioButton(name, FontSettings.CurrentWorldFontName == name))
+                        SaveWorldFont(name);
+                }
+            }
+            listingStandard.GapLine();
+            foreach (var name in OSFontPaths.Keys.OrderBy(x => x))
+            {
+                if (name.ToLower().Contains(searchText.ToLower()))
+                {
+                    if (listingStandard.RadioButton(name, FontSettings.CurrentWorldFontName == name))
+                        SaveWorldFont(name);
+                }
+            }
+
+            listingStandard.End();
+            Widgets.EndScrollView();
+        }
+
+        public void DrawPropertySettings(int toolbarInt, Rect inRect)
+        {
+            var listingStandard = new Listing_Standard();
+            listingStandard.Begin(inRect);
+
+            if (toolbarInt < 3)
+            {
+                GameFont fontIndex = GameFont.Tiny;
+                switch (toolbarInt)
+                {
+                    case 0:
+                        fontIndex = GameFont.Tiny;
+                        break;
+                    case 1:
+                        fontIndex = GameFont.Small;
+                        break;
+                    case 2:
+                        fontIndex = GameFont.Medium;
+                        break;
+                }
+                var offsetValue = (float)FontSettings.GetVerticalOffset(fontIndex);
+                listingStandard.AddLabeledSlider(
+                    "CustomFonts.VerticalOffset".Translate(FontSettings.GetVerticalOffset(fontIndex) > 0 ? "+" : "", FontSettings.GetVerticalOffset(fontIndex)),
+                    ref offsetValue, -20.0f, 20.0f);
+                var newOffset = (int)Math.Round(offsetValue);
+                if (newOffset != FontSettings.GetVerticalOffset(fontIndex))
+                {
+                    FontSettings.SetVerticalOffset(fontIndex, newOffset);
+                    RecalcCustomLineHeights();
+                }
+
+                var scaleValue = FontSettings.GetScaleFactor(fontIndex);
+                listingStandard.AddLabeledSlider(
+                    "CustomFonts.FontScalingFactor".Translate(FontSettings.GetScaleFactor(fontIndex).ToString("F1")),
+                     ref scaleValue, 0.5f, 2.0f);
+                var fontSizeScale = (float)Math.Round(scaleValue, 1);
+                if (Math.Abs(FontSettings.GetScaleFactor(fontIndex) - fontSizeScale) > 0.01)
+                {
+                    FontSettings.SetScaleFactor(fontIndex, fontSizeScale);
+                    UpdateFont();
+                }
+
+                var widthScaleValue = FontSettings.GetFontWidthScaleFactor(fontIndex);
+                listingStandard.AddLabeledSlider(
+                    "CustomFonts.FontWidthScalingFactor".Translate(FontSettings.GetFontWidthScaleFactor(fontIndex).ToString("F1")),
+                  ref widthScaleValue, 0.5f, 2.0f);
+                var widthScale = (float)Math.Round(widthScaleValue, 1);
+                if (Math.Abs(FontSettings.GetFontWidthScaleFactor(fontIndex) - widthScale) > 0.01)
+                {
+                    FontSettings.SetFontWidthScaleFactor(fontIndex, widthScale);
+                    UpdateFont();
+                }
+            }
+            else if (toolbarInt == 3)
+            {
+                var scaleValue = FontSettings.WorldScaleFactor;
+                listingStandard.AddLabeledSlider(
+                    "CustomFonts.FontScalingFactor".Translate(FontSettings.WorldScaleFactor.ToString("F1")),
+                     ref scaleValue, 0.5f, 2.0f);
+                var fontSizeScale = (float)Math.Round(scaleValue, 1);
+                if (Math.Abs(FontSettings.WorldScaleFactor - fontSizeScale) > 0.01)
+                {
+                    FontSettings.WorldScaleFactor = fontSizeScale;
+                }
+            }
+
+            listingStandard.End();
+        }
+
+        public void DrawLinuxSettings(Rect inRect)
+        {
+            var listingStandard = new Listing_Standard();
+            listingStandard.Begin(inRect);
+
+            listingStandard.Label("CustomFonts.SteamDeckPatch".Translate());
+            GUI.enabled = false;
+            var __hasUnityPlayerSo = _hasUnityPlayerSo;
+            listingStandard.CheckboxLabeled("CustomFonts.HasUnityPlayerSo".Translate(), ref __hasUnityPlayerSo);
+            var __hasRunHostFonts = _hasRunHostFonts;
+            listingStandard.CheckboxLabeled("CustomFonts.HasRunHostFonts".Translate(), ref __hasRunHostFonts);
+            GUI.enabled = _hasUnityPlayerSo && _hasRunHostFonts;
+            if (listingStandard.ButtonTextLabeled("CustomFonts.ToRunHostFonts".Translate(), "CustomFonts.Patch".Translate()))
+            {
+                string UnityPlayerSoPath = Path.GetFullPath("UnityPlayer.so");
+                ReplaceStringInBinaryFile(UnityPlayerSoPath, "/usr/share/fonts", "/run/host/fonts/");
+            }
+            GUI.enabled = _hasUnityPlayerSo;
+            if (listingStandard.ButtonTextLabeled("CustomFonts.ToUsrShareFonts".Translate(), "CustomFonts.Patch".Translate()))
+            {
+                string UnityPlayerSoPath = Path.GetFullPath("UnityPlayer.so");
+                ReplaceStringInBinaryFile(UnityPlayerSoPath, "/run/host/fonts/", "/usr/share/fonts");
+            }
+            GUI.enabled = true;
+            listingStandard.End();
+        }
+
+        public override string SettingsCategory() => "Custom Fonts";// "CustomFonts.Category".Translate();
 
         public static void SetupOSInstalledFontNames()
         {
@@ -292,11 +658,19 @@ namespace CustomFonts
             }
         }
 
-        private static void SaveFont(string fontName, bool forceUpdate = false)
+        private static void SaveFont(GameFont fontIndex, string fontName, bool forceUpdate = false)
         {
-            if (fontName == FontSettings.CurrentUIFontName && !forceUpdate) return;
-            FontSettings.CurrentUIFontName = fontName;
-            UpdateFont();
+            if (fontName == FontSettings.GetCurrentUIFontName(fontIndex) && !forceUpdate) return;
+            FontSettings.SetCurrentUIFontName(fontIndex, fontName);
+            UpdateFont(fontIndex);
+        }
+
+        private static void SaveFontAll(GameFont fontIndex, string fontName, bool forceUpdate = false)
+        {
+            foreach (GameFont value in Enum.GetValues(typeof(GameFont)))
+            {
+                SaveFont(value, fontName, forceUpdate);
+            }
         }
 
         private void SaveWorldFont(string fontName)
@@ -320,22 +694,24 @@ namespace CustomFonts
         {
             // if (FontSettings.CurrentFontName == FontSettings.PreviousFontName && !forceUpdate) return;
 
-            var isBundled = BundledFonts.ContainsKey(FontSettings.CurrentUIFontName);
+            var isBundled = BundledFonts.ContainsKey(FontSettings.GetCurrentUIFontName(fontIndex));
             Font font = null;
 
-            var fontSize = (int)Math.Round(DefaultFonts[fontIndex].fontSize * FontSettings.ScaleFactor);
+            var fontSize = (int)Math.Round(DefaultFonts[fontIndex].fontSize * FontSettings.GetScaleFactor(fontIndex));
 
             try
             {
                 if (isBundled)
                 {
-                    font = BundledFonts[FontSettings.CurrentUIFontName];
+                    font = BundledFonts[FontSettings.GetCurrentUIFontName(fontIndex)];
+                    Log.Message($"[Custom Fonts] Using bundled font {FontSettings.GetCurrentUIFontName(fontIndex)}");
                 }
                 else
                 {
-                    font = FontSettings.CurrentUIFontName != FontSettings.DefaultFontName
-                        ? Font.CreateDynamicFontFromOSFont(FontSettings.CurrentUIFontName, fontSize)
+                    font = FontSettings.GetCurrentUIFontName(fontIndex) != FontSettings.DefaultFontName
+                        ? Font.CreateDynamicFontFromOSFont(FontSettings.GetCurrentUIFontName(fontIndex), fontSize)
                         : DefaultFonts[fontIndex];
+                    Log.Message($"[Custom Fonts] Using OS font {FontSettings.GetCurrentUIFontName(fontIndex)}");
                 }
             }
             catch (Exception ex)
@@ -345,8 +721,8 @@ namespace CustomFonts
 
             if (font == null)
             {
-                Log.Message($"[Custom Fonts] Font {FontSettings.CurrentUIFontName} not found, using default font");
-                FontSettings.CurrentUIFontName = FontSettings.DefaultFontName;
+                Log.Message($"[Custom Fonts] Font {FontSettings.GetCurrentUIFontName(fontIndex)} not found, using default font");
+                FontSettings.SetCurrentUIFontName(fontIndex, FontSettings.DefaultFontName);
                 font = DefaultFonts[fontIndex];
             }
 
@@ -374,18 +750,18 @@ namespace CustomFonts
             }
         }
 
-        public static void RecalcCustomLineHeights(GameFont fontType)
+        public static void RecalcCustomLineHeights(GameFont fontIndex)
         {
-            // var isDefault = FontSettings.CurrentUIFontName == FontSettings.DefaultFontName;
-            var offsetVector = new Vector2(0f, FontSettings.VerticalOffset);
-            // Text.fontStyles[(int)fontType].clipping = isDefault ? TextClipping.Clip : TextClipping.Overflow;
-            Text.fontStyles[(int)fontType].contentOffset = offsetVector;
-            // Text.textFieldStyles[(int)fontType].clipping = isDefault ? TextClipping.Clip : TextClipping.Overflow;
-            Text.textFieldStyles[(int)fontType].contentOffset = offsetVector;
-            // Text.textAreaStyles[(int)fontType].clipping = TextClipping.Clip;
-            Text.textAreaStyles[(int)fontType].contentOffset = offsetVector;
-            // Text.textAreaReadOnlyStyles[(int)fontType].clipping = TextClipping.Clip;
-            Text.textAreaReadOnlyStyles[(int)fontType].contentOffset = offsetVector;
+            // var isDefault = FontSettings.CurrentUIFontName(fontIndex) == FontSettings.DefaultFontName;
+            var offsetVector = new Vector2(0f, FontSettings.GetVerticalOffset(fontIndex));
+            // Text.fontStyles[(int)fontIndex].clipping = isDefault ? TextClipping.Clip : TextClipping.Overflow;
+            Text.fontStyles[(int)fontIndex].contentOffset = offsetVector;
+            // Text.textFieldStyles[(int)fontIndex].clipping = isDefault ? TextClipping.Clip : TextClipping.Overflow;
+            Text.textFieldStyles[(int)fontIndex].contentOffset = offsetVector;
+            // Text.textAreaStyles[(int)fontIndex].clipping = TextClipping.Clip;
+            Text.textAreaStyles[(int)fontIndex].contentOffset = offsetVector;
+            // Text.textAreaReadOnlyStyles[(int)fontIndex].clipping = TextClipping.Clip;
+            Text.textAreaReadOnlyStyles[(int)fontIndex].contentOffset = offsetVector;
         }
 
         public static int IndexOf(byte[] array, byte[] pattern)
@@ -531,7 +907,7 @@ namespace CustomFonts
                 prefab.font = fontAsset;
                 prefab.UpdateFontAsset();
                 AccessTools.StaticFieldRefAccess<float>(typeof(WorldFeatureTextMesh_TextMeshPro), "TextScale") =
-                    1.75f * FontSettings.ScaleFactor;
+                    1.75f * FontSettings.WorldScaleFactor;
             }
 
         }

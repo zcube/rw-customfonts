@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <CustomFonts.Category>Custom Fonts</CustomFonts.Category>
+    <CustomFonts.ResetToDefault>Reset to default</CustomFonts.ResetToDefault>
+    <CustomFonts.CurrentFont>Selected: {0}</CustomFonts.CurrentFont>
+    <CustomFonts.GeneralInterface>---- General Interface ----</CustomFonts.GeneralInterface>
+    <CustomFonts.WorldMap>---- World Map ---- (Reload Save to Apply)</CustomFonts.WorldMap>
+    <CustomFonts.VerticalOffset>Vertical Position Offset: {0}{1}</CustomFonts.VerticalOffset>
+    <CustomFonts.FontScalingFactor>Font Scaling Factor: {0}</CustomFonts.FontScalingFactor>
+    <CustomFonts.FontWidthScalingFactor>Font Width Scaling Factor: {0}</CustomFonts.FontWidthScalingFactor>
+    <CustomFonts.Apply>Apply</CustomFonts.Apply>
+    <CustomFonts.Revert>Revert</CustomFonts.Revert>
+    <CustomFonts.SteamDeckPatch>SteamDeck (Steam Linux Runtime) Host Font Patch (Restart needed)</CustomFonts.SteamDeckPatch>
+    <CustomFonts.FontAll>UI:All</CustomFonts.FontAll>
+    <CustomFonts.FontTiny>UI:Tiny</CustomFonts.FontTiny>
+    <CustomFonts.FontSmall>UI:Small</CustomFonts.FontSmall>
+    <CustomFonts.FontMedium>UI:Medium</CustomFonts.FontMedium>
+    <CustomFonts.FontWorld>World</CustomFonts.FontWorld>
+    <CustomFonts.Specimen>RimWorld is a sci-fi colony sim driven by an intelligent AI storyteller.</CustomFonts.Specimen>
+    <CustomFonts.UniformUIfonts>Uniform UI Fonts</CustomFonts.UniformUIfonts>
+    <CustomFonts.ToUsrShareFonts>Patch to /usr/share/fonts</CustomFonts.ToUsrShareFonts>
+    <CustomFonts.ToRunHostFonts>Patch to /run/host/fonts</CustomFonts.ToRunHostFonts>
+    <CustomFonts.Patch>Patch</CustomFonts.Patch>
+    <CustomFonts.Etc>etc</CustomFonts.Etc>
+</LanguageData>

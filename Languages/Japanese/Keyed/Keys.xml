@@ -1,0 +1,24 @@
+<LanguageData>
+    <CustomFonts.Category>カスタムフォント</CustomFonts.Category>
+    <CustomFonts.ResetToDefault>デフォルトにリセット</CustomFonts.ResetToDefault>
+    <CustomFonts.CurrentFont>選択されたフォント：{0}</CustomFonts.CurrentFont>
+    <CustomFonts.GeneralInterface>---- 一般インターフェース ----</CustomFonts.GeneralInterface>
+    <CustomFonts.WorldMap>---- ワールドマップ ---- (適用するには保存を再読み込み)</CustomFonts.WorldMap>
+    <CustomFonts.VerticalOffset>垂直位置オフセット：{0}{1}</CustomFonts.VerticalOffset>
+    <CustomFonts.FontScalingFactor>フォント拡大率：{0}</CustomFonts.FontScalingFactor>
+    <CustomFonts.FontWidthScalingFactor>フォント幅拡大率：{0}</CustomFonts.FontWidthScalingFactor>
+    <CustomFonts.Apply>適用</CustomFonts.Apply>
+    <CustomFonts.Revert>元に戻す</CustomFonts.Revert>
+    <CustomFonts.SteamDeckPatch>SteamDeck（Steam Linuxランタイム） ホストフォントパッチ（再起動が必要です）</CustomFonts.SteamDeckPatch>
+    <CustomFonts.FontAll>UI:全体</CustomFonts.FontAll>
+    <CustomFonts.FontTiny>UI:極小</CustomFonts.FontTiny>
+    <CustomFonts.FontSmall>UI:小</CustomFonts.FontSmall>
+    <CustomFonts.FontMedium>UI:中</CustomFonts.FontMedium>
+    <CustomFonts.FontWorld>ワールド</CustomFonts.FontWorld>
+    <CustomFonts.Specimen>RimWorldは、知性のあるAIストーリーテラーによって織りなされるSFコロニーシミュレーションゲームです。</CustomFonts.Specimen>
+    <CustomFonts.UniformUIfonts>統一されたUIフォント</CustomFonts.UniformUIfonts>
+    <CustomFonts.ToUsrShareFonts>/usr/share/fontsへのパッチ</CustomFonts.ToUsrShareFonts>
+    <CustomFonts.ToRunHostFonts>/run/host/fontsへのパッチ</CustomFonts.ToRunHostFonts>
+    <CustomFonts.Patch>パッチ</CustomFonts.Patch>
+    <CustomFonts.Etc>その他</CustomFonts.Etc>
+</LanguageData>
