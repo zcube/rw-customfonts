@@ -230,6 +230,9 @@ namespace CustomFonts
         public static Harmony MyHarmony { get; private set; }
         private static ModContentPack _content;
         private static string searchText = "";
+        private static List<TabRecord> tabs = new List<TabRecord>();
+        private static List<TabRecord> uniformTabs = new List<TabRecord>();
+        public int toolbarInt = 0;
 
         public CustomFonts(ModContentPack content) :
             base(content) // A mandatory constructor which resolves the reference to the mod settings.
@@ -265,14 +268,43 @@ namespace CustomFonts
 
             MyHarmony = new Harmony("zcubekr.customfonts");
             MyHarmony.PatchAll();
+
+            tabs.Add(new TabRecord("CustomFonts.FontTiny", delegate
+            {
+                toolbarInt = 0;
+            }, () => toolbarInt == 0));
+            tabs.Add(new TabRecord("CustomFonts.FontSmall", delegate
+            {
+                toolbarInt = 1;
+            }, () => toolbarInt == 1));
+            tabs.Add(new TabRecord("CustomFonts.FontMedium", delegate
+            {
+                toolbarInt = 2;
+            }, () => toolbarInt == 2));
+            tabs.Add(new TabRecord("CustomFonts.FontWorld", delegate
+            {
+                toolbarInt = 3;
+            }, () => toolbarInt == 3));
+            tabs.Add(new TabRecord("CustomFonts.Etc", delegate
+            {
+                toolbarInt = 4;
+            }, () => toolbarInt == 4));
+            uniformTabs.Add(tabs[2]);
+            uniformTabs.Add(tabs[3]);
+            uniformTabs.Add(tabs[4]);
         }
 
-        public int toolbarInt = 0;
         public override void DoSettingsWindowContents(Rect inRect) // The GUI part to edit the mod settings.
         {
             SetupOSInstalledFontNames();
             SetupOSFontPaths();
             SetupBundledFonts();
+
+            tabs[0].label = "CustomFonts.FontTiny".Translate(FontSettings.GetCurrentUIFontName(GameFont.Tiny));
+            tabs[1].label = "CustomFonts.FontSmall".Translate(FontSettings.GetCurrentUIFontName(GameFont.Small));
+            tabs[2].label = "CustomFonts.FontMedium".Translate(FontSettings.GetCurrentUIFontName(GameFont.Medium));
+            tabs[3].label = "CustomFonts.FontWorld".Translate(FontSettings.CurrentWorldFontName);
+            tabs[4].label = "CustomFonts.Etc".Translate(FontSettings.CurrentWorldFontName);
 
             var listingStandard = new Listing_Standard();
             listingStandard.Begin(inRect);
@@ -295,16 +327,18 @@ namespace CustomFonts
             }
             listingStandard.CheckboxLabeled("CustomFonts.UniformUIfonts".Translate(), ref FontSettings.UniformUIfonts, "CustomFonts.UniformUIfonts".Translate());
 
-            string[] toolbarStrings = new string[] {
-                "CustomFonts.FontTiny".Translate(FontSettings.GetCurrentUIFontName(GameFont.Tiny)),
-                "CustomFonts.FontSmall".Translate(FontSettings.GetCurrentUIFontName(GameFont.Small)),
-                "CustomFonts.FontMedium".Translate(FontSettings.GetCurrentUIFontName(GameFont.Medium)),
-                "CustomFonts.FontWorld".Translate(FontSettings.CurrentWorldFontName),
-                "CustomFonts.Etc".Translate(),
-            };
+            Rect toolbarRect = listingStandard.GetRect(TabDrawer.TabHeight);
+            toolbarRect.y += TabDrawer.TabHeight;
+            toolbarRect.height = 0f;
 
-            Rect toolbarRect = listingStandard.GetRect(30);
-            toolbarInt = GUI.Toolbar(toolbarRect, toolbarInt, toolbarStrings);
+            if (FontSettings.UniformUIfonts)
+            {
+                var selectedTab = TabDrawer.DrawTabs(toolbarRect, uniformTabs);
+            }
+            else
+            {
+                var selectedTab = TabDrawer.DrawTabs(toolbarRect, tabs);
+            }
 
             switch (toolbarInt)
             {
