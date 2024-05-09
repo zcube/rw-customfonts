@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <CustomFonts.Category>自定义字体</CustomFonts.Category>
+    <CustomFonts.ResetToDefault>重置为默认值</CustomFonts.ResetToDefault>
+    <CustomFonts.CurrentFont>当前字体：{0}</CustomFonts.CurrentFont>
+    <CustomFonts.GeneralInterface>---- 一般界面 ----</CustomFonts.GeneralInterface>
+    <CustomFonts.WorldMap>---- 世界地图 ----（保存后重新加载以应用）</CustomFonts.WorldMap>
+    <CustomFonts.VerticalOffset>垂直偏移：{0}{1}</CustomFonts.VerticalOffset>
+    <CustomFonts.FontScalingFactor>字体缩放比例：{0}</CustomFonts.FontScalingFactor>
+    <CustomFonts.FontWidthScalingFactor>字体宽度缩放比例：{0}</CustomFonts.FontWidthScalingFactor>
+    <CustomFonts.Apply>应用</CustomFonts.Apply>
+    <CustomFonts.Revert>恢复</CustomFonts.Revert>
+    <CustomFonts.SteamDeckPatch>Steam Deck（Steam Linux Runtime）主机字体补丁（需要重新启动）</CustomFonts.SteamDeckPatch>
+    <CustomFonts.FontAll>UI:全部</CustomFonts.FontAll>
+    <CustomFonts.FontTiny>UI:极小</CustomFonts.FontTiny>
+    <CustomFonts.FontSmall>UI:小</CustomFonts.FontSmall>
+    <CustomFonts.FontMedium>UI:中</CustomFonts.FontMedium>
+    <CustomFonts.FontWorld>世界</CustomFonts.FontWorld>
+    <CustomFonts.Specimen>RimWorld 是由智能 AI 讲故事的 SF 殖民地模拟游戏。</CustomFonts.Specimen>
+    <CustomFonts.UniformUIfonts>统一的 UI 字体</CustomFonts.UniformUIfonts>
+    <CustomFonts.ToUsrShareFonts>补丁到 /usr/share/fonts</CustomFonts.ToUsrShareFonts>
+    <CustomFonts.ToRunHostFonts>补丁到 /run/host/fonts</CustomFonts.ToRunHostFonts>
+    <CustomFonts.Patch>补丁</CustomFonts.Patch>
+    <CustomFonts.Etc>其他</CustomFonts.Etc>
+    <CustomFonts.Search>搜索</CustomFonts.Search>
+</LanguageData>
