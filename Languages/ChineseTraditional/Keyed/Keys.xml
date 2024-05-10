@@ -23,4 +23,6 @@
     <CustomFonts.Patch>補丁</CustomFonts.Patch>
     <CustomFonts.Etc>其他</CustomFonts.Etc>
     <CustomFonts.Search>搜尋</CustomFonts.Search>
+    <CustomFonts.HasUnityPlayerSo>UnityPlayer.so</CustomFonts.HasUnityPlayerSo>
+    <CustomFonts.HasRunHostFonts>/run/host/fonts</CustomFonts.HasRunHostFonts>
 </LanguageData>

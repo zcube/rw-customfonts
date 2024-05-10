@@ -23,4 +23,6 @@
     <CustomFonts.Patch>Patch</CustomFonts.Patch>
     <CustomFonts.Etc>etc</CustomFonts.Etc>
     <CustomFonts.Search>Search</CustomFonts.Search>
+    <CustomFonts.HasUnityPlayerSo>UnityPlayer.so</CustomFonts.HasUnityPlayerSo>
+    <CustomFonts.HasRunHostFonts>/run/host/fonts</CustomFonts.HasRunHostFonts>
 </LanguageData>

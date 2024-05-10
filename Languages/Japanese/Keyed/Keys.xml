@@ -22,4 +22,6 @@
     <CustomFonts.Patch>パッチ</CustomFonts.Patch>
     <CustomFonts.Etc>その他</CustomFonts.Etc>
     <CustomFonts.Search>検索</CustomFonts.Search>
+    <CustomFonts.HasUnityPlayerSo>UnityPlayer.so</CustomFonts.HasUnityPlayerSo>
+    <CustomFonts.HasRunHostFonts>/run/host/fonts</CustomFonts.HasRunHostFonts>
 </LanguageData>
