@@ -385,7 +385,6 @@ namespace CustomFonts
 
             Rect remainRect = listingStandard.GetRect(0);
             var scrollHeight = inRect.height - remainRect.y - 10f;
-            Log.Message($"scrollHeight: {scrollHeight} remainRect: {remainRect} inRect: {inRect}");
             var listRect = new Rect();
             var listScrollRect = new Rect();
             var propertyRect = new Rect();
