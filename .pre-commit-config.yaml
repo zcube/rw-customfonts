@@ -1,0 +1,15 @@
+---
+fail_fast: false
+exclude: |
+  (?x)^(
+    .*\.sops\.toml
+  )$
+repos:
+  - repo: local
+    hooks:
+      - id: task format
+        name: task format
+        entry: task format
+        types: [c#]
+        language: system
+        pass_filenames: false

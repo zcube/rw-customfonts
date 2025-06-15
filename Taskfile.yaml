@@ -15,6 +15,8 @@ tasks:
         platforms: [darwin]
 
   build:
+    env:
+      ProjectDir: "{{.USER_WORKING_DIR}}/Source/CustomFonts"
     cmds:
       - echo ${STEAM_OS}
       - |
@@ -52,3 +54,22 @@ tasks:
         cd "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/"
         rm Taskfile.*
         rm .git*
+
+  rider:
+    cmds:
+      - rider .
+
+  code:
+    cmds:
+      - code .
+
+  format:
+    cmds:
+      - dotnet format ./Source/CustomFonts/CustomFonts.sln
+
+  backup:
+    cmds:
+      - |
+        export CURRENT_VERSION=$(monodis --assembly ${STEAM_APPS}/common/RimWorld/RimWorldLinux_Data/Managed/Assembly-CSharp.dll | grep "Version:" | sed 's/.*Version: *\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/')
+        echo "Current version: ${CURRENT_VERSION}"
+        rsync -avz --delete "${STEAM_APPS}/common/RimWorld/" "${STEAM_APPS}/old/RimWorld/${CURRENT_VERSION}/"
