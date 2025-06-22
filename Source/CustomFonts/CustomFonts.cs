@@ -974,14 +974,18 @@ namespace CustomFonts
                         fontAsset = TMP_FontAsset.CreateFontAsset(
                             mod.BundledFonts[fontSettings.CurrentWorldFontName]);
                     }
+                    else if (mod.OSFontPaths.ContainsKey(fontSettings.CurrentWorldFontName))
+                    {
+                        fontAsset = TMP_FontAsset.CreateFontAsset(
+                            new Font(mod.OSFontPaths[fontSettings.CurrentWorldFontName]));
+                    }
                     else if (fontSettings.CurrentWorldFontName == FontSettings.DefaultFontName)
                     {
                         fontAsset = mod.DefaultTMPFontAsset;
                     }
                     else
                     {
-                        fontAsset = TMP_FontAsset.CreateFontAsset(
-                            new Font(mod.OSFontPaths[fontSettings.CurrentWorldFontName]));
+                        fontAsset = mod.DefaultTMPFontAsset;
                     }
                 }
                 catch (Exception ex)

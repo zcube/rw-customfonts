@@ -27,6 +27,9 @@ tasks:
       - |
         export STEAM_APPS=${STEAM_APPS_1_5}
         dotnet build ./Source/CustomFonts/CustomFonts.sln -c "Release 1.5"
+      - |
+        export STEAM_APPS=${STEAM_APPS_1_6}
+        dotnet build ./Source/CustomFonts/CustomFonts.sln -c "Release 1.6"
 
   export:
     cmds:
@@ -34,13 +37,19 @@ tasks:
         platforms: [windows]
       - cmd: robocopy 1.5/Assemblies "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.5/Assemblies" /E /NFL /NDL /NJH /NJS || exit 0
         platforms: [windows]
+      - cmd: robocopy 1.6/Assemblies "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.6/Assemblies" /E /NFL /NDL /NJH /NJS || exit 0
+        platforms: [windows]
       - cmd: cp -rf 1.4/Assemblies/* "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.4/Assemblies/"
         platforms: [linux]
       - cmd: cp -rf 1.5/Assemblies/* "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.5/Assemblies/"
         platforms: [linux]
+      - cmd: cp -rf 1.6/Assemblies/* "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.6/Assemblies/"
+        platforms: [linux]
       - cmd: cp -rf 1.4/Assemblies/* "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/1.4/Assemblies/"
         platforms: [darwin]
       - cmd: cp -rf 1.5/Assemblies/* "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/1.5/Assemblies/"
+        platforms: [darwin]
+      - cmd: cp -rf 1.6/Assemblies/* "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/1.6/Assemblies/"
         platforms: [darwin]
       - cmd: robocopy Languages "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/Languages" /E /NFL /NDL /NJH /NJS || exit 0
         platforms: [windows]

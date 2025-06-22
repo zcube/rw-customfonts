@@ -7,6 +7,7 @@
   <supportedVersions>
     <li>1.4</li>
     <li>1.5</li>
+    <li>1.6</li>
   </supportedVersions>
   <loadBefore>
     <li>
@@ -22,7 +23,7 @@
     <li>latta.devl10n</li>
   </loadAfter>
   <description><![CDATA[A fork of Custom Fonts by nmkj.
-  
+
 This mod enables changing the game font to system fonts or bundled ones.
 ゲームのフォントをOSのフォントか同梱フォントに変更できるようにします。
 게임 폰트를 시스템 폰트나 번들된 폰트로 변경할 수 있습니다.
@@ -33,14 +34,6 @@ author : nmkj
 url: https://github.com/nmkj-io/rw-customfonts
 
 <size=17><b>Bundled Fonts</b></size>
-
-<b>- GoYangDeogYang B, EB </b>
-공공누리 제1유형(출처표시)
-https://www.goyang.go.kr/www/www05/www05_3/www05_3_6/www05_3_6_tab2.jsp
-
-<b>- HangeulNuri R, B </b>
-공공누리 3유형(출처표시-변경금지-비영리)
-https://hanfont.hangeul.go.kr/relaxfont/font/hangeulnuri.do
 
 <b>- Nanum Fonts</b>
 Copyright (c) 2010, NAVER Corporation (https://www.navercorp.com/).

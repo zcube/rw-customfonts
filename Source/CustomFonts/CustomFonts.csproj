@@ -40,6 +40,14 @@
     <WarningLevel>4</WarningLevel>
     <OutputPath>../../1.5/Assemblies/</OutputPath>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release 1.6|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <OutputPath>../../1.6/Assemblies/</OutputPath>
+  </PropertyGroup>
   <Choose>
     <When Condition=" '$(Configuration)'=='Release 1.4' ">
       <ItemGroup>
@@ -53,6 +61,18 @@
       <ItemGroup>
         <Reference Include="0Harmony, Version=2.3.3.0, Culture=neutral, processorArchitecture=MSIL">
           <HintPath>$(ProjectDir)/../../packages/HarmonyMod/1.5/Assemblies/0Harmony.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+      </ItemGroup>
+    </When>
+    <When Condition=" '$(Configuration)'=='Release 1.6' ">
+      <ItemGroup>
+        <Reference Include="0Harmony, Version=2.3.6.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>$(ProjectDir)/../../packages/HarmonyMod/Current/Assemblies/0Harmony.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="UnityEngine.TextCoreFontEngineModule">
+          <HintPath>$(STEAM_APPS)/common/RimWorld/$(STEAM_OS)/Managed/UnityEngine.TextCoreFontEngineModule.dll</HintPath>
           <Private>False</Private>
         </Reference>
       </ItemGroup>
