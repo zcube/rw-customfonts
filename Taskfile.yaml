@@ -11,7 +11,7 @@ tasks:
     cmds:
       - curl -LO https://github.com/pardeike/HarmonyRimWorld/releases/latest/download/HarmonyMod.zip
       - cmd: 7z x -y HarmonyMod.zip -opackages
-        platforms: [windows/amd64, linux]
+        platforms: [windows, linux]
       - cmd: 7zz x -y HarmonyMod.zip -opackages
         platforms: [darwin]
 
@@ -30,20 +30,27 @@ tasks:
 
   export:
     cmds:
+      - cmd: robocopy 1.4/Assemblies "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.4/Assemblies" /E /NFL /NDL /NJH /NJS || exit 0
+        platforms: [windows]
+      - cmd: robocopy 1.5/Assemblies "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.5/Assemblies" /E /NFL /NDL /NJH /NJS || exit 0
+        platforms: [windows]
       - cmd: cp -rf 1.4/Assemblies/* "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.4/Assemblies/"
-        platforms: [windows/amd64, linux]
+        platforms: [linux]
       - cmd: cp -rf 1.5/Assemblies/* "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.5/Assemblies/"
-        platforms: [windows/amd64, linux]
+        platforms: [linux]
       - cmd: cp -rf 1.4/Assemblies/* "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/1.4/Assemblies/"
         platforms: [darwin]
       - cmd: cp -rf 1.5/Assemblies/* "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/1.5/Assemblies/"
         platforms: [darwin]
+      - cmd: robocopy Languages "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/Languages" /E /NFL /NDL /NJH /NJS || exit 0
+        platforms: [windows]
       - cmd: cp -rf Languages/* "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/Languages/"
-        platforms: [windows/amd64, linux]
+        platforms: [linux]
       - cmd: cp -rf Languages/* "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/Languages/"
         platforms: [darwin]
 
   build_and_export:
+    desc: build and export the project
     cmds:
       - task: build
       - task: export
@@ -52,18 +59,26 @@ tasks:
     cmds:
       - git archive --format=tar.gz HEAD -o custom-fonts.tar.gz
       - cmd: tar zxvf custom-fonts.tar.gz -C "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/"
-        platforms: [windows/amd64, linux]
+        platforms: [windows, linux]
       - cmd: tar zxvf custom-fonts.tar.gz -C "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/"
         platforms: [darwin]
       - cmd: |
           cd "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/"
           rm Taskfile.*
           rm .git*
-        platforms: [windows/amd64, linux]
+          rm .env.sample
+          rm .pre-commit-config.yaml
+          rm .editorconfig
+          rm -rf Source
+        platforms: [windows, linux]
       - cmd: |
           cd "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/"
           rm Taskfile.*
           rm .git*
+          rm .env.sample
+          rm .pre-commit-config.yaml
+          rm .editorconfig
+          rm -rf Source
         platforms: [darwin]
 
   rider:
@@ -83,14 +98,21 @@ tasks:
     desc: get current version
     cmds:
       - |
-        export CURRENT_VERSION=$(monodis --assembly "${STEAM_APPS}/common/RimWorld/${STEAM_OS}/Managed/Assembly-CSharp.dll" | grep "Version:" | sed 's/.*Version: *\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/')
+        export CURRENT_VERSION=$(monodis --assembly "${STEAM_APPS}/common/RimWorld/${STEAM_OS}/Managed/Assembly-CSharp.dll" | grep "Version:" | sed 's/.*Version: *\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/' | tr -d '\r')
         echo "Current version: ${CURRENT_VERSION}"
 
   backup:
     desc: backup current version
     cmds:
-      - |
-        export CURRENT_VERSION=$(monodis --assembly "${STEAM_APPS}/common/RimWorld/${STEAM_OS}/Managed/Assembly-CSharp.dll" | grep "Version:" | sed 's/.*Version: *\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/')
-        echo "Current version: ${CURRENT_VERSION}"
-        mkdir -p "${STEAM_APPS}/old/RimWorld/${CURRENT_VERSION}/common/RimWorld/"
-        rsync -avz --delete "${STEAM_APPS}/common/RimWorld/" "${STEAM_APPS}/old/RimWorld/${CURRENT_VERSION}/common/RimWorld/"
+      - cmd: |
+          export CURRENT_VERSION=$(monodis --assembly "${STEAM_APPS}/common/RimWorld/${STEAM_OS}/Managed/Assembly-CSharp.dll" | grep "Version:" | sed 's/.*Version: *\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/' | tr -d '\r')
+          echo "Current version: <${CURRENT_VERSION}>"
+          mkdir -p "${STEAM_APPS}/old/RimWorld/${CURRENT_VERSION}/common/RimWorld/" || true
+          rsync -avz --delete "${STEAM_APPS}/common/RimWorld/" "${STEAM_APPS}/old/RimWorld/${CURRENT_VERSION}/common/RimWorld/"
+        platforms: [darwin, linux]
+      - cmd: |
+          export CURRENT_VERSION=$(monodis --assembly "${STEAM_APPS}/common/RimWorld/${STEAM_OS}/Managed/Assembly-CSharp.dll" | grep "Version:" | sed 's/.*Version: *\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/' | tr -d '\r')
+          echo "Current version: <${CURRENT_VERSION}>"
+          mkdir "${STEAM_APPS}/old/RimWorld/${CURRENT_VERSION}/common/RimWorld/" || true
+          robocopy "${STEAM_APPS}/common/RimWorld" "${STEAM_APPS}/old/RimWorld/${CURRENT_VERSION}/common/RimWorld" /MIR /NFL /NDL /NJH /NJS
+        platforms: [windows]
