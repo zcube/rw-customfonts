@@ -29,15 +29,3 @@ task build
     SIL Open Font License 1.1
     https://help.naver.com/service/30016/contents/18088?osType=PC&lang=ko
     ```
-
-* GoYangDeogYang B, EB
-    ```
-    공공누리 제1유형(출처표시)
-    https://www.goyang.go.kr/www/www05/www05_3/www05_3_6/www05_3_6_tab2.jsp
-    ```
-
-* hangeulnuri
-    ```
-    공공누리 3유형(출처표시-변경금지-비영리)
-    https://hanfont.hangeul.go.kr/relaxfont/font/hangeulnuri.do
-    ```
