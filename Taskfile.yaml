@@ -21,6 +21,7 @@ tasks:
       ProjectDir: "{{.USER_WORKING_DIR}}/Source/CustomFonts"
     cmds:
       - echo ${STEAM_OS}
+      - echo ${ProjectDir}
       - |
         export STEAM_APPS=${STEAM_APPS_1_4}
         dotnet build ./Source/CustomFonts/CustomFonts.sln -c "Release 1.4"
@@ -67,9 +68,17 @@ tasks:
   release:
     cmds:
       - git archive --format=tar.gz HEAD -o custom-fonts.tar.gz
-      - cmd: tar zxvf custom-fonts.tar.gz -C "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/"
-        platforms: [windows, linux]
-      - cmd: tar zxvf custom-fonts.tar.gz -C "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/"
+      - cmd: |
+          mkdir "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/" || true
+          tar zxvf custom-fonts.tar.gz -C "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/"
+        platforms: [windows]
+      - cmd: |
+          mkdir -p "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/"
+          tar zxvf custom-fonts.tar.gz -C "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/"
+        platforms: [linux]
+      - cmd: |
+          mkdir -p "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/"
+          tar zxvf custom-fonts.tar.gz -C "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/"
         platforms: [darwin]
       - cmd: |
           cd "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/"

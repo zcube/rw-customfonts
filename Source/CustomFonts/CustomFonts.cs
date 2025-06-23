@@ -19,11 +19,7 @@ namespace CustomFonts
     {
         // Setting values
         public const string DefaultFontName = "Default";
-        // public ref string CurrentUIFontName = CurrentUIFontNameMedium;
-        // public ref float ScaleFactor = ScaleFactorMedium;
-        // public ref int VerticalOffset = VerticalOffsetMedium;
-        // public ref float FontWidthScaleFactor = FontWidthScaleFactorMedium;
-        public string CurrentWorldFontName;
+        public string CurrentWorldFontName = "Default";
         public float WorldScaleFactor = 1.0f;
 
         public string CurrentUIFontNameTiny = "Default";
