@@ -19,6 +19,7 @@
     <li>Ludeon.RimWorld.Ideology</li>
     <li>Ludeon.RimWorld.Biotech</li>
     <li>Ludeon.RimWorld.Anomaly</li>
+    <li>Ludeon.RimWorld.Odyssey</li>
     <li>aRandomKiwi.RimThemes</li>
     <li>latta.devl10n</li>
   </loadAfter>
