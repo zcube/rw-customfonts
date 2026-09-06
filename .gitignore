@@ -40,5 +40,6 @@ Assemblies/CustomFonts.pdb
 HarmonyMod.zip
 rimfonts-decompressed
 *.tar.gz
+custom-fonts.zip
 .env
 *.ps1

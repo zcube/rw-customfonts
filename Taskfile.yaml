@@ -7,56 +7,101 @@ env:
 
 tasks:
   prepare:
-    desc: prepare the environment
+    desc: download the Harmony reference assemblies into packages/ (needs curl and 7zip)
     cmds:
-      - curl -LO https://github.com/pardeike/HarmonyRimWorld/releases/latest/download/HarmonyMod.zip
+      # -f makes curl fail on an HTTP error instead of saving the error page as a zip, and the
+      # old extract is removed first so a file dropped by a newer HarmonyMod cannot linger.
+      - cmd: |
+          curl -fL --retry 3 -o HarmonyMod.zip https://github.com/pardeike/HarmonyRimWorld/releases/latest/download/HarmonyMod.zip
+          if [ ! -s HarmonyMod.zip ]; then
+            echo "ERROR: HarmonyMod.zip was not downloaded" >&2
+            exit 1
+          fi
+          rm -rf packages/HarmonyMod
       - cmd: 7z x -y HarmonyMod.zip -opackages
         platforms: [windows, linux]
       - cmd: 7zz x -y HarmonyMod.zip -opackages
         platforms: [darwin]
+      - cmd: |
+          if [ ! -f packages/HarmonyMod/Current/Assemblies/0Harmony.dll ]; then
+            echo "ERROR: packages/HarmonyMod/Current/Assemblies/0Harmony.dll is missing after extraction" >&2
+            exit 1
+          fi
+          echo "Harmony reference assemblies ready in packages/HarmonyMod"
 
   build:
-    desc: build the project
+    desc: build every supported RimWorld version
     env:
       ProjectDir: "{{.USER_WORKING_DIR}}/Source/CustomFonts"
     cmds:
-      - echo ${STEAM_OS}
-      - echo ${ProjectDir}
-      - |
-        export STEAM_APPS=${STEAM_APPS_1_4}
-        dotnet build ./Source/CustomFonts/CustomFonts.sln -c "Release 1.4"
-      - |
-        export STEAM_APPS=${STEAM_APPS_1_5}
-        dotnet build ./Source/CustomFonts/CustomFonts.sln -c "Release 1.5"
-      - |
-        export STEAM_APPS=${STEAM_APPS_1_6}
-        dotnet build ./Source/CustomFonts/CustomFonts.sln -c "Release 1.6"
+      # Each version compiles against its own RimWorld install. An unset or wrong STEAM_APPS_*
+      # used to surface as a wall of CS0246 "type not found" errors, so the path is checked
+      # up front and reported by name instead.
+      - cmd: |
+          build_one() {
+            label="$1"
+            varname="$2"
+            root="$3"
+            if [ -z "${root}" ]; then
+              echo "ERROR: ${varname} is not set - add it to .env (see .env.sample)" >&2
+              exit 1
+            fi
+            managed="${root}/common/RimWorld/${STEAM_OS}/Managed"
+            if [ ! -f "${managed}/Assembly-CSharp.dll" ]; then
+              echo "ERROR: ${varname}=${root} is not a RimWorld install" >&2
+              echo "       expected ${managed}/Assembly-CSharp.dll" >&2
+              exit 1
+            fi
+            echo "==> Release ${label}  (${root})"
+            export STEAM_APPS="${root}"
+            dotnet build ./Source/CustomFonts/CustomFonts.sln -c "Release ${label}"
+          }
+          build_one 1.4 STEAM_APPS_1_4 "${STEAM_APPS_1_4}"
+          build_one 1.5 STEAM_APPS_1_5 "${STEAM_APPS_1_5}"
+          build_one 1.6 STEAM_APPS_1_6 "${STEAM_APPS_1_6}"
 
   export:
+    desc: copy the built assemblies and mod metadata into the local Mods folder
     cmds:
-      - cmd: robocopy 1.4/Assemblies "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.4/Assemblies" /E /NFL /NDL /NJH /NJS || exit 0
+      # About/ was missing here, so mod metadata edits never reached the game. rimfonts is
+      # deliberately left out: it is a large asset bundle that only the release task ships.
+      - cmd: |
+          copy_dir() {
+            code=0
+            robocopy "$1" "$2" /E /NFL /NDL /NJH /NJS || code=$?
+            # robocopy reports 0-7 for success (bit flags) and 8 or above for real failures.
+            if [ "${code}" -ge 8 ]; then
+              echo "robocopy failed with exit code ${code} while copying $1" >&2
+              exit "${code}"
+            fi
+          }
+          DEST="${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts"
+          copy_dir 1.4/Assemblies "${DEST}/1.4/Assemblies"
+          copy_dir 1.5/Assemblies "${DEST}/1.5/Assemblies"
+          copy_dir 1.6/Assemblies "${DEST}/1.6/Assemblies"
+          copy_dir Languages "${DEST}/Languages"
+          copy_dir About "${DEST}/About"
+          echo "Exported to ${DEST}"
         platforms: [windows]
-      - cmd: robocopy 1.5/Assemblies "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.5/Assemblies" /E /NFL /NDL /NJH /NJS || exit 0
-        platforms: [windows]
-      - cmd: robocopy 1.6/Assemblies "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.6/Assemblies" /E /NFL /NDL /NJH /NJS || exit 0
-        platforms: [windows]
-      - cmd: cp -rf 1.4/Assemblies/* "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.4/Assemblies/"
+      - cmd: |
+          DEST="${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts"
+          mkdir -p "${DEST}/1.4/Assemblies" "${DEST}/1.5/Assemblies" "${DEST}/1.6/Assemblies" "${DEST}/Languages" "${DEST}/About"
+          cp -rf 1.4/Assemblies/. "${DEST}/1.4/Assemblies/"
+          cp -rf 1.5/Assemblies/. "${DEST}/1.5/Assemblies/"
+          cp -rf 1.6/Assemblies/. "${DEST}/1.6/Assemblies/"
+          cp -rf Languages/. "${DEST}/Languages/"
+          cp -rf About/. "${DEST}/About/"
+          echo "Exported to ${DEST}"
         platforms: [linux]
-      - cmd: cp -rf 1.5/Assemblies/* "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.5/Assemblies/"
-        platforms: [linux]
-      - cmd: cp -rf 1.6/Assemblies/* "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/1.6/Assemblies/"
-        platforms: [linux]
-      - cmd: cp -rf 1.4/Assemblies/* "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/1.4/Assemblies/"
-        platforms: [darwin]
-      - cmd: cp -rf 1.5/Assemblies/* "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/1.5/Assemblies/"
-        platforms: [darwin]
-      - cmd: cp -rf 1.6/Assemblies/* "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/1.6/Assemblies/"
-        platforms: [darwin]
-      - cmd: robocopy Languages "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/Languages" /E /NFL /NDL /NJH /NJS || exit 0
-        platforms: [windows]
-      - cmd: cp -rf Languages/* "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/Languages/"
-        platforms: [linux]
-      - cmd: cp -rf Languages/* "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/Languages/"
+      - cmd: |
+          DEST="${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts"
+          mkdir -p "${DEST}/1.4/Assemblies" "${DEST}/1.5/Assemblies" "${DEST}/1.6/Assemblies" "${DEST}/Languages" "${DEST}/About"
+          cp -rf 1.4/Assemblies/. "${DEST}/1.4/Assemblies/"
+          cp -rf 1.5/Assemblies/. "${DEST}/1.5/Assemblies/"
+          cp -rf 1.6/Assemblies/. "${DEST}/1.6/Assemblies/"
+          cp -rf Languages/. "${DEST}/Languages/"
+          cp -rf About/. "${DEST}/About/"
+          echo "Exported to ${DEST}"
         platforms: [darwin]
 
   build_and_export:
@@ -66,49 +111,61 @@ tasks:
       - task: export
 
   release:
+    desc: install the committed tree into the local Mods folder as players would get it
     cmds:
-      - git archive --format=tar.gz HEAD -o custom-fonts.tar.gz
+      # git archive only ships committed content, so an uncommitted fix would silently be
+      # left out of the release. Warn loudly rather than shipping a stale tree.
       - cmd: |
-          mkdir "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/" || true
-          tar zxvf custom-fonts.tar.gz -C "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/"
-        platforms: [windows]
+          if ! git diff --quiet HEAD --; then
+            echo "WARNING: tracked files differ from HEAD." >&2
+            echo "         git archive ships HEAD only, so those changes will NOT be released." >&2
+            git diff --name-only HEAD -- >&2
+          fi
+      # A zip extracted with 7zip, not a tar.gz: Task's shell provides its own minimal tar
+      # builtin that shadows the system one, and it can neither read gzip nor take the classic
+      # "zxvf" form. 7zip is already required by the prepare task.
+      - git archive --format=zip HEAD -o custom-fonts.zip
       - cmd: |
-          mkdir -p "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/"
-          tar zxvf custom-fonts.tar.gz -C "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/"
-        platforms: [linux]
-      - cmd: |
-          mkdir -p "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/"
-          tar zxvf custom-fonts.tar.gz -C "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/"
-        platforms: [darwin]
-      - cmd: |
-          cd "${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts/"
-          rm Taskfile.*
-          rm .git*
-          rm .env.sample
-          rm .pre-commit-config.yaml
-          rm .editorconfig
-          rm -rf Source
+          DEST="${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts"
+          mkdir -p "${DEST}"
+          7z x -y custom-fonts.zip -o"${DEST}"
+          # Absolute paths, so a bad DEST can never make this delete files in the repo.
+          rm -f "${DEST}"/Taskfile.* "${DEST}"/.git* "${DEST}"/.env.sample \
+                "${DEST}"/.pre-commit-config.yaml "${DEST}"/.editorconfig
+          rm -rf "${DEST}/Source"
+          echo "Released to ${DEST}"
         platforms: [windows, linux]
       - cmd: |
-          cd "${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts/"
-          rm Taskfile.*
-          rm .git*
-          rm .env.sample
-          rm .pre-commit-config.yaml
-          rm .editorconfig
-          rm -rf Source
+          DEST="${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts"
+          mkdir -p "${DEST}"
+          7zz x -y custom-fonts.zip -o"${DEST}"
+          rm -f "${DEST}"/Taskfile.* "${DEST}"/.git* "${DEST}"/.env.sample \
+                "${DEST}"/.pre-commit-config.yaml "${DEST}"/.editorconfig
+          rm -rf "${DEST}/Source"
+          echo "Released to ${DEST}"
         platforms: [darwin]
 
+  clean:
+    desc: remove build outputs and downloaded archives
+    cmds:
+      - cmd: |
+          rm -rf Source/CustomFonts/obj Source/CustomFonts/bin
+          rm -f 1.4/Assemblies/CustomFonts.dll 1.5/Assemblies/CustomFonts.dll 1.6/Assemblies/CustomFonts.dll
+          rm -f custom-fonts.tar.gz custom-fonts.zip HarmonyMod.zip
+          echo "Cleaned"
+
   rider:
+    desc: open the project in Rider
     cmds:
       - rider .
 
   code:
+    desc: open the project in VS Code
     cmds:
       - code .
 
   format:
-    desc: format
+    desc: format the source with dotnet format
     cmds:
       - dotnet format ./Source/CustomFonts/CustomFonts.sln
 
