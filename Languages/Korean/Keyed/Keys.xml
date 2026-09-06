@@ -25,4 +25,12 @@
     <CustomFonts.Search>검색</CustomFonts.Search>
     <CustomFonts.HasUnityPlayerSo>UnityPlayer.so</CustomFonts.HasUnityPlayerSo>
     <CustomFonts.HasRunHostFonts>/run/host/fonts</CustomFonts.HasRunHostFonts>
+    <CustomFonts.DebugLogging>디버그 로깅 (폰트 리소스 추적)</CustomFonts.DebugLogging>
+    <CustomFonts.DebugLoggingDesc>폰트 / 아틀라스의 생성·해제 수치를 30초마다 로그에 기록합니다. 폰트 메모리 누수 확인용이며, 평소에는 꺼두세요.</CustomFonts.DebugLoggingDesc>
+    <CustomFonts.DebugLogStats>폰트 리소스 통계 기록</CustomFonts.DebugLogStats>
+    <CustomFonts.DebugLogNow>지금 기록</CustomFonts.DebugLogNow>
+    <CustomFonts.DebugStressTest>폰트 전환 스트레스 테스트 (누수 확인)</CustomFonts.DebugStressTest>
+    <CustomFonts.DebugStressTestRun>200회 전환 실행</CustomFonts.DebugStressTestRun>
+    <CustomFonts.DebugWorldFontTest>월드맵 폰트 반영 테스트</CustomFonts.DebugWorldFontTest>
+    <CustomFonts.DebugWorldFontTestRun>월드 테스트 실행</CustomFonts.DebugWorldFontTestRun>
 </LanguageData>

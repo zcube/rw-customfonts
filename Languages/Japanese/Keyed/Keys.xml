@@ -24,4 +24,12 @@
     <CustomFonts.Search>検索</CustomFonts.Search>
     <CustomFonts.HasUnityPlayerSo>UnityPlayer.so</CustomFonts.HasUnityPlayerSo>
     <CustomFonts.HasRunHostFonts>/run/host/fonts</CustomFonts.HasRunHostFonts>
+    <CustomFonts.DebugLogging>デバッグログ (フォントリソース追跡)</CustomFonts.DebugLogging>
+    <CustomFonts.DebugLoggingDesc>フォント / アトラスの生成・解放の数値を30秒ごとにログへ出力します。フォントのメモリリーク確認用です。通常プレイ時はオフにしてください。</CustomFonts.DebugLoggingDesc>
+    <CustomFonts.DebugLogStats>フォントリソース統計を出力</CustomFonts.DebugLogStats>
+    <CustomFonts.DebugLogNow>今すぐ出力</CustomFonts.DebugLogNow>
+    <CustomFonts.DebugStressTest>フォント切替ストレステスト (リーク確認)</CustomFonts.DebugStressTest>
+    <CustomFonts.DebugStressTestRun>200回切替を実行</CustomFonts.DebugStressTestRun>
+    <CustomFonts.DebugWorldFontTest>ワールドマップ フォント反映テスト</CustomFonts.DebugWorldFontTest>
+    <CustomFonts.DebugWorldFontTestRun>ワールドテスト実行</CustomFonts.DebugWorldFontTestRun>
 </LanguageData>

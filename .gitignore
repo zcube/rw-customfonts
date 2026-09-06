@@ -41,3 +41,4 @@ HarmonyMod.zip
 rimfonts-decompressed
 *.tar.gz
 .env
+*.ps1
