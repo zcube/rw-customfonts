@@ -250,6 +250,7 @@ namespace CustomFonts
         private static bool _fontEngineInitialized;
         private bool _textMetricsDirty;
         private bool _worldScalePending;
+        private float _lastSpecimenHeight;
         private Vector2 scrollPosition = Vector2.zero;
         public Harmony MyHarmony { get; private set; }
         private ModContentPack _content;
@@ -346,7 +347,22 @@ namespace CustomFonts
                 _settings.WorldScaleFactor = 1.0f;
                 SaveWorldFont(FontSettings.DefaultFontName);
             }
+            var uniformBefore = _settings.UniformUIfonts;
             listingStandard.CheckboxLabeled("CustomFonts.UniformUIfonts".Translate(), ref _settings.UniformUIfonts, "CustomFonts.UniformUIfonts".Translate());
+            if (_settings.UniformUIfonts && !uniformBefore)
+            {
+                // Turning it on used to leave whatever Tiny and Small were set to earlier in
+                // place, so the UI kept drawing the old sizes while only Medium was editable.
+                _settings.UpdateUniformUIfonts();
+                UpdateFont();
+                DebugLog($"uniform UI fonts enabled, Tiny/Small synced from Medium ({DescribeSettings()})");
+            }
+            if (_settings.UniformUIfonts && toolbarInt < 2)
+            {
+                // The uniform tab strip starts at Medium, but toolbarInt still pointed at the
+                // hidden Tiny tab, so the sliders silently edited Tiny instead.
+                toolbarInt = 2;
+            }
 
             Rect toolbarRect = listingStandard.GetRect(TabDrawer.TabHeight);
             toolbarRect.y += TabDrawer.TabHeight;
@@ -380,23 +396,25 @@ namespace CustomFonts
                     break;
             }
 
-            string[] specimen =
-            {
-                "CustomFonts.Specimen".Translate(),
-            };
+            var specimenText = "CustomFonts.Specimen".Translate();
 
-            Rect fontViewRect = listingStandard.GetRect(100);
+            // The preview used to reserve a hard coded 100px. Listing_Standard.Label sizes each
+            // line with Text.CalcHeight, so a long translated sentence wraps and a large scaling
+            // factor grows every line - both push the preview past 100px and it then draws over
+            // whatever follows. Measure the exact height instead.
+            var previewHeight = MeasureSpecimenHeight(specimenText, listingStandard.ColumnWidth);
+
+            Rect fontViewRect = listingStandard.GetRect(previewHeight);
             {
                 var fontViewListingStandard = new Listing_Standard();
                 fontViewListingStandard.Begin(fontViewRect);
 
                 var backup = Text.Font;
-                Text.Font = GameFont.Tiny;
-                fontViewListingStandard.Label(String.Join("\n", specimen));
-                Text.Font = GameFont.Small;
-                fontViewListingStandard.Label(String.Join("\n", specimen));
-                Text.Font = GameFont.Medium;
-                fontViewListingStandard.Label(String.Join("\n", specimen));
+                foreach (var previewFont in PreviewFonts)
+                {
+                    Text.Font = previewFont;
+                    fontViewListingStandard.Label(SpecimenLine(previewFont, specimenText));
+                }
                 // TODO: world font specimen
                 Text.Font = backup;
                 fontViewListingStandard.End();
@@ -471,6 +489,43 @@ namespace CustomFonts
             listingStandard.End();
 
             base.DoSettingsWindowContents(inRect);
+        }
+
+        private static readonly GameFont[] PreviewFonts = { GameFont.Tiny, GameFont.Small, GameFont.Medium };
+
+        // Each preview line is tagged with its GameFont initial and the pixel size actually
+        // bound to that style, so a line rendering at the wrong size is obvious on screen
+        // instead of having to be guessed from the shapes.
+        private static string SpecimenLine(GameFont fontIndex, string specimenText)
+        {
+            return $"[{fontIndex.ToString().Substring(0, 1)} {Text.fontStyles[(int)fontIndex].fontSize}px] {specimenText}";
+        }
+
+        // Mirrors what Listing_Standard.Label does per line: CalcHeight for the wrapped text
+        // plus one verticalSpacing gap. Measuring with the same call the layout uses keeps the
+        // reserved box exactly as tall as what gets drawn into it.
+        private float MeasureSpecimenHeight(string specimenText, float width)
+        {
+            var lineGap = new Listing_Standard().verticalSpacing;
+            var backup = Text.Font;
+            var height = 0f;
+            var parts = new List<string>();
+            foreach (var previewFont in PreviewFonts)
+            {
+                Text.Font = previewFont;
+                var lineHeight = Text.CalcHeight(SpecimenLine(previewFont, specimenText), width);
+                height += lineHeight + lineGap;
+                parts.Add($"{previewFont}={Text.fontStyles[(int)previewFont].fontSize}px/h{lineHeight:F0}");
+            }
+            Text.Font = backup;
+
+            if (Math.Abs(height - _lastSpecimenHeight) > 0.5f)
+            {
+                _lastSpecimenHeight = height;
+                DebugLog($"specimen preview at width {width:F0}: {string.Join(", ", parts.ToArray())}, " +
+                         $"total {height:F0}px (the old hard coded box was 100px)");
+            }
+            return height;
         }
 
         public Rect Padding(Rect rect, float padding)
@@ -623,7 +678,7 @@ namespace CustomFonts
                 var newOffset = (int)Math.Round(offsetValue);
                 if (newOffset != _settings.GetVerticalOffset(fontIndex))
                 {
-                    _settings.SetVerticalOffset(fontIndex, newOffset);
+                    ApplyVerticalOffset(fontIndex, newOffset);
                     RecalcCustomLineHeights();
                 }
 
@@ -634,7 +689,7 @@ namespace CustomFonts
                 var fontSizeScale = (float)Math.Round(scaleValue, 1);
                 if (Math.Abs(_settings.GetScaleFactor(fontIndex) - fontSizeScale) > 0.01)
                 {
-                    _settings.SetScaleFactor(fontIndex, fontSizeScale);
+                    ApplyScaleFactor(fontIndex, fontSizeScale);
                     UpdateFont();
                 }
 
@@ -645,7 +700,7 @@ namespace CustomFonts
                 var widthScale = (float)Math.Round(widthScaleValue, 1);
                 if (Math.Abs(_settings.GetFontWidthScaleFactor(fontIndex) - widthScale) > 0.01)
                 {
-                    _settings.SetFontWidthScaleFactor(fontIndex, widthScale);
+                    ApplyFontWidthScaleFactor(fontIndex, widthScale);
                     UpdateFont();
                 }
             }
@@ -674,6 +729,48 @@ namespace CustomFonts
             }
 
             listingStandard.End();
+        }
+
+        // With uniform fonts on, only the Medium tab is reachable, so a slider must write the
+        // value to every size. Writing just the selected one let Tiny and Small keep stale
+        // values that the UI still rendered with while offering no way to change them.
+        private void ApplyVerticalOffset(GameFont fontIndex, int value)
+        {
+            if (!_settings.UniformUIfonts)
+            {
+                _settings.SetVerticalOffset(fontIndex, value);
+                return;
+            }
+            foreach (GameFont each in Enum.GetValues(typeof(GameFont)))
+            {
+                _settings.SetVerticalOffset(each, value);
+            }
+        }
+
+        private void ApplyScaleFactor(GameFont fontIndex, float value)
+        {
+            if (!_settings.UniformUIfonts)
+            {
+                _settings.SetScaleFactor(fontIndex, value);
+                return;
+            }
+            foreach (GameFont each in Enum.GetValues(typeof(GameFont)))
+            {
+                _settings.SetScaleFactor(each, value);
+            }
+        }
+
+        private void ApplyFontWidthScaleFactor(GameFont fontIndex, float value)
+        {
+            if (!_settings.UniformUIfonts)
+            {
+                _settings.SetFontWidthScaleFactor(fontIndex, value);
+                return;
+            }
+            foreach (GameFont each in Enum.GetValues(typeof(GameFont)))
+            {
+                _settings.SetFontWidthScaleFactor(each, value);
+            }
         }
 
         public void DrawLinuxSettings(Rect inRect)
