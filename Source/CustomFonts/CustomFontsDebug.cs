@@ -228,6 +228,7 @@ namespace CustomFonts
                 $"  TMP_FontAsset      : {fontAssets.Length} (atlas ~{ToMegabytes(fontAssetAtlasBytes)} MB)\n" +
                 $"  owned OS fonts     : {_osFontCache.Count} [{string.Join(", ", _osFontCache.Keys.ToArray())}]\n" +
                 $"  applied font keys  : {string.Join(", ", _appliedFontKeys.Select(pair => $"{pair.Key}={pair.Value}").ToArray())}\n" +
+                $"  settings          : {DescribeSettings()}\n" +
                 $"  line metrics       : {DescribeLineMetrics()}\n" +
                 $"  bound styles       : {DescribeBoundStyles()}\n" +
                 $"  world font         : setting '{_settings.CurrentWorldFontName}', cached asset {_worldFontAssetKey ?? "<none>"}\n" +
@@ -471,6 +472,23 @@ namespace CustomFonts
         {
             if (fontAsset == null) return "<null>";
             return $"{fontAsset.faceInfo.familyName} ({fontAsset.faceInfo.styleName})";
+        }
+
+        // Dumps what is actually held in the settings object, so a value that was saved or
+        // loaded into the wrong slot shows up directly next to what is bound and drawn.
+        public string DescribeSettings()
+        {
+            var parts = new List<string>();
+            foreach (GameFont value in Enum.GetValues(typeof(GameFont)))
+            {
+                parts.Add($"{value}: '{_settings.GetCurrentUIFontName(value)}' " +
+                          $"scale {_settings.GetScaleFactor(value):F1} " +
+                          $"offset {_settings.GetVerticalOffset(value)} " +
+                          $"width {_settings.GetFontWidthScaleFactor(value):F1}");
+            }
+            parts.Add($"uniform {_settings.UniformUIfonts}");
+            parts.Add($"world '{_settings.CurrentWorldFontName}' scale {_settings.WorldScaleFactor:F1}");
+            return string.Join("; ", parts.ToArray());
         }
 
         public string DescribeLineMetrics()
