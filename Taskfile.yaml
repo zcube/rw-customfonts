@@ -115,22 +115,48 @@ tasks:
   version:
     desc: get current version
     cmds:
-      - |
-        export CURRENT_VERSION=$(monodis --assembly "${STEAM_APPS}/common/RimWorld/${STEAM_OS}/Managed/Assembly-CSharp.dll" | grep "Version:" | sed 's/.*Version: *\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/' | tr -d '\r')
-        echo "Current version: ${CURRENT_VERSION}"
+      # Version.txt holds "<version> rev<n>". read and parameter expansion are shell builtins,
+      # so this needs no monodis, no PowerShell and no tr/grep/sed on any platform. The trailing
+      # CR of the CRLF file sits after the rev, so cutting at the first space also drops it.
+      - cmd: |
+          read -r RIMWORLD_VERSION_LINE < "${STEAM_APPS}/common/RimWorld/Version.txt" || RIMWORLD_VERSION_LINE=""
+          echo "Current version: ${RIMWORLD_VERSION_LINE%% *}"
 
   backup:
-    desc: backup current version
+    desc: backup the installed version into old/RimWorld/<version>
     cmds:
       - cmd: |
-          export CURRENT_VERSION=$(monodis --assembly "${STEAM_APPS}/common/RimWorld/${STEAM_OS}/Managed/Assembly-CSharp.dll" | grep "Version:" | sed 's/.*Version: *\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/' | tr -d '\r')
-          echo "Current version: <${CURRENT_VERSION}>"
-          mkdir -p "${STEAM_APPS}/old/RimWorld/${CURRENT_VERSION}/common/RimWorld/" || true
-          rsync -avz --delete "${STEAM_APPS}/common/RimWorld/" "${STEAM_APPS}/old/RimWorld/${CURRENT_VERSION}/common/RimWorld/"
-        platforms: [darwin, linux]
+          read -r RIMWORLD_VERSION_LINE < "${STEAM_APPS}/common/RimWorld/Version.txt" || RIMWORLD_VERSION_LINE=""
+          CURRENT_VERSION=${RIMWORLD_VERSION_LINE%% *}
+          if [ -z "${CURRENT_VERSION}" ]; then
+            echo "ERROR: could not read a version from ${STEAM_APPS}/common/RimWorld/Version.txt" >&2
+            echo "Refusing to mirror into an unnamed backup folder." >&2
+            exit 1
+          fi
+          DEST="${STEAM_APPS}/old/RimWorld/${CURRENT_VERSION}/common/RimWorld"
+          echo "Backing up ${CURRENT_VERSION} -> ${DEST}"
+          mkdir -p "${DEST}"
+          rsync -a --delete "${STEAM_APPS}/common/RimWorld/" "${DEST}/"
+          echo "Backup complete"
+        platforms: [linux, darwin]
       - cmd: |
-          export CURRENT_VERSION=$(monodis --assembly "${STEAM_APPS}/common/RimWorld/${STEAM_OS}/Managed/Assembly-CSharp.dll" | grep "Version:" | sed 's/.*Version: *\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/' | tr -d '\r')
-          echo "Current version: <${CURRENT_VERSION}>"
-          mkdir "${STEAM_APPS}/old/RimWorld/${CURRENT_VERSION}/common/RimWorld/" || true
-          robocopy "${STEAM_APPS}/common/RimWorld" "${STEAM_APPS}/old/RimWorld/${CURRENT_VERSION}/common/RimWorld" /MIR /NFL /NDL /NJH /NJS
+          read -r RIMWORLD_VERSION_LINE < "${STEAM_APPS}/common/RimWorld/Version.txt" || RIMWORLD_VERSION_LINE=""
+          CURRENT_VERSION=${RIMWORLD_VERSION_LINE%% *}
+          if [ -z "${CURRENT_VERSION}" ]; then
+            echo "ERROR: could not read a version from ${STEAM_APPS}/common/RimWorld/Version.txt" >&2
+            echo "Refusing to mirror into an unnamed backup folder." >&2
+            exit 1
+          fi
+          DEST="${STEAM_APPS}/old/RimWorld/${CURRENT_VERSION}/common/RimWorld"
+          echo "Backing up ${CURRENT_VERSION} -> ${DEST}"
+          # robocopy creates the destination tree itself, so no mkdir is needed here - handy
+          # because a bare Windows box has no mkdir binary for Task's built in shell.
+          code=0
+          robocopy "${STEAM_APPS}/common/RimWorld" "${DEST}" /MIR /NFL /NDL /NJH /NJS || code=$?
+          # robocopy reports 0-7 for success (bit flags) and 8 or above for real failures.
+          if [ "${code}" -ge 8 ]; then
+            echo "robocopy failed with exit code ${code}" >&2
+            exit "${code}"
+          fi
+          echo "Backup complete"
         platforms: [windows]

@@ -3,7 +3,7 @@
   <name>Custom Fonts - Forked</name>
   <author>zcubekr</author>
   <packageId>zcubekr.customfonts</packageId>
-  <url>https://github.com/zcube/rw-customfonts</url>
+  <url>https://github.com/ZCube/rw-customfonts</url>
   <supportedVersions>
     <li>1.4</li>
     <li>1.5</li>
@@ -28,6 +28,11 @@
 This mod enables changing the game font to system fonts or bundled ones.
 ゲームのフォントをOSのフォントか同梱フォントに変更できるようにします。
 게임 폰트를 시스템 폰트나 번들된 폰트로 변경할 수 있습니다.
+
+<size=17><b>This Fork</b></size>
+
+author : zcubekr
+url: https://github.com/ZCube/rw-customfonts
 
 <size=17><b>Original</b></size>
 

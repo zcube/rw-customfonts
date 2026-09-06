@@ -25,4 +25,12 @@
     <CustomFonts.Search>Search</CustomFonts.Search>
     <CustomFonts.HasUnityPlayerSo>UnityPlayer.so</CustomFonts.HasUnityPlayerSo>
     <CustomFonts.HasRunHostFonts>/run/host/fonts</CustomFonts.HasRunHostFonts>
+    <CustomFonts.DebugLogging>Debug logging (font resource tracking)</CustomFonts.DebugLogging>
+    <CustomFonts.DebugLoggingDesc>Writes font / atlas allocation and release counters to the log every 30 seconds. Use it to check for font memory leaks. Keep this off during normal play.</CustomFonts.DebugLoggingDesc>
+    <CustomFonts.DebugLogStats>Log font resource stats</CustomFonts.DebugLogStats>
+    <CustomFonts.DebugLogNow>Log now</CustomFonts.DebugLogNow>
+    <CustomFonts.DebugStressTest>Font switch stress test (leak check)</CustomFonts.DebugStressTest>
+    <CustomFonts.DebugStressTestRun>Run 200 switches</CustomFonts.DebugStressTestRun>
+    <CustomFonts.DebugWorldFontTest>World map font test</CustomFonts.DebugWorldFontTest>
+    <CustomFonts.DebugWorldFontTestRun>Run world test</CustomFonts.DebugWorldFontTestRun>
 </LanguageData>

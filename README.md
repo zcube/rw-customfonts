@@ -1,6 +1,8 @@
 # Custom-Fonts
 
+* this fork: [ZCube/rw-customfonts](https://github.com/ZCube/rw-customfonts)
 * fork from [nmkj-io/rw-customfonts](https://github.com/nmkj-io/rw-customfonts)
+* Steam Workshop: [Custom Fonts - Forked](https://steamcommunity.com/sharedfiles/filedetails/?id=3231727915)
 
 # Build
 

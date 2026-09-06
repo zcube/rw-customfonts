@@ -77,7 +77,10 @@
     </When>
     <When Condition=" '$(Configuration)'=='Release 1.6' ">
       <ItemGroup>
-        <Reference Include="0Harmony, Version=2.3.6.0, Culture=neutral, processorArchitecture=MSIL">
+        <!-- No version pin: HarmonyMod/Current tracks the latest Harmony release and task
+             prepare always downloads the newest one, so pinning here breaks the build on
+             every Harmony release. The 1.4 and 1.5 folders are frozen, so those stay pinned. -->
+        <Reference Include="0Harmony">
           <HintPath>$(ProjectDir)/../../packages/HarmonyMod/Current/Assemblies/0Harmony.dll</HintPath>
           <Private>False</Private>
         </Reference>

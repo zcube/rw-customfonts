@@ -25,4 +25,12 @@
     <CustomFonts.Search>搜尋</CustomFonts.Search>
     <CustomFonts.HasUnityPlayerSo>UnityPlayer.so</CustomFonts.HasUnityPlayerSo>
     <CustomFonts.HasRunHostFonts>/run/host/fonts</CustomFonts.HasRunHostFonts>
+    <CustomFonts.DebugLogging>偵錯日誌（字型資源追蹤）</CustomFonts.DebugLogging>
+    <CustomFonts.DebugLoggingDesc>每30秒將字型/圖集的建立與釋放計數寫入日誌，用於檢查字型記憶體洩漏。正常遊玩時請關閉。</CustomFonts.DebugLoggingDesc>
+    <CustomFonts.DebugLogStats>記錄字型資源統計</CustomFonts.DebugLogStats>
+    <CustomFonts.DebugLogNow>立即記錄</CustomFonts.DebugLogNow>
+    <CustomFonts.DebugStressTest>字型切換壓力測試（洩漏檢查）</CustomFonts.DebugStressTest>
+    <CustomFonts.DebugStressTestRun>執行200次切換</CustomFonts.DebugStressTestRun>
+    <CustomFonts.DebugWorldFontTest>世界地圖字型套用測試</CustomFonts.DebugWorldFontTest>
+    <CustomFonts.DebugWorldFontTestRun>執行世界測試</CustomFonts.DebugWorldFontTestRun>
 </LanguageData>

@@ -25,4 +25,12 @@
     <CustomFonts.Search>搜索</CustomFonts.Search>
     <CustomFonts.HasUnityPlayerSo>UnityPlayer.so</CustomFonts.HasUnityPlayerSo>
     <CustomFonts.HasRunHostFonts>/run/host/fonts</CustomFonts.HasRunHostFonts>
+    <CustomFonts.DebugLogging>调试日志（字体资源追踪）</CustomFonts.DebugLogging>
+    <CustomFonts.DebugLoggingDesc>每30秒将字体/图集的创建与释放计数写入日志，用于检查字体内存泄漏。正常游玩时请关闭。</CustomFonts.DebugLoggingDesc>
+    <CustomFonts.DebugLogStats>记录字体资源统计</CustomFonts.DebugLogStats>
+    <CustomFonts.DebugLogNow>立即记录</CustomFonts.DebugLogNow>
+    <CustomFonts.DebugStressTest>字体切换压力测试（泄漏检查）</CustomFonts.DebugStressTest>
+    <CustomFonts.DebugStressTestRun>执行200次切换</CustomFonts.DebugStressTestRun>
+    <CustomFonts.DebugWorldFontTest>世界地图字体应用测试</CustomFonts.DebugWorldFontTest>
+    <CustomFonts.DebugWorldFontTestRun>执行世界测试</CustomFonts.DebugWorldFontTestRun>
 </LanguageData>
