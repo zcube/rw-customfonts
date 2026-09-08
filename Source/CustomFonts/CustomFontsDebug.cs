@@ -483,7 +483,7 @@ namespace CustomFonts
             {
                 parts.Add($"{value}: '{_settings.GetCurrentUIFontName(value)}' " +
                           $"scale {_settings.GetScaleFactor(value):F1} " +
-                          $"offset {_settings.GetVerticalOffset(value)} " +
+                          $"offset {_settings.GetVerticalOffset(value)}->{EffectiveVerticalOffset(value):F1} " +
                           $"width {_settings.GetFontWidthScaleFactor(value):F1}");
             }
             parts.Add($"uniform {_settings.UniformUIfonts}");
