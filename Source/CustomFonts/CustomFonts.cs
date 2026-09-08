@@ -208,6 +208,32 @@ namespace CustomFonts
                 SetFontWidthScaleFactor(GameFont.Small, FontWidthScaleFactorMedium);
             }
         }
+
+        // Uniform mode makes Medium the only editable size, so Tiny and Small are only ever
+        // copies of it. Any path that writes one size without mirroring it leaves the UI
+        // drawing stale sizes with no visible way to fix them, so the settings window checks
+        // this every frame and repairs the copies instead of waiting for the checkbox to be
+        // toggled off and on again.
+        // Identifies the Medium values the copies are made from. The settings window uses it
+        // to notice a repair that did not stick (a font that cannot be bound falls back to
+        // Default) and stop retrying it every frame instead of rebuilding fonts forever.
+        public string UniformSignature()
+        {
+            return $"{CurrentUIFontNameMedium}|{ScaleFactorMedium:F2}|{VerticalOffsetMedium}|{FontWidthScaleFactorMedium:F2}";
+        }
+
+        public bool UniformOutOfSync()
+        {
+            if (!UniformUIfonts) return false;
+            foreach (GameFont value in Enum.GetValues(typeof(GameFont)))
+            {
+                if (GetCurrentUIFontName(value) != CurrentUIFontNameMedium) return true;
+                if (Math.Abs(GetScaleFactor(value) - ScaleFactorMedium) > 0.001f) return true;
+                if (GetVerticalOffset(value) != VerticalOffsetMedium) return true;
+                if (Math.Abs(GetFontWidthScaleFactor(value) - FontWidthScaleFactorMedium) > 0.001f) return true;
+            }
+            return false;
+        }
     }
 
     [StaticConstructorOnStartup]
@@ -251,6 +277,7 @@ namespace CustomFonts
         private bool _textMetricsDirty;
         private bool _worldScalePending;
         private float _lastSpecimenHeight;
+        private string _lastUniformSignature;
         private Vector2 scrollPosition = Vector2.zero;
         public Harmony MyHarmony { get; private set; }
         private ModContentPack _content;
@@ -349,14 +376,13 @@ namespace CustomFonts
             }
             var uniformBefore = _settings.UniformUIfonts;
             listingStandard.CheckboxLabeled("CustomFonts.UniformUIfonts".Translate(), ref _settings.UniformUIfonts, "CustomFonts.UniformUIfonts".Translate());
-            if (_settings.UniformUIfonts && !uniformBefore)
+            if (_settings.UniformUIfonts != uniformBefore)
             {
-                // Turning it on used to leave whatever Tiny and Small were set to earlier in
-                // place, so the UI kept drawing the old sizes while only Medium was editable.
-                _settings.UpdateUniformUIfonts();
-                UpdateFont();
-                DebugLog($"uniform UI fonts enabled, Tiny/Small synced from Medium ({DescribeSettings()})");
+                // Tiny/Small only scale the vertical offset while uniform is on, so the applied
+                // offsets have to be rebuilt whenever the checkbox flips either way.
+                RecalcCustomLineHeights();
             }
+            EnsureUniformFonts();
             if (_settings.UniformUIfonts && toolbarInt < 2)
             {
                 // The uniform tab strip starts at Medium, but toolbarInt still pointed at the
@@ -562,7 +588,7 @@ namespace CustomFonts
             if (listingStandard.RadioButton(FontSettings.DefaultFontName, _settings.GetCurrentUIFontName(fontIndex) == FontSettings.DefaultFontName))
             {
                 if (_settings.UniformUIfonts)
-                    SaveFontAll(fontIndex, FontSettings.DefaultFontName);
+                    SaveFontAll(FontSettings.DefaultFontName);
                 else
                     SaveFont(fontIndex, FontSettings.DefaultFontName);
             }
@@ -574,7 +600,7 @@ namespace CustomFonts
                     if (listingStandard.RadioButton(name, _settings.GetCurrentUIFontName(fontIndex) == name))
                     {
                         if (_settings.UniformUIfonts)
-                            SaveFontAll(fontIndex, name);
+                            SaveFontAll(name);
                         else
                             SaveFont(fontIndex, name);
                     }
@@ -588,7 +614,7 @@ namespace CustomFonts
                     if (listingStandard.RadioButton(name, _settings.GetCurrentUIFontName(fontIndex) == name))
                     {
                         if (_settings.UniformUIfonts)
-                            SaveFontAll(fontIndex, name);
+                            SaveFontAll(name);
                         else
                             SaveFont(fontIndex, name);
                     }
@@ -729,6 +755,26 @@ namespace CustomFonts
             }
 
             listingStandard.End();
+        }
+
+        // Tiny and Small are copies of Medium while uniform fonts are on, and the Medium tab
+        // is the only one that can edit them. A change that reaches only one size therefore
+        // leaves the other two drawing something the player cannot correct - which is what
+        // toggling the checkbox off and on used to work around. This repairs the copies
+        // wherever the divergence came from, and only once per distinct Medium state so a
+        // font that refuses to bind cannot turn into a per frame font rebuild.
+        public void EnsureUniformFonts()
+        {
+            if (!_settings.UniformOutOfSync()) return;
+
+            var signature = _settings.UniformSignature();
+            if (signature == _lastUniformSignature) return;
+            _lastUniformSignature = signature;
+
+            _settings.UpdateUniformUIfonts();
+            UpdateFont();
+            RecalcCustomLineHeights();
+            DebugLog($"uniform UI fonts resynced from Medium ({DescribeSettings()})");
         }
 
         // With uniform fonts on, only the Medium tab is reachable, so a slider must write the
@@ -949,12 +995,16 @@ namespace CustomFonts
             UpdateFont(fontIndex);
         }
 
-        private void SaveFontAll(GameFont fontIndex, string fontName, bool forceUpdate = false)
+        // Every size is written and re-applied unconditionally: SaveFont skips a size whose
+        // name already matches, which would leave that size bound to the font it happens to
+        // be drawing with right now instead of the one that was just picked.
+        private void SaveFontAll(string fontName)
         {
             foreach (GameFont value in Enum.GetValues(typeof(GameFont)))
             {
-                SaveFont(value, fontName, forceUpdate);
+                _settings.SetCurrentUIFontName(value, fontName);
             }
+            UpdateFont();
         }
 
         private void SaveWorldFont(string fontName)
@@ -1335,10 +1385,29 @@ namespace CustomFonts
             }
         }
 
+        // The offset is authored on the Medium tab while uniform fonts are on, so it describes
+        // a Medium sized line. Handing the same pixel count to Tiny - roughly half the glyph
+        // height - pushes it about twice as far relative to its own text, so the copies are
+        // scaled by the size ratio that UpdateFont already sizes the fonts with. With uniform
+        // off every size carries the offset its own tab set, and is used as is.
+        public float EffectiveVerticalOffset(GameFont fontIndex)
+        {
+            var offset = (float)_settings.GetVerticalOffset(fontIndex);
+            if (!_settings.UniformUIfonts || fontIndex == GameFont.Medium || Math.Abs(offset) < 0.001f) return offset;
+
+            Font mediumFont;
+            Font sizeFont;
+            if (!DefaultFonts.TryGetValue(GameFont.Medium, out mediumFont) || mediumFont == null) return offset;
+            if (!DefaultFonts.TryGetValue(fontIndex, out sizeFont) || sizeFont == null) return offset;
+            if (mediumFont.fontSize <= 0) return offset;
+
+            return offset * sizeFont.fontSize / mediumFont.fontSize;
+        }
+
         public void RecalcCustomLineHeights(GameFont fontIndex)
         {
             // var isDefault = _settings.CurrentUIFontName(fontIndex) == FontSettings.DefaultFontName;
-            var offsetVector = new Vector2(0f, _settings.GetVerticalOffset(fontIndex));
+            var offsetVector = new Vector2(0f, EffectiveVerticalOffset(fontIndex));
             // Text.fontStyles[(int)fontIndex].clipping = isDefault ? TextClipping.Clip : TextClipping.Overflow;
             Text.fontStyles[(int)fontIndex].contentOffset = offsetVector;
             // Text.textFieldStyles[(int)fontIndex].clipping = isDefault ? TextClipping.Clip : TextClipping.Overflow;
@@ -1442,6 +1511,7 @@ namespace CustomFonts
                     }
                 }
 
+                mod.EnsureUniformFonts();
                 mod.RecalcTextMetricsIfNeeded();
                 mod.TickFontStressTest();
                 mod.TickWorldFontTest();
