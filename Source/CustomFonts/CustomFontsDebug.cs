@@ -10,7 +10,9 @@ namespace CustomFonts
 {
     // Diagnostics for the font resource lifetime: the toggleable debug log, the resource
     // counters that make a leak visible, and the stress test that drives font switching hard
-    // enough to expose one. None of this runs unless the player turns debug logging on.
+    // enough to expose one. None of it is reachable without RimWorld's developer mode, and
+    // nothing is logged unless debug logging is also turned on - except the command line
+    // stress runs, which are started deliberately and report on their own.
     public partial class CustomFonts
     {
         private const float DebugStatsInterval = 30f;
@@ -41,7 +43,11 @@ namespace CustomFonts
         private string _worldTestOriginalFontName;
         private string _worldTestAlternateFontName;
 
-        public bool DebugLogging => _settings.DebugLogging;
+        // The diagnostics are a development tool, not something a player should be able to
+        // leave running by accident, so RimWorld's own developer mode gates all of it: the
+        // controls are hidden and the logging stays quiet while dev mode is off, and the
+        // saved checkbox state comes back untouched once it is turned on again.
+        public bool DebugLogging => Prefs.DevMode && _settings.DebugLogging;
 
         // Cycles through fonts the way a player hammering the font list and the scale slider
         // would. It deliberately runs across frames instead of in one loop: a dynamic font only
@@ -179,13 +185,13 @@ namespace CustomFonts
 
         public void DebugLog(string message)
         {
-            if (!_settings.DebugLogging) return;
+            if (!DebugLogging) return;
             Log.Message($"[Custom Fonts][debug] {message}");
         }
 
         public void TickDebugStats()
         {
-            if (!_settings.DebugLogging)
+            if (!DebugLogging)
             {
                 _nextDebugStatsTime = 0f;
                 return;
@@ -542,6 +548,8 @@ namespace CustomFonts
 
         public void DrawDebugSettings(Listing_Standard listingStandard)
         {
+            if (!Prefs.DevMode) return;
+
             listingStandard.GapLine();
             listingStandard.CheckboxLabeled("CustomFonts.DebugLogging".Translate(), ref _settings.DebugLogging,
                 "CustomFonts.DebugLoggingDesc".Translate());
