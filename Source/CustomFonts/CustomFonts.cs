@@ -273,7 +273,9 @@ namespace CustomFonts
         private TMP_FontAsset _worldFontAsset;
         private Font _worldFontSource;
         private string _worldFontAssetKey;
+#if !RIMWORLD_1_7
         private static bool _fontEngineInitialized;
+#endif
         private bool _textMetricsDirty;
         private bool _worldScalePending;
         private float _lastSpecimenHeight;
@@ -856,7 +858,12 @@ namespace CustomFonts
         {
             if (_hasInstalledFontNames) return;
             _hasInstalledFontNames = true;
+#if RIMWORLD_1_7
+            SetupOSFontPaths();
+            _fontNames = OSFontPaths.Keys.Select(name => name.Substring(0, name.LastIndexOf(" (", StringComparison.Ordinal))).Distinct().ToList();
+#else
             _fontNames = Font.GetOSInstalledFontNames().ToList();
+#endif
             _fontNames.Sort();
         }
 
@@ -881,6 +888,9 @@ namespace CustomFonts
         // a full glyph atlas per font, which is never released.
         private static bool TryGetFaceName(string filePath, out string faceName)
         {
+#if RIMWORLD_1_7
+            return WaylithFontLoader.TryGetFaceName(File.ReadAllBytes(filePath), out faceName);
+#else
             faceName = null;
             if (!_fontEngineInitialized)
             {
@@ -900,10 +910,14 @@ namespace CustomFonts
             {
                 FontEngine.UnloadFontFace();
             }
+#endif
         }
 
         private static bool TryGetFaceName(Font font, out string faceName)
         {
+#if RIMWORLD_1_7
+            return WaylithFontLoader.TryGetFaceName(font, out faceName);
+#else
             faceName = null;
             if (!_fontEngineInitialized)
             {
@@ -923,6 +937,7 @@ namespace CustomFonts
             {
                 FontEngine.UnloadFontFace();
             }
+#endif
         }
 
         public void SetupOSFontPaths()
@@ -935,7 +950,11 @@ namespace CustomFonts
                 foreach (var path in Font.GetPathsToOSFonts())
                 {
                     string fontName;
-                    if (!TryGetFaceName(path, out fontName))
+                    bool hasName;
+                    try { hasName = TryGetFaceName(path, out fontName); }
+                    catch (IOException) { continue; }
+                    catch (UnauthorizedAccessException) { continue; }
+                    if (!hasName)
                     {
 #if DEBUG
                         Log.Warning($"[Custom Fonts] Unable to read face info for {path}, skipping.");
@@ -1078,6 +1097,9 @@ namespace CustomFonts
                 if (isBundled)
                 {
                     font = BundledFonts[fontName];
+#if RIMWORLD_1_7
+                    if (font.GameFontIndex < 3) font = null;
+#endif
                     fontKey = BundledFontKey(fontName);
                 }
                 else if (fontName != FontSettings.DefaultFontName)
@@ -1179,14 +1201,27 @@ namespace CustomFonts
 
         private static string BundledFontKey(string fontName) => "bundled:" + fontName;
 
-        private static string OSFontKey(string fontName, int fontSize) => "os:" + fontSize + ":" + fontName;
+        private static string OSFontKey(string fontName, int fontSize) =>
+#if RIMWORLD_1_7
+            "os:" + fontName;
+#else
+            "os:" + fontSize + ":" + fontName;
+#endif
 
         private Font ResolveOSFont(string fontKey, string fontName, int fontSize)
         {
             Font cached;
             if (_osFontCache.TryGetValue(fontKey, out cached) && cached != null) return cached;
 
+#if RIMWORLD_1_7
+            SetupOSFontPaths();
+            string path;
+            if (!OSFontPaths.TryGetValue(fontName, out path) && !OSFontPaths.TryGetValue(fontName + " (Regular)", out path))
+                path = OSFontPaths.FirstOrDefault(entry => entry.Key.StartsWith(fontName + " (", StringComparison.Ordinal)).Value;
+            var font = path == null ? null : WaylithFontLoader.Load(path, fontName);
+#else
             var font = Font.CreateDynamicFontFromOSFont(fontName, fontSize);
+#endif
             if (font != null)
             {
                 _osFontCache[fontKey] = font;
@@ -1203,6 +1238,10 @@ namespace CustomFonts
         // other one was created by an earlier font/size change and can go away.
         private void PruneOSFontCache()
         {
+#if RIMWORLD_1_7
+            // shortcut: the backend exposes no unregister API; retain fonts to avoid duplicate native registrations until it does.
+            return;
+#else
             if (_osFontCache.Count == 0) return;
 
             List<string> stale = null;
@@ -1220,6 +1259,7 @@ namespace CustomFonts
                 QueueDestroy(_osFontCache[key]);
                 _osFontCache.Remove(key);
             }
+#endif
         }
 
         public TMP_FontAsset GetWorldFontAsset()
@@ -1242,7 +1282,13 @@ namespace CustomFonts
             {
                 if (BundledFonts.ContainsKey(fontName))
                 {
+#if RIMWORLD_1_7
+                    var bundledSource = BundledFonts[fontName];
+                    if (bundledSource.GameFontIndex >= 3)
+                        fontAsset = new TMP_FontAsset(bundledSource.GameFontIndex) { name = bundledSource.name, sourceFontFile = bundledSource };
+#else
                     fontAsset = TMP_FontAsset.CreateFontAsset(BundledFonts[fontName]);
+#endif
                 }
                 else
                 {
@@ -1250,8 +1296,14 @@ namespace CustomFonts
                     string path;
                     if (OSFontPaths.TryGetValue(fontName, out path))
                     {
+#if RIMWORLD_1_7
+                        var worldSource = ResolveOSFont(OSFontKey(fontName, 22), fontName, 22);
+                        if (worldSource != null)
+                            fontAsset = new TMP_FontAsset(worldSource.GameFontIndex) { name = worldSource.name, sourceFontFile = worldSource };
+#else
                         source = new Font(path);
                         fontAsset = TMP_FontAsset.CreateFontAsset(source);
+#endif
                     }
                 }
             }
@@ -1285,6 +1337,7 @@ namespace CustomFonts
             if (_worldFontAsset != null)
             {
                 DebugLog($"releasing world font asset '{_worldFontAssetKey}'");
+#if !RIMWORLD_1_7
                 var atlasTextures = _worldFontAsset.atlasTextures;
                 if (atlasTextures != null)
                 {
@@ -1294,6 +1347,8 @@ namespace CustomFonts
                     }
                 }
                 QueueDestroy(_worldFontAsset.material);
+#endif
+                // Waylith owns the registered font atlas; only this TMP wrapper belongs to the mod.
                 QueueDestroy(_worldFontAsset);
             }
             QueueDestroy(_worldFontSource);

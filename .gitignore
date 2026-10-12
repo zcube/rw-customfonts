@@ -43,3 +43,7 @@ rimfonts-decompressed
 custom-fonts.zip
 .env
 *.ps1
+
+# Partial Decompiled resources
+_rimworld
+Directory.Build.props

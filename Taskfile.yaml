@@ -6,6 +6,11 @@ env:
   STEAM_OS: '{{if eq OS "windows"}}RimWorldWin64_Data{{else}}{{if eq OS "linux"}}RimWorldLinux_Data{{else}}RimWorldMac.app/Contents/Resources/Data{{end}}{{end}}'
 
 tasks:
+  build:1.7:
+    desc: build the experimental RimWorld 1.7 port (requires .NET 10 SDK and Harmony 1.7)
+    cmds:
+      - dotnet build ./Source/CustomFonts/CustomFonts.sln -c "Release 1.7"
+
   prepare:
     desc: download the Harmony reference assemblies into packages/ (needs curl and 7zip)
     cmds:
@@ -151,6 +156,7 @@ tasks:
       - cmd: |
           rm -rf Source/CustomFonts/obj Source/CustomFonts/bin
           rm -f 1.4/Assemblies/CustomFonts.dll 1.5/Assemblies/CustomFonts.dll 1.6/Assemblies/CustomFonts.dll
+          rm -f 1.7/Assemblies/CustomFonts.dll 1.7/Assemblies/CustomFonts.pdb
           rm -f custom-fonts.tar.gz custom-fonts.zip HarmonyMod.zip
           echo "Cleaned"
 
