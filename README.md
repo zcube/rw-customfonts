@@ -12,6 +12,13 @@
 task build
 ```
 
+RimWorld 1.7 uses `1.7/Fonts.zip` instead of the legacy Unity font asset bundle.
+Ship that file together with `1.7/Assemblies`; the ZIP contains the same 15
+font payloads extracted from `rimfonts`, with family/style names preserved.
+Only the selected font is decompressed and registered, then cached for the
+session. Older versions continue to use `rimfonts`. If the ZIP is missing,
+1.7 falls back to the slower legacy bundle and logs a warning.
+
 # Licnese
 
 * MIT License

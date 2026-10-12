@@ -251,6 +251,9 @@ namespace CustomFonts
         private List<string> _fontNames = new List<string>();
         private bool _hasInstalledFontNames;
         private bool _hasBundledFonts;
+#if RIMWORLD_1_7
+        private string _bundledFontZipPath;
+#endif
         private bool _hasOSFontAssets;
         private bool _hasPlatformInfo;
         private bool _hasUnityPlayerSo;
@@ -889,7 +892,7 @@ namespace CustomFonts
         private static bool TryGetFaceName(string filePath, out string faceName)
         {
 #if RIMWORLD_1_7
-            return WaylithFontLoader.TryGetFaceName(File.ReadAllBytes(filePath), out faceName);
+            return WaylithFontLoader.TryGetFaceName(filePath, out faceName);
 #else
             faceName = null;
             if (!_fontEngineInitialized)
@@ -946,7 +949,7 @@ namespace CustomFonts
             {
                 if (_hasOSFontAssets) return;
                 _hasOSFontAssets = true;
-                var startedAt = Time.realtimeSinceStartup;
+                var scanTimer = System.Diagnostics.Stopwatch.StartNew();
                 foreach (var path in Font.GetPathsToOSFonts())
                 {
                     string fontName;
@@ -966,7 +969,11 @@ namespace CustomFonts
                         OSFontPaths.Add(fontName, path);
                     }
                 }
-                DebugLog($"scanned {OSFontPaths.Count} OS font faces in {(Time.realtimeSinceStartup - startedAt) * 1000f:F0} ms");
+#if RIMWORLD_1_7
+                Log.Message($"[Custom Fonts] OS font discovery: {OSFontPaths.Count} faces in {scanTimer.ElapsedMilliseconds} ms");
+#else
+                DebugLog($"scanned {OSFontPaths.Count} OS font faces in {scanTimer.ElapsedMilliseconds} ms");
+#endif
             }
             catch (Exception ex)
             {
@@ -978,6 +985,26 @@ namespace CustomFonts
         {
             if (_hasBundledFonts) return;
             _hasBundledFonts = true;
+            var bundleTimer = System.Diagnostics.Stopwatch.StartNew();
+#if RIMWORLD_1_7
+            var zipPath = Path.Combine(_content.RootDir, "1.7", "Fonts.zip");
+            if (File.Exists(zipPath))
+            {
+                using (var zip = System.IO.Compression.ZipFile.OpenRead(zipPath))
+                {
+                    foreach (var entry in zip.Entries)
+                    {
+                        if (entry.FullName != entry.Name || !entry.Name.EndsWith(".ttf", StringComparison.OrdinalIgnoreCase)) continue;
+                        var name = "(Bundled) " + Path.GetFileNameWithoutExtension(entry.Name);
+                        BundledFonts.Add(name, null);
+                    }
+                }
+                _bundledFontZipPath = zipPath;
+                Log.Message($"[Custom Fonts] Bundled font index: {BundledFonts.Count} fonts in {bundleTimer.ElapsedMilliseconds} ms (loaded on selection)");
+                return;
+            }
+            Log.Warning("[Custom Fonts] 1.7/Fonts.zip is missing; using the slower legacy asset bundle.");
+#endif
             var fontAssetPath = Path.Combine(_content.RootDir, "rimfonts");
             var cab = AssetBundle.LoadFromFile(fontAssetPath);
             if (cab == null)
@@ -1004,7 +1031,11 @@ namespace CustomFonts
                     BundledFonts.Add(fontName, font);
                 }
             }
+#if RIMWORLD_1_7
+            Log.Message($"[Custom Fonts] Bundled font loading: {BundledFonts.Count} fonts in {bundleTimer.ElapsedMilliseconds} ms");
+#else
             DebugLog($"loaded {BundledFonts.Count} bundled font(s)");
+#endif
         }
 
         private void SaveFont(GameFont fontIndex, string fontName, bool forceUpdate = false)
@@ -1013,6 +1044,28 @@ namespace CustomFonts
             _settings.SetCurrentUIFontName(fontIndex, fontName);
             UpdateFont(fontIndex);
         }
+
+#if RIMWORLD_1_7
+        private Font ResolveBundledFont(string name)
+        {
+            var font = BundledFonts[name];
+            if (font != null || _bundledFontZipPath == null) return font;
+            var timer = System.Diagnostics.Stopwatch.StartNew();
+            using (var zip = System.IO.Compression.ZipFile.OpenRead(_bundledFontZipPath))
+            {
+                var entry = zip.GetEntry(name.Substring("(Bundled) ".Length) + ".ttf");
+                if (entry == null || entry.Length < 12 || entry.Length > 128 * 1024 * 1024)
+                    throw new InvalidDataException("Missing or invalid bundled font: " + name);
+                var data = new byte[(int)entry.Length];
+                using (var stream = entry.Open()) stream.ReadExactly(data);
+                long readMs = timer.ElapsedMilliseconds;
+                font = WaylithFontLoader.Load(data, name);
+                Log.Message($"[Custom Fonts] Bundled font '{name}': unpack {data.Length:N0} bytes in {readMs} ms, validate/register {timer.ElapsedMilliseconds - readMs} ms");
+            }
+            BundledFonts[name] = font;
+            return font;
+        }
+#endif
 
         // Every size is written and re-applied unconditionally: SaveFont skips a size whose
         // name already matches, which would leave that size bound to the font it happens to
@@ -1096,9 +1149,11 @@ namespace CustomFonts
             {
                 if (isBundled)
                 {
-                    font = BundledFonts[fontName];
 #if RIMWORLD_1_7
+                    font = ResolveBundledFont(fontName);
                     if (font.GameFontIndex < 3) font = null;
+#else
+                    font = BundledFonts[fontName];
 #endif
                     fontKey = BundledFontKey(fontName);
                 }
@@ -1283,7 +1338,7 @@ namespace CustomFonts
                 if (BundledFonts.ContainsKey(fontName))
                 {
 #if RIMWORLD_1_7
-                    var bundledSource = BundledFonts[fontName];
+                    var bundledSource = ResolveBundledFont(fontName);
                     if (bundledSource.GameFontIndex >= 3)
                         fontAsset = new TMP_FontAsset(bundledSource.GameFontIndex) { name = bundledSource.name, sourceFontFile = bundledSource };
 #else
