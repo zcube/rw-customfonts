@@ -33,4 +33,17 @@
     <CustomFonts.DebugStressTestRun>Run 200 switches</CustomFonts.DebugStressTestRun>
     <CustomFonts.DebugWorldFontTest>World map font test</CustomFonts.DebugWorldFontTest>
     <CustomFonts.DebugWorldFontTestRun>Run world test</CustomFonts.DebugWorldFontTestRun>
+    <CustomFonts.FontSources>Font files and folders</CustomFonts.FontSources>
+    <CustomFonts.FontSourcesHelp>Add a TTF, OTF or TTC file, or a folder. Relative paths start in this mod folder; environment variables and ~ are supported. TTC uses its first face. Apply search options with Refresh. Registered fonts stay in the renderer until the game exits.</CustomFonts.FontSourcesHelp>
+    <CustomFonts.IncludeSystemFonts>Include system fonts</CustomFonts.IncludeSystemFonts>
+    <CustomFonts.RecursiveFolders>Search subfolders</CustomFonts.RecursiveFolders>
+    <CustomFonts.FontPath>File or folder path</CustomFonts.FontPath>
+    <CustomFonts.AddFontPath>Add path</CustomFonts.AddFontPath>
+    <CustomFonts.EmptyFontPath>Enter a font file or folder path.</CustomFonts.EmptyFontPath>
+    <CustomFonts.RemoveFontPath>Remove</CustomFonts.RemoveFontPath>
+    <CustomFonts.RefreshFontSources>Refresh font list / apply search options</CustomFonts.RefreshFontSources>
+    <CustomFonts.FontSourceCount>{0} font files, {1} skipped sources (details in log)</CustomFonts.FontSourceCount>
+    <CustomFonts.WaylithFontRegistrations>File font registrations: {0} (retained until game exit)</CustomFonts.WaylithFontRegistrations>
+    <CustomFonts.WaylithDebugLoggingDesc>Log native font registration reuse, UI glyphs and world fonts. Registered fonts remain allocated until the game exits.</CustomFonts.WaylithDebugLoggingDesc>
+    <CustomFonts.WaylithDebugStressTest>Font / size switch test (registration reuse)</CustomFonts.WaylithDebugStressTest>
 </LanguageData>

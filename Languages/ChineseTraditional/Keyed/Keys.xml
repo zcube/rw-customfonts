@@ -1,36 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-    <CustomFonts.Category>自定義字體</CustomFonts.Category>
-    <CustomFonts.ResetToDefault>重置為預設值</CustomFonts.ResetToDefault>
-    <CustomFonts.CurrentFont>當前字體：{0}</CustomFonts.CurrentFont>
-    <CustomFonts.GeneralInterface>---- 一般介面 ----</CustomFonts.GeneralInterface>
-    <CustomFonts.WorldMap>---- 世界地圖 ----（儲存後重新載入以套用）</CustomFonts.WorldMap>
-    <CustomFonts.VerticalOffset>垂直位移：{0}{1}</CustomFonts.VerticalOffset>
-    <CustomFonts.FontScalingFactor>字體縮放比例：{0}</CustomFonts.FontScalingFactor>
-    <CustomFonts.FontWidthScalingFactor>字體寬度縮放比例：{0}</CustomFonts.FontWidthScalingFactor>
+    <CustomFonts.Category>自訂字型</CustomFonts.Category>
+    <CustomFonts.ResetToDefault>恢復預設</CustomFonts.ResetToDefault>
+    <CustomFonts.CurrentFont>已選擇：{0}</CustomFonts.CurrentFont>
+    <CustomFonts.GeneralInterface>---- 遊戲介面 ----</CustomFonts.GeneralInterface>
+    <CustomFonts.WorldMap>---- 世界地圖 ----</CustomFonts.WorldMap>
+    <CustomFonts.VerticalOffset>垂直位置偏移：{0}{1}</CustomFonts.VerticalOffset>
+    <CustomFonts.FontScalingFactor>字型縮放：{0}</CustomFonts.FontScalingFactor>
+    <CustomFonts.FontWidthScalingFactor>字型寬度縮放：{0}</CustomFonts.FontWidthScalingFactor>
     <CustomFonts.Apply>套用</CustomFonts.Apply>
-    <CustomFonts.Revert>恢復</CustomFonts.Revert>
-    <CustomFonts.SteamDeckPatch>Steam Deck（Steam Linux Runtime）主機字體補丁（需要重新啟動）</CustomFonts.SteamDeckPatch>
-    <CustomFonts.FontAll>UI:全部</CustomFonts.FontAll>
-    <CustomFonts.FontTiny>UI:極小</CustomFonts.FontTiny>
-    <CustomFonts.FontSmall>UI:小</CustomFonts.FontSmall>
-    <CustomFonts.FontMedium>UI:中</CustomFonts.FontMedium>
-    <CustomFonts.FontWorld>世界</CustomFonts.FontWorld>
-    <CustomFonts.Specimen>RimWorld 是由智能 AI 講故事的 SF 殖民地模擬遊戲。</CustomFonts.Specimen>
-    <CustomFonts.UniformUIfonts>統一的 UI 字體</CustomFonts.UniformUIfonts>
-    <CustomFonts.ToUsrShareFonts>補丁到 /usr/share/fonts</CustomFonts.ToUsrShareFonts>
-    <CustomFonts.ToRunHostFonts>補丁到 /run/host/fonts</CustomFonts.ToRunHostFonts>
-    <CustomFonts.Patch>補丁</CustomFonts.Patch>
+    <CustomFonts.Revert>還原</CustomFonts.Revert>
+    <CustomFonts.SteamDeckPatch>Steam Deck 主機字型修補（需要重新啟動）</CustomFonts.SteamDeckPatch>
+    <CustomFonts.FontAll>介面：全部</CustomFonts.FontAll>
+    <CustomFonts.FontTiny>介面：極小</CustomFonts.FontTiny>
+    <CustomFonts.FontSmall>介面：小</CustomFonts.FontSmall>
+    <CustomFonts.FontMedium>介面：中</CustomFonts.FontMedium>
+    <CustomFonts.FontWorld>世界地圖</CustomFonts.FontWorld>
+    <CustomFonts.Specimen>邊緣世界是一款由智慧型人工智慧敘事者驅動的科幻殖民地模擬遊戲。</CustomFonts.Specimen>
+    <CustomFonts.UniformUIfonts>統一介面字型</CustomFonts.UniformUIfonts>
+    <CustomFonts.ToUsrShareFonts>切換至 /usr/share/fonts</CustomFonts.ToUsrShareFonts>
+    <CustomFonts.ToRunHostFonts>切換至 /run/host/fonts</CustomFonts.ToRunHostFonts>
+    <CustomFonts.Patch>套用修補</CustomFonts.Patch>
     <CustomFonts.Etc>其他</CustomFonts.Etc>
     <CustomFonts.Search>搜尋</CustomFonts.Search>
     <CustomFonts.HasUnityPlayerSo>UnityPlayer.so</CustomFonts.HasUnityPlayerSo>
     <CustomFonts.HasRunHostFonts>/run/host/fonts</CustomFonts.HasRunHostFonts>
-    <CustomFonts.DebugLogging>偵錯日誌（字型資源追蹤）</CustomFonts.DebugLogging>
-    <CustomFonts.DebugLoggingDesc>每30秒將字型/圖集的建立與釋放計數寫入日誌，用於檢查字型記憶體洩漏。正常遊玩時請關閉。</CustomFonts.DebugLoggingDesc>
-    <CustomFonts.DebugLogStats>記錄字型資源統計</CustomFonts.DebugLogStats>
-    <CustomFonts.DebugLogNow>立即記錄</CustomFonts.DebugLogNow>
-    <CustomFonts.DebugStressTest>字型切換壓力測試（洩漏檢查）</CustomFonts.DebugStressTest>
+    <CustomFonts.DebugLogging>偵錯紀錄（字型資源追蹤）</CustomFonts.DebugLogging>
+    <CustomFonts.DebugLoggingDesc>每30秒記錄字型與圖集的建立及釋放情況，用於排查記憶體洩漏。正常遊戲時請關閉。</CustomFonts.DebugLoggingDesc>
+    <CustomFonts.DebugLogStats>輸出字型資源統計</CustomFonts.DebugLogStats>
+    <CustomFonts.DebugLogNow>立即輸出</CustomFonts.DebugLogNow>
+    <CustomFonts.DebugStressTest>字型切換壓力測試</CustomFonts.DebugStressTest>
     <CustomFonts.DebugStressTestRun>執行200次切換</CustomFonts.DebugStressTestRun>
-    <CustomFonts.DebugWorldFontTest>世界地圖字型套用測試</CustomFonts.DebugWorldFontTest>
-    <CustomFonts.DebugWorldFontTestRun>執行世界測試</CustomFonts.DebugWorldFontTestRun>
+    <CustomFonts.DebugWorldFontTest>世界地圖字型測試</CustomFonts.DebugWorldFontTest>
+    <CustomFonts.DebugWorldFontTestRun>執行世界地圖測試</CustomFonts.DebugWorldFontTestRun>
+    <CustomFonts.FontSources>字型檔案和資料夾</CustomFonts.FontSources>
+    <CustomFonts.FontSourcesHelp>新增 TTF、OTF、TTC 檔案或資料夾。相對路徑以模組目錄為起點，支援環境變數和 ~。TTC 使用第一個字型。按下重新整理以套用搜尋設定。已註冊的字型會保留至遊戲結束。</CustomFonts.FontSourcesHelp>
+    <CustomFonts.IncludeSystemFonts>包含系統字型</CustomFonts.IncludeSystemFonts>
+    <CustomFonts.RecursiveFolders>搜尋子資料夾</CustomFonts.RecursiveFolders>
+    <CustomFonts.FontPath>檔案或資料夾路徑</CustomFonts.FontPath>
+    <CustomFonts.AddFontPath>新增路徑</CustomFonts.AddFontPath>
+    <CustomFonts.EmptyFontPath>請輸入字型檔案或資料夾路徑。</CustomFonts.EmptyFontPath>
+    <CustomFonts.RemoveFontPath>移除</CustomFonts.RemoveFontPath>
+    <CustomFonts.RefreshFontSources>重新整理字型清單 / 套用搜尋設定</CustomFonts.RefreshFontSources>
+    <CustomFonts.FontSourceCount>{0} 個字型檔案，略過 {1} 個來源（詳見紀錄）</CustomFonts.FontSourceCount>
+    <CustomFonts.WaylithFontRegistrations>檔案字型註冊數：{0}（保留至遊戲結束）</CustomFonts.WaylithFontRegistrations>
+    <CustomFonts.WaylithDebugLoggingDesc>記錄原生字型註冊重用、介面字形和世界字型。已註冊字型保留至遊戲結束。</CustomFonts.WaylithDebugLoggingDesc>
+    <CustomFonts.WaylithDebugStressTest>字型與大小切換測試（註冊重用）</CustomFonts.WaylithDebugStressTest>
 </LanguageData>

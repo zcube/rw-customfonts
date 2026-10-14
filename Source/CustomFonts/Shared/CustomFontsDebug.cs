@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Verse;
@@ -15,6 +15,7 @@ namespace CustomFonts
     // stress runs, which are started deliberately and report on their own.
     public partial class CustomFonts
     {
+        partial void LogEngineResourceStats(string reason);
         private const float DebugStatsInterval = 30f;
         private float _nextDebugStatsTime;
 
@@ -206,6 +207,7 @@ namespace CustomFonts
         // switching fonts, moving the sliders and re-entering the world map.
         public void LogResourceStats(string reason)
         {
+            LogEngineResourceStats(reason);
             var fonts = Resources.FindObjectsOfTypeAll<Font>();
             var fontAssets = Resources.FindObjectsOfTypeAll<TMP_FontAsset>();
 

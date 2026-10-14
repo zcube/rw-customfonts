@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -8,7 +8,17 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CustomFonts</RootNamespace>
     <AssemblyName>CustomFonts</AssemblyName>
-    <TargetFramework>net472</TargetFramework>
+    <RimWorldVersion Condition="'$(RimWorldVersion)' == '' and $([System.String]::Copy('$(Configuration)').StartsWith('Release '))">$([System.String]::Copy('$(Configuration)').Substring(8))</RimWorldVersion>
+    <RimWorldVersion Condition="'$(RimWorldVersion)' == ''">1.6</RimWorldVersion>
+    <ExpectedEngine Condition="$([MSBuild]::VersionLessThan('$(RimWorldVersion)', '1.7'))">Unity</ExpectedEngine>
+    <ExpectedEngine Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(RimWorldVersion)', '1.7'))">Waylith</ExpectedEngine>
+    <Engine>$(ExpectedEngine)</Engine>
+    <TargetFramework Condition="'$(Engine)' == 'Unity'">net472</TargetFramework>
+    <TargetFramework Condition="'$(Engine)' == 'Waylith'">net10.0</TargetFramework>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GameDir Condition="'$(GameDir)' == ''">$(STEAM_APPS)/common/RimWorld</GameDir>
+    <HarmonyUnityFolder Condition="Exists('$(MSBuildProjectDirectory)/../../packages/HarmonyMod/1.6/Assemblies/0Harmony.dll')">1.6</HarmonyUnityFolder>
+    <HarmonyUnityFolder Condition="'$(HarmonyUnityFolder)' == ''">Current</HarmonyUnityFolder>
     <FileAlignment>512</FileAlignment>
     <IsPublishable>false</IsPublishable>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -50,42 +60,67 @@
     <WarningLevel>4</WarningLevel>
     <OutputPath>../../1.6/Assemblies/</OutputPath>
   </PropertyGroup>
+  <PropertyGroup Condition="$([System.String]::Copy('$(Configuration)').StartsWith('Release '))">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <OutputPath>../../$(RimWorldVersion)/Assemblies/</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Engine)' == 'Waylith'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>$(DefineConstants);WAYLITH</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Shared/**/*.cs" />
+    <Compile Include="Engines/$(Engine)/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Engine)' == 'Waylith'">
+    <Reference Include="Assembly-CSharp" HintPath="$(GameDir)/Assembly-CSharp.dll" Private="false" />
+    <Reference Include="UnityStubs" HintPath="$(GameDir)/UnityStubs.dll" Private="false" />
+    <Reference Include="AssetsTools.NET" HintPath="$(GameDir)/AssetsTools.NET.dll" Private="false" />
+    <Reference Include="Brutal.ImGui" HintPath="$(GameDir)/Brutal.ImGui.dll" Private="false" />
+    <Reference Include="Brutal.Core.Common" HintPath="$(GameDir)/Brutal.Core.Common.dll" Private="false" />
+    <Reference Include="Brutal.Core.Numerics" HintPath="$(GameDir)/Brutal.Core.Numerics.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="../../packages/HarmonyMod/1.7/Assemblies/0Harmony.dll" Private="false" />
+  </ItemGroup>
   <Choose>
-    <When Condition=" '$(Configuration)'=='Release 1.4' ">
+    <When Condition="'$(Engine)' == 'Waylith'" />
+    <When Condition=" '$(RimWorldVersion)'=='1.4' ">
       <ItemGroup>
         <Reference Include="0Harmony, Version=2.2.2.0, Culture=neutral, processorArchitecture=MSIL">
           <HintPath>$(ProjectDir)/../../packages/HarmonyMod/1.4/Assemblies/0Harmony.dll</HintPath>
           <Private>False</Private>
         </Reference>
         <Reference Include="UnityEngine.TextCoreModule">
-          <HintPath>$(STEAM_APPS)/common/RimWorld/$(STEAM_OS)/Managed/UnityEngine.TextCoreModule.dll</HintPath>
+          <HintPath>$(GameDir)/$(STEAM_OS)/Managed/UnityEngine.TextCoreModule.dll</HintPath>
           <Private>False</Private>
         </Reference>
       </ItemGroup>
     </When>
-    <When Condition=" '$(Configuration)'=='Release 1.5' ">
+    <When Condition=" '$(RimWorldVersion)'=='1.5' ">
       <ItemGroup>
         <Reference Include="0Harmony, Version=2.3.3.0, Culture=neutral, processorArchitecture=MSIL">
           <HintPath>$(ProjectDir)/../../packages/HarmonyMod/1.5/Assemblies/0Harmony.dll</HintPath>
           <Private>False</Private>
         </Reference>
         <Reference Include="UnityEngine.TextCoreModule">
-          <HintPath>$(STEAM_APPS)/common/RimWorld/$(STEAM_OS)/Managed/UnityEngine.TextCoreModule.dll</HintPath>
+          <HintPath>$(GameDir)/$(STEAM_OS)/Managed/UnityEngine.TextCoreModule.dll</HintPath>
           <Private>False</Private>
         </Reference>
       </ItemGroup>
     </When>
-    <When Condition=" '$(Configuration)'=='Release 1.6' ">
+    <When Condition=" '$(RimWorldVersion)'=='1.6' ">
       <ItemGroup>
-        <!-- No version pin: HarmonyMod/Current tracks the latest Harmony release and task
-             prepare always downloads the newest one, so pinning here breaks the build on
-             every Harmony release. The 1.4 and 1.5 folders are frozen, so those stay pinned. -->
+        <!-- Harmony 3 moved the Unity library from Current to 1.6. Keep supporting both
+             layouts; do not bind the Unity build to the .NET 10 library in 1.7. -->
         <Reference Include="0Harmony">
-          <HintPath>$(ProjectDir)/../../packages/HarmonyMod/Current/Assemblies/0Harmony.dll</HintPath>
+          <HintPath>$(ProjectDir)/../../packages/HarmonyMod/$(HarmonyUnityFolder)/Assemblies/0Harmony.dll</HintPath>
           <Private>False</Private>
         </Reference>
         <Reference Include="UnityEngine.TextCoreFontEngineModule">
-          <HintPath>$(STEAM_APPS)/common/RimWorld/$(STEAM_OS)/Managed/UnityEngine.TextCoreFontEngineModule.dll</HintPath>
+          <HintPath>$(GameDir)/$(STEAM_OS)/Managed/UnityEngine.TextCoreFontEngineModule.dll</HintPath>
           <Private>False</Private>
         </Reference>
       </ItemGroup>
@@ -93,50 +128,56 @@
     <Otherwise>
       <ItemGroup>
         <Reference Include="0Harmony, Culture=neutral, processorArchitecture=MSIL">
-          <HintPath>$(ProjectDir)/../../packages/HarmonyMod/Current/Assemblies/0Harmony.dll</HintPath>
+          <HintPath>$(ProjectDir)/../../packages/HarmonyMod/$(HarmonyUnityFolder)/Assemblies/0Harmony.dll</HintPath>
           <Private>False</Private>
         </Reference>
       </ItemGroup>
     </Otherwise>
   </Choose>
-  <ItemGroup>
+  <ItemGroup Condition="'$(Engine)' == 'Unity'">
     <Reference Include="Assembly-CSharp">
-      <HintPath>$(STEAM_APPS)/common/RimWorld/$(STEAM_OS)/Managed/Assembly-CSharp.dll</HintPath>
+      <HintPath>$(GameDir)/$(STEAM_OS)/Managed/Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
     <Reference Include="System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
     <Reference Include="System.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"/>
     <Reference Include="Unity.TextMeshPro">
-      <HintPath>$(STEAM_APPS)/common/RimWorld/$(STEAM_OS)/Managed/Unity.TextMeshPro.dll</HintPath>
+      <HintPath>$(GameDir)/$(STEAM_OS)/Managed/Unity.TextMeshPro.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>$(STEAM_APPS)/common/RimWorld/$(STEAM_OS)/Managed/UnityEngine.dll</HintPath>
+      <HintPath>$(GameDir)/$(STEAM_OS)/Managed/UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.AssetBundleModule">
-      <HintPath>$(STEAM_APPS)/common/RimWorld/$(STEAM_OS)/Managed/UnityEngine.AssetBundleModule.dll</HintPath>
+      <HintPath>$(GameDir)/$(STEAM_OS)/Managed/UnityEngine.AssetBundleModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>$(STEAM_APPS)/common/RimWorld/$(STEAM_OS)/Managed/UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(GameDir)/$(STEAM_OS)/Managed/UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>$(STEAM_APPS)/common/RimWorld/$(STEAM_OS)/Managed/UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>$(GameDir)/$(STEAM_OS)/Managed/UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>$(STEAM_APPS)/common/RimWorld/$(STEAM_OS)/Managed/UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>$(GameDir)/$(STEAM_OS)/Managed/UnityEngine.TextRenderingModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>$(STEAM_APPS)/common/RimWorld/$(STEAM_OS)/Managed/UnityEngine.UI.dll</HintPath>
+      <HintPath>$(GameDir)/$(STEAM_OS)/Managed/UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <Target Name="ValidateEngineSelection" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(Engine)' != '$(ExpectedEngine)'"
+           Text="RimWorld $(RimWorldVersion) requires $(ExpectedEngine). The Engine property cannot override the version boundary." />
+    <Error Condition="'$(RequestedEngine)' != '' and '$(RequestedEngine)' != '$(Engine)'"
+           Text="RimWorld $(RimWorldVersion) requires $(Engine), but the requested build is $(RequestedEngine). Use build_version for automatic engine selection." />
+  </Target>
 </Project>

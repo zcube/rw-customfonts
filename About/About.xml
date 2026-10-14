@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
   <name>Custom Fonts - Forked</name>
   <author>zcubekr</author>
@@ -8,6 +8,7 @@
     <li>1.4</li>
     <li>1.5</li>
     <li>1.6</li>
+    <li>1.7</li>
   </supportedVersions>
   <loadBefore>
     <li>
@@ -28,6 +29,10 @@
 This mod enables changing the game font to system fonts or bundled ones.
 ゲームのフォントをOSのフォントか同梱フォントに変更できるようにします。
 게임 폰트를 시스템 폰트나 번들된 폰트로 변경할 수 있습니다.
+
+RimWorld 1.7 (Waylith) also supports loading font files and folders by path.
+RimWorld 1.7 (Waylith) ではフォントファイルやフォルダーのパスも指定できます。
+RimWorld 1.7 (Waylith)부터 폰트 파일 및 폴더 경로를 직접 지정할 수 있습니다.
 
 <size=17><b>This Fork</b></size>
 

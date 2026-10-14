@@ -33,4 +33,17 @@
     <CustomFonts.DebugStressTestRun>200회 전환 실행</CustomFonts.DebugStressTestRun>
     <CustomFonts.DebugWorldFontTest>월드맵 폰트 반영 테스트</CustomFonts.DebugWorldFontTest>
     <CustomFonts.DebugWorldFontTestRun>월드 테스트 실행</CustomFonts.DebugWorldFontTestRun>
+    <CustomFonts.FontSources>폰트 파일 및 폴더</CustomFonts.FontSources>
+    <CustomFonts.FontSourcesHelp>TTF·OTF·TTC 파일 또는 폴더를 추가하세요. 상대 경로는 이 모드 폴더 기준이며 환경 변수와 ~를 지원합니다. TTC는 첫 번째 글꼴을 사용합니다. 검색 옵션 변경 후 새로고침을 누르세요. 등록된 폰트는 게임 종료 시 해제됩니다.</CustomFonts.FontSourcesHelp>
+    <CustomFonts.IncludeSystemFonts>시스템 폰트 포함</CustomFonts.IncludeSystemFonts>
+    <CustomFonts.RecursiveFolders>하위 폴더 검색</CustomFonts.RecursiveFolders>
+    <CustomFonts.FontPath>파일 또는 폴더 경로</CustomFonts.FontPath>
+    <CustomFonts.AddFontPath>경로 추가</CustomFonts.AddFontPath>
+    <CustomFonts.EmptyFontPath>폰트 파일 또는 폴더 경로를 입력하세요.</CustomFonts.EmptyFontPath>
+    <CustomFonts.RemoveFontPath>제거</CustomFonts.RemoveFontPath>
+    <CustomFonts.RefreshFontSources>폰트 목록 새로고침 / 검색 옵션 적용</CustomFonts.RefreshFontSources>
+    <CustomFonts.FontSourceCount>폰트 파일 {0}개, 건너뛴 항목 {1}개 (자세한 내용은 로그 참조)</CustomFonts.FontSourceCount>
+    <CustomFonts.WaylithFontRegistrations>파일 폰트 등록: {0}개 (게임 종료까지 유지)</CustomFonts.WaylithFontRegistrations>
+    <CustomFonts.WaylithDebugLoggingDesc>네이티브 폰트 등록 재사용, UI 글자 및 월드 폰트를 기록합니다. 등록된 폰트는 게임 종료까지 유지됩니다.</CustomFonts.WaylithDebugLoggingDesc>
+    <CustomFonts.WaylithDebugStressTest>폰트·크기 전환 검사 (등록 재사용)</CustomFonts.WaylithDebugStressTest>
 </LanguageData>

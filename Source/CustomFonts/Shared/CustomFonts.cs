@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Verse;
 using UnityEngine;
 using HarmonyLib;
@@ -10,251 +9,22 @@ using RimWorld.Planet;
 using RimWorld;
 using SettingsHelper;
 using TMPro;
-using UnityEngine.TextCore;
-using UnityEngine.TextCore.LowLevel;
 
 namespace CustomFonts
 {
-    public class FontSettings : ModSettings
-    {
-        // Setting values
-        public const string DefaultFontName = "Default";
-        public string CurrentWorldFontName = "Default";
-        public float WorldScaleFactor = 1.0f;
 
-        public string CurrentUIFontNameTiny = "Default";
-        public string CurrentUIFontNameSmall = "Default";
-        public string CurrentUIFontNameMedium = "Default";
-
-        public float ScaleFactorTiny = 1.0f;
-        public float ScaleFactorSmall = 1.0f;
-        public float ScaleFactorMedium = 1.0f;
-
-        public int VerticalOffsetTiny = 0;
-        public int VerticalOffsetSmall = 0;
-        public int VerticalOffsetMedium = 0;
-
-        public float FontWidthScaleFactorTiny = 1.0f;
-        public float FontWidthScaleFactorSmall = 1.0f;
-        public float FontWidthScaleFactorMedium = 1.0f;
-
-        public bool UniformUIfonts = false;
-        public bool DebugLogging = false;
-
-        public string GetCurrentUIFontName(GameFont fontIndex)
-        {
-            switch (fontIndex)
-            {
-                case GameFont.Tiny:
-                    return CurrentUIFontNameTiny;
-                case GameFont.Small:
-                    return CurrentUIFontNameSmall;
-                case GameFont.Medium:
-                    return CurrentUIFontNameMedium;
-                default:
-                    return CurrentUIFontNameMedium;
-            }
-        }
-
-        public void SetCurrentUIFontName(GameFont fontIndex, string fontName)
-        {
-            switch (fontIndex)
-            {
-                case GameFont.Tiny:
-                    CurrentUIFontNameTiny = fontName;
-                    break;
-                case GameFont.Small:
-                    CurrentUIFontNameSmall = fontName;
-                    break;
-                case GameFont.Medium:
-                    CurrentUIFontNameMedium = fontName;
-                    break;
-            }
-        }
-
-        public float GetScaleFactor(GameFont fontIndex)
-        {
-            switch (fontIndex)
-            {
-                case GameFont.Tiny:
-                    return ScaleFactorTiny;
-                case GameFont.Small:
-                    return ScaleFactorSmall;
-                case GameFont.Medium:
-                    return ScaleFactorMedium;
-                default:
-                    return ScaleFactorMedium;
-            }
-        }
-
-        public void SetScaleFactor(GameFont fontIndex, float value)
-        {
-            switch (fontIndex)
-            {
-                case GameFont.Tiny:
-                    ScaleFactorTiny = value;
-                    break;
-                case GameFont.Small:
-                    ScaleFactorSmall = value;
-                    break;
-                case GameFont.Medium:
-                    ScaleFactorMedium = value;
-                    break;
-            }
-        }
-
-        public int GetVerticalOffset(GameFont fontIndex)
-        {
-            switch (fontIndex)
-            {
-                case GameFont.Tiny:
-                    return VerticalOffsetTiny;
-                case GameFont.Small:
-                    return VerticalOffsetSmall;
-                case GameFont.Medium:
-                    return VerticalOffsetMedium;
-                default:
-                    return VerticalOffsetMedium;
-            }
-        }
-
-        public void SetVerticalOffset(GameFont fontIndex, int value)
-        {
-            switch (fontIndex)
-            {
-                case GameFont.Tiny:
-                    VerticalOffsetTiny = value;
-                    break;
-                case GameFont.Small:
-                    VerticalOffsetSmall = value;
-                    break;
-                case GameFont.Medium:
-                    VerticalOffsetMedium = value;
-                    break;
-            }
-        }
-
-        public float GetFontWidthScaleFactor(GameFont fontIndex)
-        {
-            switch (fontIndex)
-            {
-                case GameFont.Tiny:
-                    return FontWidthScaleFactorTiny;
-                case GameFont.Small:
-                    return FontWidthScaleFactorSmall;
-                case GameFont.Medium:
-                    return FontWidthScaleFactorMedium;
-                default:
-                    return FontWidthScaleFactorMedium;
-            }
-        }
-
-        public void SetFontWidthScaleFactor(GameFont fontIndex, float value)
-        {
-            switch (fontIndex)
-            {
-                case GameFont.Tiny:
-                    FontWidthScaleFactorTiny = value;
-                    break;
-                case GameFont.Small:
-                    FontWidthScaleFactorSmall = value;
-                    break;
-                case GameFont.Medium:
-                    FontWidthScaleFactorMedium = value;
-                    break;
-            }
-        }
-
-
-        public override void ExposeData() // Writing settings to the mod file
-        {
-            UpdateUniformUIfonts();
-            Scribe_Values.Look(ref UniformUIfonts, "UniformUIfonts", true);
-            Scribe_Values.Look(ref DebugLogging, "DebugLogging", false);
-
-            Scribe_Values.Look(ref CurrentWorldFontName, "CurrentWorldFontName", DefaultFontName);
-            Scribe_Values.Look(ref WorldScaleFactor, "WorldScaleFactor", 1.0f);
-
-            Scribe_Values.Look(ref CurrentUIFontNameMedium, "CurrentUIFontName", DefaultFontName);
-            Scribe_Values.Look(ref CurrentUIFontNameTiny, "CurrentUITinyFontName", DefaultFontName);
-            Scribe_Values.Look(ref CurrentUIFontNameSmall, "CurrentUISmallFontName", DefaultFontName);
-
-            Scribe_Values.Look(ref ScaleFactorMedium, "ScaleFactor", 1.0f);
-            Scribe_Values.Look(ref ScaleFactorTiny, "ScaleFactorTiny", 1.0f);
-            Scribe_Values.Look(ref ScaleFactorSmall, "ScaleFactorSmall", 1.0f);
-
-            Scribe_Values.Look(ref VerticalOffsetMedium, "VerticalOffset", 0);
-            Scribe_Values.Look(ref VerticalOffsetTiny, "VerticalOffsetTiny", 0);
-            Scribe_Values.Look(ref VerticalOffsetSmall, "VerticalOffsetSmall", 0);
-
-            Scribe_Values.Look(ref FontWidthScaleFactorMedium, "FontWidthScaleFactor", 1.0f);
-            Scribe_Values.Look(ref FontWidthScaleFactorTiny, "FontWidthScaleFactorTiny", 1.0f);
-            Scribe_Values.Look(ref FontWidthScaleFactorSmall, "FontWidthScaleFactorSmall", 1.0f);
-
-            base.ExposeData();
-        }
-
-        public void UpdateUniformUIfonts()
-        {
-            if (UniformUIfonts)
-            {
-                SetCurrentUIFontName(GameFont.Tiny, CurrentUIFontNameMedium);
-                SetCurrentUIFontName(GameFont.Small, CurrentUIFontNameMedium);
-                SetScaleFactor(GameFont.Tiny, ScaleFactorMedium);
-                SetScaleFactor(GameFont.Small, ScaleFactorMedium);
-                SetVerticalOffset(GameFont.Tiny, VerticalOffsetMedium);
-                SetVerticalOffset(GameFont.Small, VerticalOffsetMedium);
-                SetFontWidthScaleFactor(GameFont.Tiny, FontWidthScaleFactorMedium);
-                SetFontWidthScaleFactor(GameFont.Small, FontWidthScaleFactorMedium);
-            }
-        }
-
-        // Uniform mode makes Medium the only editable size, so Tiny and Small are only ever
-        // copies of it. Any path that writes one size without mirroring it leaves the UI
-        // drawing stale sizes with no visible way to fix them, so the settings window checks
-        // this every frame and repairs the copies instead of waiting for the checkbox to be
-        // toggled off and on again.
-        // Identifies the Medium values the copies are made from. The settings window uses it
-        // to notice a repair that did not stick (a font that cannot be bound falls back to
-        // Default) and stop retrying it every frame instead of rebuilding fonts forever.
-        public string UniformSignature()
-        {
-            return $"{CurrentUIFontNameMedium}|{ScaleFactorMedium:F2}|{VerticalOffsetMedium}|{FontWidthScaleFactorMedium:F2}";
-        }
-
-        public bool UniformOutOfSync()
-        {
-            if (!UniformUIfonts) return false;
-            foreach (GameFont value in Enum.GetValues(typeof(GameFont)))
-            {
-                if (GetCurrentUIFontName(value) != CurrentUIFontNameMedium) return true;
-                if (Math.Abs(GetScaleFactor(value) - ScaleFactorMedium) > 0.001f) return true;
-                if (GetVerticalOffset(value) != VerticalOffsetMedium) return true;
-                if (Math.Abs(GetFontWidthScaleFactor(value) - FontWidthScaleFactorMedium) > 0.001f) return true;
-            }
-            return false;
-        }
-    }
-
-    [StaticConstructorOnStartup]
-    static class StartupFontPatcher
-    {
-        static StartupFontPatcher()
-        {
-        }
-    }
-
-
+    // Discovery, font creation, platform settings and resource ownership are implemented
+    // by the single Engines/<engine> directory selected in the project configuration.
     public partial class CustomFonts : Mod
     {
         public readonly FontSettings _settings;
+        public void TickEngineVerification() => OnEngineVerification();
+        partial void OnEngineVerification();
         private List<string> _fontNames = new List<string>();
         private bool _hasInstalledFontNames;
         private bool _hasBundledFonts;
         private bool _hasOSFontAssets;
-        private bool _hasPlatformInfo;
-        private bool _hasUnityPlayerSo;
-        private bool _hasRunHostFonts;
+
         public bool ForceLegacyText;
         public readonly Dictionary<string, Font> BundledFonts = new Dictionary<string, Font>();
         public readonly Dictionary<GameFont, Font> DefaultFonts = new Dictionary<GameFont, Font>();
@@ -273,7 +43,7 @@ namespace CustomFonts
         private TMP_FontAsset _worldFontAsset;
         private Font _worldFontSource;
         private string _worldFontAssetKey;
-        private static bool _fontEngineInitialized;
+
         private bool _textMetricsDirty;
         private bool _worldScalePending;
         private float _lastSpecimenHeight;
@@ -314,7 +84,7 @@ namespace CustomFonts
                 DefaultFontStyle[value] = Text.fontStyles[(int)value];
             }
 
-            ForceLegacyText = _settings.CurrentWorldFontName == FontSettings.DefaultFontName;
+            ForceLegacyText = UseLegacyWorldText(_settings.CurrentWorldFontName);
 
             // var gameFontEnumLength = Enum.GetValues(typeof(GameFont)).Length;
 
@@ -353,11 +123,11 @@ namespace CustomFonts
             SetupOSInstalledFontNames();
             SetupBundledFonts();
 
-            tabs[0].label = "CustomFonts.FontTiny".Translate(_settings.GetCurrentUIFontName(GameFont.Tiny));
-            tabs[1].label = "CustomFonts.FontSmall".Translate(_settings.GetCurrentUIFontName(GameFont.Small));
-            tabs[2].label = "CustomFonts.FontMedium".Translate(_settings.GetCurrentUIFontName(GameFont.Medium));
-            tabs[3].label = "CustomFonts.FontWorld".Translate(_settings.CurrentWorldFontName);
-            tabs[4].label = "CustomFonts.Etc".Translate(_settings.CurrentWorldFontName);
+            tabs[0].label = "CustomFonts.FontTiny".Translate(DisplayFontName(_settings.GetCurrentUIFontName(GameFont.Tiny)));
+            tabs[1].label = "CustomFonts.FontSmall".Translate(DisplayFontName(_settings.GetCurrentUIFontName(GameFont.Small)));
+            tabs[2].label = "CustomFonts.FontMedium".Translate(DisplayFontName(_settings.GetCurrentUIFontName(GameFont.Medium)));
+            tabs[3].label = "CustomFonts.FontWorld".Translate(DisplayFontName(_settings.CurrentWorldFontName));
+            tabs[4].label = "CustomFonts.Etc".Translate(DisplayFontName(_settings.CurrentWorldFontName));
 
             var listingStandard = new Listing_Standard();
             listingStandard.Begin(inRect);
@@ -406,19 +176,19 @@ namespace CustomFonts
             switch (toolbarInt)
             {
                 case 0:
-                    listingStandard.Label("CustomFonts.CurrentFont".Translate(_settings.GetCurrentUIFontName(GameFont.Tiny)));
+                    listingStandard.Label("CustomFonts.CurrentFont".Translate(DisplayFontName(_settings.GetCurrentUIFontName(GameFont.Tiny))));
                     break;
                 case 1:
-                    listingStandard.Label("CustomFonts.CurrentFont".Translate(_settings.GetCurrentUIFontName(GameFont.Small)));
+                    listingStandard.Label("CustomFonts.CurrentFont".Translate(DisplayFontName(_settings.GetCurrentUIFontName(GameFont.Small))));
                     break;
                 case 2:
-                    listingStandard.Label("CustomFonts.CurrentFont".Translate(_settings.GetCurrentUIFontName(GameFont.Medium)));
+                    listingStandard.Label("CustomFonts.CurrentFont".Translate(DisplayFontName(_settings.GetCurrentUIFontName(GameFont.Medium))));
                     break;
                 case 3:
-                    listingStandard.Label("CustomFonts.CurrentFont".Translate(_settings.CurrentWorldFontName));
+                    listingStandard.Label("CustomFonts.CurrentFont".Translate(DisplayFontName(_settings.CurrentWorldFontName)));
                     break;
                 case 4:
-                    listingStandard.Label("CustomFonts.Etc".Translate(_settings.CurrentWorldFontName));
+                    listingStandard.Label("CustomFonts.Etc".Translate(DisplayFontName(_settings.CurrentWorldFontName)));
                     break;
             }
 
@@ -507,10 +277,9 @@ namespace CustomFonts
                     break;
                 case 4:
                     fullRect = listingStandard.GetRect(scrollHeight);
-                    DrawLinuxSettings(fullRect);
+                    DrawEngineSettings(fullRect);
                     break;
             }
-
 
             listingStandard.End();
 
@@ -597,7 +366,7 @@ namespace CustomFonts
             {
                 if (name.ToLower().Contains(searchText.ToLower()))
                 {
-                    if (listingStandard.RadioButton(name, _settings.GetCurrentUIFontName(fontIndex) == name))
+                    if (listingStandard.RadioButton(DisplayFontName(name), _settings.GetCurrentUIFontName(fontIndex) == name, tooltip: name))
                     {
                         if (_settings.UniformUIfonts)
                             SaveFontAll(name);
@@ -611,7 +380,7 @@ namespace CustomFonts
             {
                 if (name.ToLower().Contains(searchText.ToLower()))
                 {
-                    if (listingStandard.RadioButton(name, _settings.GetCurrentUIFontName(fontIndex) == name))
+                    if (listingStandard.RadioButton(DisplayFontName(name), _settings.GetCurrentUIFontName(fontIndex) == name, tooltip: name))
                     {
                         if (_settings.UniformUIfonts)
                             SaveFontAll(name);
@@ -659,7 +428,7 @@ namespace CustomFonts
             {
                 if (name.ToLower().Contains(searchText.ToLower()))
                 {
-                    if (listingStandard.RadioButton(name, _settings.CurrentWorldFontName == name))
+                    if (listingStandard.RadioButton(DisplayFontName(name), _settings.CurrentWorldFontName == name, tooltip: name))
                         SaveWorldFont(name);
                 }
             }
@@ -668,7 +437,7 @@ namespace CustomFonts
             {
                 if (name.ToLower().Contains(searchText.ToLower()))
                 {
-                    if (listingStandard.RadioButton(name, _settings.CurrentWorldFontName == name))
+                    if (listingStandard.RadioButton(DisplayFontName(name), _settings.CurrentWorldFontName == name, tooltip: name))
                         SaveWorldFont(name);
                 }
             }
@@ -819,174 +588,7 @@ namespace CustomFonts
             }
         }
 
-        public void DrawLinuxSettings(Rect inRect)
-        {
-            SetupPlatformInfo();
-            var listingStandard = new Listing_Standard();
-            listingStandard.Begin(inRect);
-
-            listingStandard.Label("CustomFonts.SteamDeckPatch".Translate());
-            GUI.enabled = false;
-            var __hasUnityPlayerSo = _hasUnityPlayerSo;
-            listingStandard.CheckboxLabeled("CustomFonts.HasUnityPlayerSo".Translate(), ref __hasUnityPlayerSo);
-            var __hasRunHostFonts = _hasRunHostFonts;
-            listingStandard.CheckboxLabeled("CustomFonts.HasRunHostFonts".Translate(), ref __hasRunHostFonts);
-            GUI.enabled = _hasUnityPlayerSo && _hasRunHostFonts;
-            if (listingStandard.ButtonTextLabeled("CustomFonts.ToRunHostFonts".Translate(), "CustomFonts.Patch".Translate()))
-            {
-                string UnityPlayerSoPath = Path.GetFullPath("UnityPlayer.so");
-                ReplaceStringInBinaryFile(UnityPlayerSoPath, "/usr/share/fonts", "/run/host/fonts/");
-            }
-            GUI.enabled = _hasUnityPlayerSo;
-            if (listingStandard.ButtonTextLabeled("CustomFonts.ToUsrShareFonts".Translate(), "CustomFonts.Patch".Translate()))
-            {
-                string UnityPlayerSoPath = Path.GetFullPath("UnityPlayer.so");
-                ReplaceStringInBinaryFile(UnityPlayerSoPath, "/run/host/fonts/", "/usr/share/fonts");
-            }
-            GUI.enabled = true;
-
-            DrawDebugSettings(listingStandard);
-
-            listingStandard.End();
-        }
-
         public override string SettingsCategory() => "Custom Fonts";// "CustomFonts.Category".Translate();
-
-        public void SetupOSInstalledFontNames()
-        {
-            if (_hasInstalledFontNames) return;
-            _hasInstalledFontNames = true;
-            _fontNames = Font.GetOSInstalledFontNames().ToList();
-            _fontNames.Sort();
-        }
-
-        public void SetupPlatformInfo()
-        {
-            if (_hasPlatformInfo) return;
-            _hasPlatformInfo = true;
-            try
-            {
-                string UnityPlayerSoPath = Path.GetFullPath("UnityPlayer.so");
-                _hasUnityPlayerSo = File.Exists(UnityPlayerSoPath);
-                _hasRunHostFonts = Directory.Exists("/run/host/fonts");
-            }
-            catch (Exception ex)
-            {
-                Log.Message($"[Custom Fonts] error: {ex.Message}");
-            }
-        }
-
-        // Reads the family / style name straight out of the font file through the low level
-        // font engine. Creating a TMP_FontAsset just to read those two strings would allocate
-        // a full glyph atlas per font, which is never released.
-        private static bool TryGetFaceName(string filePath, out string faceName)
-        {
-            faceName = null;
-            if (!_fontEngineInitialized)
-            {
-                FontEngine.InitializeFontEngine();
-                _fontEngineInitialized = true;
-            }
-
-            if (FontEngine.LoadFontFace(filePath) != FontEngineError.Success) return false;
-            try
-            {
-                var faceInfo = FontEngine.GetFaceInfo();
-                if (string.IsNullOrEmpty(faceInfo.familyName)) return false;
-                faceName = $"{faceInfo.familyName} ({faceInfo.styleName})";
-                return true;
-            }
-            finally
-            {
-                FontEngine.UnloadFontFace();
-            }
-        }
-
-        private static bool TryGetFaceName(Font font, out string faceName)
-        {
-            faceName = null;
-            if (!_fontEngineInitialized)
-            {
-                FontEngine.InitializeFontEngine();
-                _fontEngineInitialized = true;
-            }
-
-            if (FontEngine.LoadFontFace(font) != FontEngineError.Success) return false;
-            try
-            {
-                var faceInfo = FontEngine.GetFaceInfo();
-                if (string.IsNullOrEmpty(faceInfo.familyName)) return false;
-                faceName = $"{faceInfo.familyName} ({faceInfo.styleName})";
-                return true;
-            }
-            finally
-            {
-                FontEngine.UnloadFontFace();
-            }
-        }
-
-        public void SetupOSFontPaths()
-        {
-            try
-            {
-                if (_hasOSFontAssets) return;
-                _hasOSFontAssets = true;
-                var startedAt = Time.realtimeSinceStartup;
-                foreach (var path in Font.GetPathsToOSFonts())
-                {
-                    string fontName;
-                    if (!TryGetFaceName(path, out fontName))
-                    {
-#if DEBUG
-                        Log.Warning($"[Custom Fonts] Unable to read face info for {path}, skipping.");
-#endif
-                        continue;
-                    }
-                    if (!OSFontPaths.ContainsKey(fontName))
-                    {
-                        OSFontPaths.Add(fontName, path);
-                    }
-                }
-                DebugLog($"scanned {OSFontPaths.Count} OS font faces in {(Time.realtimeSinceStartup - startedAt) * 1000f:F0} ms");
-            }
-            catch (Exception ex)
-            {
-                Log.Message($"[Custom Fonts] error: {ex.Message}");
-            }
-        }
-
-        public void SetupBundledFonts()
-        {
-            if (_hasBundledFonts) return;
-            _hasBundledFonts = true;
-            var fontAssetPath = Path.Combine(_content.RootDir, "rimfonts");
-            var cab = AssetBundle.LoadFromFile(fontAssetPath);
-            if (cab == null)
-            {
-                Log.Message("[Custom Fonts] Unable to load bundled fonts.");
-                return;
-            }
-#if DEBUG
-            Log.Message(
-                $"[Custom Fonts] Loading font asset at {fontAssetPath}:\n{string.Join("\n", cab.GetAllAssetNames())}");
-#endif
-
-            foreach (var font in cab.LoadAllAssets<Font>())
-            {
-                string faceName;
-                if (!TryGetFaceName(font, out faceName))
-                {
-                    Log.Warning($"[Custom Fonts] Unable to read face info for bundled font {font.name}, skipping.");
-                    continue;
-                }
-                var fontName = $"(Bundled) {faceName}";
-                if (!BundledFonts.ContainsKey(fontName))
-                {
-                    BundledFonts.Add(fontName, font);
-                }
-            }
-            DebugLog($"loaded {BundledFonts.Count} bundled font(s)");
-        }
 
         private void SaveFont(GameFont fontIndex, string fontName, bool forceUpdate = false)
         {
@@ -1011,7 +613,7 @@ namespace CustomFonts
         {
             if (fontName == _settings.CurrentWorldFontName) return;
             _settings.CurrentWorldFontName = fontName;
-            ForceLegacyText = fontName == FontSettings.DefaultFontName;
+            ForceLegacyText = UseLegacyWorldText(fontName);
             AccessTools.StaticFieldRefAccess<bool>(typeof(WorldFeatures), "ForceLegacyText") = ForceLegacyText;
             RefreshWorldFeatureTexts();
         }
@@ -1051,7 +653,7 @@ namespace CustomFonts
             }
             catch (Exception ex)
             {
-                Log.Warning($"[Custom Fonts] unable to refresh world feature texts: {ex.Message}");
+                Log.Warning($"[Custom Fonts] unable to refresh world feature texts: {ex.GetBaseException()}");
             }
         }
 
@@ -1077,7 +679,7 @@ namespace CustomFonts
             {
                 if (isBundled)
                 {
-                    font = BundledFonts[fontName];
+                    font = ResolveBundledFont(fontName);
                     fontKey = BundledFontKey(fontName);
                 }
                 else if (fontName != FontSettings.DefaultFontName)
@@ -1181,24 +783,6 @@ namespace CustomFonts
 
         private static string OSFontKey(string fontName, int fontSize) => "os:" + fontSize + ":" + fontName;
 
-        private Font ResolveOSFont(string fontKey, string fontName, int fontSize)
-        {
-            Font cached;
-            if (_osFontCache.TryGetValue(fontKey, out cached) && cached != null) return cached;
-
-            var font = Font.CreateDynamicFontFromOSFont(fontName, fontSize);
-            if (font != null)
-            {
-                _osFontCache[fontKey] = font;
-                DebugLog($"created dynamic OS font '{fontName}' @{fontSize} (cache={_osFontCache.Count})");
-            }
-            else
-            {
-                _osFontCache.Remove(fontKey);
-            }
-            return font;
-        }
-
         // Only the dynamic fonts that are actually bound to a GameFont are kept alive; every
         // other one was created by an earlier font/size change and can go away.
         private void PruneOSFontCache()
@@ -1242,7 +826,7 @@ namespace CustomFonts
             {
                 if (BundledFonts.ContainsKey(fontName))
                 {
-                    fontAsset = TMP_FontAsset.CreateFontAsset(BundledFonts[fontName]);
+                    fontAsset = TMP_FontAsset.CreateFontAsset(ResolveBundledFont(fontName));
                 }
                 else
                 {
@@ -1250,7 +834,7 @@ namespace CustomFonts
                     string path;
                     if (OSFontPaths.TryGetValue(fontName, out path))
                     {
-                        source = new Font(path);
+                        source = LoadFontFile(path);
                         fontAsset = TMP_FontAsset.CreateFontAsset(source);
                     }
                 }
@@ -1285,15 +869,7 @@ namespace CustomFonts
             if (_worldFontAsset != null)
             {
                 DebugLog($"releasing world font asset '{_worldFontAssetKey}'");
-                var atlasTextures = _worldFontAsset.atlasTextures;
-                if (atlasTextures != null)
-                {
-                    foreach (var atlasTexture in atlasTextures)
-                    {
-                        QueueDestroy(atlasTexture);
-                    }
-                }
-                QueueDestroy(_worldFontAsset.material);
+                ReleaseWorldFontResources(_worldFontAsset);
                 QueueDestroy(_worldFontAsset);
             }
             QueueDestroy(_worldFontSource);
@@ -1312,6 +888,7 @@ namespace CustomFonts
         private void QueueDestroy(UnityEngine.Object target)
         {
             if (target == null) return;
+            if (IsEngineOwned(target)) return;
             if (IsProtected(target))
             {
                 Log.Warning($"[Custom Fonts] Refusing to destroy game owned resource {target.name} ({target.GetType().Name})");
@@ -1418,170 +995,6 @@ namespace CustomFonts
             Text.textAreaReadOnlyStyles[(int)fontIndex].contentOffset = offsetVector;
         }
 
-        public int IndexOf(byte[] array, byte[] pattern)
-        {
-            if (pattern.Length > array.Length)
-                return -1;
-
-            for (int i = 0; i <= array.Length - pattern.Length; i++)
-            {
-                bool found = true;
-                for (int j = 0; j < pattern.Length; j++)
-                {
-                    if (array[i + j] != pattern[j])
-                    {
-                        found = false;
-                        break;
-                    }
-                }
-                if (found)
-                    return i;
-            }
-            return -1;
-        }
-
-        public void ReplaceStringInBinaryFile(string filePath, string searchString, string replaceString)
-        {
-            try
-            {
-                byte[] searchStringBytes = Encoding.UTF8.GetBytes(searchString);
-                byte[] replaceStringBytes = Encoding.UTF8.GetBytes(replaceString);
-
-                using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite))
-                {
-                    byte[] data = new byte[fileStream.Length];
-                    fileStream.Read(data, 0, (int)fileStream.Length);
-                    int index = IndexOf(data, searchStringBytes);
-                    if (index != -1)
-                    {
-                        Array.Copy(replaceStringBytes, 0, data, index, replaceStringBytes.Length);
-                        fileStream.Seek(0, SeekOrigin.Begin);
-                        fileStream.Write(data, 0, data.Length);
-                        Log.Message($"[Custom Fonts] Updating UnityPlayer.so fonts path from {searchString} to {replaceString}");
-                    }
-                    else
-                    {
-                        Log.Message($"[Custom Fonts] {searchString} not found");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Message($"[Custom Fonts] error: {ex.Message}");
-            }
-        }
     }
 
-    internal static class HarmoneyPatchers
-    {
-        private static bool _patcherInitialized;
-        private static CustomFonts _mod;
-
-        // StartOfOnGUI runs for every GUI event, so the mod lookup is resolved only once.
-        private static CustomFonts Mod => _mod ?? (_mod = LoadedModManager.GetMod<CustomFonts>());
-
-        [HarmonyPatch(typeof(Text), nameof(Text.StartOfOnGUI))]
-        class StartOfOnGUIPatcher
-        {
-            [HarmonyPostfix]
-            public static void Postfix()
-            {
-                var mod = Mod;
-                if (mod == null) return;
-
-                if (!_patcherInitialized)
-                {
-                    _patcherInitialized = true;
-                    mod.SetupOSInstalledFontNames();
-                    mod.SetupBundledFonts();
-                    mod.DefaultTMPFontAsset = WorldFeatureTextMesh_TextMeshPro.WorldTextPrefab.GetComponent<TextMeshPro>().font;
-                    mod.UpdateFont();
-                    AccessTools.StaticFieldRefAccess<bool>(typeof(WorldFeatures), "ForceLegacyText") = mod.ForceLegacyText;
-                    mod.DebugLog("font patcher initialised");
-                    if (mod.DebugLogging) mod.LogResourceStats("startup");
-
-                    // Unattended leak check: RimWorldWin64.exe -customfonts-stress
-                    if (Environment.GetCommandLineArgs().Any(arg => arg == "-customfonts-stress"))
-                    {
-                        mod.BeginFontStressTest();
-                    }
-                    if (Environment.GetCommandLineArgs().Any(arg => arg == "-customfonts-worldtest"))
-                    {
-                        mod.BeginWorldFontTest();
-                    }
-                }
-
-                mod.EnsureUniformFonts();
-                mod.RecalcTextMetricsIfNeeded();
-                mod.TickFontStressTest();
-                mod.TickWorldFontTest();
-                mod.ProcessPendingDestroy();
-                mod.TickDebugStats();
-            }
-        }
-
-        [HarmonyPatch(typeof(GenScene), nameof(GenScene.GoToMainMenu))]
-        class GoToMainMenuPatcher
-        {
-            [HarmonyPostfix]
-            public static void Postfix()
-            {
-                var mod = Mod;
-                mod.UpdateFont();
-            }
-        }
-
-        [HarmonyPatch(typeof(WorldFeatures), "HasCharacter")]
-        private class WorldMapHasCharacterPatcher
-        {
-            [HarmonyPrefix]
-            public static bool Prefix(ref bool __result)
-            {
-                var mod = Mod;
-                if (mod.ForceLegacyText)
-                    return true;
-                __result = true;
-                return false;
-            }
-        }
-
-        [HarmonyPatch(typeof(WorldFeatureTextMesh_TextMeshPro), "Init")]
-        class WorldMapInitPatcher
-        {
-            [HarmonyPrefix]
-            public static void Prefix()
-            {
-                var mod = Mod;
-                var fontAsset = mod.GetWorldFontAsset();
-
-                var prefab = WorldFeatureTextMesh_TextMeshPro.WorldTextPrefab.GetComponent<TextMeshPro>();
-                if (prefab.font != fontAsset)
-                {
-                    prefab.font = fontAsset;
-                    prefab.UpdateFontAsset();
-                }
-                AccessTools.StaticFieldRefAccess<float>(typeof(WorldFeatureTextMesh_TextMeshPro), "TextScale") =
-                    1.75f * mod._settings.WorldScaleFactor;
-            }
-
-        }
-
-        [HarmonyPatch(typeof(Dialog_FileList), nameof(Dialog_FileList.DrawDateAndVersion))]
-        class DrawDateAndVersionPatcher
-        {
-            [HarmonyPrefix]
-            public static void Prefix(Dialog_FileList __instance, SaveFileInfo sfi, ref Rect rect)
-            {
-                string str = "0000-00-00 00:00";
-
-                var backup = Text.Font;
-                Text.Font = GameFont.Tiny;
-                var size = Text.CalcSize(str);
-
-                rect.x -= size.x - rect.width + 2.0f;
-                rect.width = size.x + 2.0f;
-                Text.Font = backup;
-            }
-        }
-    }
 }

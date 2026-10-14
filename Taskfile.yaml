@@ -5,6 +5,9 @@ dotenv: [".env"]
 env:
   STEAM_OS: '{{if eq OS "windows"}}RimWorldWin64_Data{{else}}{{if eq OS "linux"}}RimWorldLinux_Data{{else}}RimWorldMac.app/Contents/Resources/Data{{end}}{{end}}'
 
+vars:
+  DOTNET: '{{default "dotnet" .DOTNET}}'
+
 tasks:
   prepare:
     desc: download the Harmony reference assemblies into packages/ (needs curl and 7zip)
@@ -23,8 +26,12 @@ tasks:
       - cmd: 7zz x -y HarmonyMod.zip -opackages
         platforms: [darwin]
       - cmd: |
-          if [ ! -f packages/HarmonyMod/Current/Assemblies/0Harmony.dll ]; then
-            echo "ERROR: packages/HarmonyMod/Current/Assemblies/0Harmony.dll is missing after extraction" >&2
+          if [ ! -f packages/HarmonyMod/1.6/Assemblies/0Harmony.dll ] && [ ! -f packages/HarmonyMod/Current/Assemblies/0Harmony.dll ]; then
+            echo "ERROR: Harmony 1.6 reference is missing after extraction" >&2
+            exit 1
+          fi
+          if [ ! -f packages/HarmonyMod/1.7/Assemblies/0Harmony.dll ]; then
+            echo "ERROR: Harmony 1.7 reference is missing after extraction" >&2
             exit 1
           fi
           echo "Harmony reference assemblies ready in packages/HarmonyMod"
@@ -54,11 +61,44 @@ tasks:
             fi
             echo "==> Release ${label}  (${root})"
             export STEAM_APPS="${root}"
-            dotnet build ./Source/CustomFonts/CustomFonts.sln -c "Release ${label}"
+            "{{.DOTNET}}" build ./Source/CustomFonts/CustomFonts.sln -c "Release ${label}"
           }
           build_one 1.4 STEAM_APPS_1_4 "${STEAM_APPS_1_4}"
           build_one 1.5 STEAM_APPS_1_5 "${STEAM_APPS_1_5}"
           build_one 1.6 STEAM_APPS_1_6 "${STEAM_APPS_1_6}"
+      - task: build_waylith
+
+  build_unity:
+    desc: build one Unity version (task build_unity VERSION=1.6 STEAM_APPS=...)
+    requires:
+      vars: [VERSION, STEAM_APPS]
+    cmds:
+      - '"{{.DOTNET}}" build ./Source/CustomFonts/CustomFonts.csproj -c "Release {{.VERSION}}" -p:STEAM_APPS="{{.STEAM_APPS}}" -p:RequestedEngine=Unity'
+
+  build_version:
+    desc: build one version with automatic engine selection (below 1.7 Unity, 1.7 and above Waylith)
+    requires:
+      vars: [VERSION, STEAM_APPS]
+    cmds:
+      - '"{{.DOTNET}}" build ./Source/CustomFonts/CustomFonts.csproj -c "Release {{.VERSION}}" -p:STEAM_APPS="{{.STEAM_APPS}}" -p:GameDir="{{.STEAM_APPS}}/common/RimWorld"'
+
+  build_waylith:
+    desc: build a Waylith version (1.7 and above, requires .NET 10 SDK)
+    vars:
+      VERSION: '{{default "1.7" .VERSION}}'
+      ROOT: '{{default .STEAM_APPS .STEAM_APPS_1_7}}'
+    preconditions:
+      - sh: 'test -f "{{.ROOT}}/common/RimWorld/UnityStubs.dll"'
+        msg: STEAM_APPS_1_7 (or STEAM_APPS) must point to the Steam apps folder containing RimWorld 1.7.
+      - sh: 'test -f packages/HarmonyMod/1.7/Assemblies/0Harmony.dll'
+        msg: Run task prepare to install the Harmony 1.7 reference.
+    cmds:
+      - '"{{.DOTNET}}" build ./Source/CustomFonts/CustomFonts.csproj -c "Release {{.VERSION}}" -p:GameDir="{{.ROOT}}/common/RimWorld" -p:RequestedEngine=Waylith'
+
+  test:
+    desc: test Waylith font names and file path handling (requires .NET 10 SDK)
+    cmds:
+      - '"{{.DOTNET}}" run --project Tests/WaylithFonts.Tests/WaylithFonts.Tests.csproj'
 
   export:
     desc: copy the built assemblies and mod metadata into the local Mods folder
@@ -79,6 +119,7 @@ tasks:
           copy_dir 1.4/Assemblies "${DEST}/1.4/Assemblies"
           copy_dir 1.5/Assemblies "${DEST}/1.5/Assemblies"
           copy_dir 1.6/Assemblies "${DEST}/1.6/Assemblies"
+          copy_dir 1.7/Assemblies "${DEST}/1.7/Assemblies"
           copy_dir Languages "${DEST}/Languages"
           copy_dir About "${DEST}/About"
           echo "Exported to ${DEST}"
@@ -89,6 +130,8 @@ tasks:
           cp -rf 1.4/Assemblies/. "${DEST}/1.4/Assemblies/"
           cp -rf 1.5/Assemblies/. "${DEST}/1.5/Assemblies/"
           cp -rf 1.6/Assemblies/. "${DEST}/1.6/Assemblies/"
+          mkdir -p "${DEST}/1.7/Assemblies"
+          cp -rf 1.7/Assemblies/. "${DEST}/1.7/Assemblies/"
           cp -rf Languages/. "${DEST}/Languages/"
           cp -rf About/. "${DEST}/About/"
           echo "Exported to ${DEST}"
@@ -99,6 +142,8 @@ tasks:
           cp -rf 1.4/Assemblies/. "${DEST}/1.4/Assemblies/"
           cp -rf 1.5/Assemblies/. "${DEST}/1.5/Assemblies/"
           cp -rf 1.6/Assemblies/. "${DEST}/1.6/Assemblies/"
+          mkdir -p "${DEST}/1.7/Assemblies"
+          cp -rf 1.7/Assemblies/. "${DEST}/1.7/Assemblies/"
           cp -rf Languages/. "${DEST}/Languages/"
           cp -rf About/. "${DEST}/About/"
           echo "Exported to ${DEST}"
@@ -150,7 +195,7 @@ tasks:
     cmds:
       - cmd: |
           rm -rf Source/CustomFonts/obj Source/CustomFonts/bin
-          rm -f 1.4/Assemblies/CustomFonts.dll 1.5/Assemblies/CustomFonts.dll 1.6/Assemblies/CustomFonts.dll
+          rm -f 1.4/Assemblies/CustomFonts.dll 1.5/Assemblies/CustomFonts.dll 1.6/Assemblies/CustomFonts.dll 1.7/Assemblies/CustomFonts.dll
           rm -f custom-fonts.tar.gz custom-fonts.zip HarmonyMod.zip
           echo "Cleaned"
 

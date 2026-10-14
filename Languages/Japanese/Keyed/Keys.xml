@@ -32,4 +32,17 @@
     <CustomFonts.DebugStressTestRun>200回切替を実行</CustomFonts.DebugStressTestRun>
     <CustomFonts.DebugWorldFontTest>ワールドマップ フォント反映テスト</CustomFonts.DebugWorldFontTest>
     <CustomFonts.DebugWorldFontTestRun>ワールドテスト実行</CustomFonts.DebugWorldFontTestRun>
+    <CustomFonts.EmptyFontPath>フォントファイルまたはフォルダーのパスを入力してください。</CustomFonts.EmptyFontPath>
+    <CustomFonts.AddFontPath>パスを追加</CustomFonts.AddFontPath>
+    <CustomFonts.FontSourcesHelp>TTF、OTF、TTC ファイルまたはフォルダーを追加します。相対パスは MOD フォルダーが基準で、環境変数と ~ に対応します。TTC は最初の書体を使用します。検索設定は更新ボタンで適用します。登録済みフォントはゲーム終了まで保持されます。</CustomFonts.FontSourcesHelp>
+    <CustomFonts.FontPath>ファイルまたはフォルダーのパス</CustomFonts.FontPath>
+    <CustomFonts.RecursiveFolders>サブフォルダーを検索</CustomFonts.RecursiveFolders>
+    <CustomFonts.FontSources>フォントファイルとフォルダー</CustomFonts.FontSources>
+    <CustomFonts.FontSourceCount>フォント {0} 件、スキップした読み込み元 {1} 件（詳細はログ）</CustomFonts.FontSourceCount>
+    <CustomFonts.RefreshFontSources>フォント一覧を更新 / 検索設定を適用</CustomFonts.RefreshFontSources>
+    <CustomFonts.RemoveFontPath>削除</CustomFonts.RemoveFontPath>
+    <CustomFonts.IncludeSystemFonts>システムフォントを含める</CustomFonts.IncludeSystemFonts>
+    <CustomFonts.WaylithFontRegistrations>ファイルフォント登録数：{0}（ゲーム終了まで保持）</CustomFonts.WaylithFontRegistrations>
+    <CustomFonts.WaylithDebugLoggingDesc>ネイティブフォント登録の再利用、UI文字、ワールドフォントを記録します。登録済みフォントはゲーム終了まで保持されます。</CustomFonts.WaylithDebugLoggingDesc>
+    <CustomFonts.WaylithDebugStressTest>フォント・サイズ切替テスト（登録の再利用）</CustomFonts.WaylithDebugStressTest>
 </LanguageData>
