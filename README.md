@@ -51,8 +51,12 @@ task release
 `STEAM_APPS` selects the deployment installation; `STEAM_APPS_1_4` through
 `STEAM_APPS_1_7` select build references. Export and release use the same target:
 
-* Windows/Linux: `<STEAM_APPS>/common/RimWorld/Mods/rw-customfonts`
-* macOS: `<STEAM_APPS>/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts`
+* Windows/Linux and macOS 1.7 (Waylith): `<STEAM_APPS>/common/RimWorld/Mods/rw-customfonts`
+* macOS 1.4–1.6 (Unity): `<STEAM_APPS>/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts`
+
+On macOS, export and release detect the 1.7 executable at
+`RimWorld.app/Contents/MacOS/RimWorld.dll` to select the correct mod directory.
+After deploying a new local mod, restart RimWorld to refresh its mod list.
 
 To target another installation, pass the same `STEAM_APPS=...` to both `task export`
 and `task release`. The deployed folder contains all four game-version assemblies.

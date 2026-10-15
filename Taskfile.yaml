@@ -113,6 +113,15 @@ tasks:
 
   export:
     desc: copy the built assemblies and mod metadata into the local Mods folder
+    vars:
+      DEPLOY_MOD_ROOT: &deploy_mod_root
+        sh: |
+          GAME_ROOT="{{.STEAM_APPS}}/common/RimWorld"
+          if [ "{{OS}}" = darwin ] && [ ! -f "${GAME_ROOT}/RimWorld.app/Contents/MacOS/RimWorld.dll" ]; then
+            printf '%s' "${GAME_ROOT}/RimWorldMac.app/Mods/rw-customfonts"
+          else
+            printf '%s' "${GAME_ROOT}/Mods/rw-customfonts"
+          fi
     cmds:
       # Also copy assets/notices so exporting to a fresh test install is self-contained.
       - cmd: |
@@ -125,7 +134,7 @@ tasks:
               exit "${code}"
             fi
           }
-          DEST="{{.STEAM_APPS}}/common/RimWorld/Mods/rw-customfonts"
+          DEST="{{.DEPLOY_MOD_ROOT}}"
           copy_dir 1.4/Assemblies "${DEST}/1.4/Assemblies"
           copy_dir 1.5/Assemblies "${DEST}/1.5/Assemblies"
           copy_dir 1.6/Assemblies "${DEST}/1.6/Assemblies"
@@ -139,7 +148,7 @@ tasks:
           echo "Exported to ${DEST}"
         platforms: [windows]
       - cmd: |
-          DEST="{{.STEAM_APPS}}/common/RimWorld/Mods/rw-customfonts"
+          DEST="{{.DEPLOY_MOD_ROOT}}"
           mkdir -p "${DEST}/1.4/Assemblies" "${DEST}/1.5/Assemblies" "${DEST}/1.6/Assemblies" "${DEST}/Languages" "${DEST}/About"
           cp -rf 1.4/Assemblies/. "${DEST}/1.4/Assemblies/"
           cp -rf 1.5/Assemblies/. "${DEST}/1.5/Assemblies/"
@@ -154,7 +163,7 @@ tasks:
           echo "Exported to ${DEST}"
         platforms: [linux]
       - cmd: |
-          DEST="{{.STEAM_APPS}}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts"
+          DEST="{{.DEPLOY_MOD_ROOT}}"
           mkdir -p "${DEST}/1.4/Assemblies" "${DEST}/1.5/Assemblies" "${DEST}/1.6/Assemblies" "${DEST}/Languages" "${DEST}/About"
           cp -rf 1.4/Assemblies/. "${DEST}/1.4/Assemblies/"
           cp -rf 1.5/Assemblies/. "${DEST}/1.5/Assemblies/"
@@ -170,7 +179,7 @@ tasks:
         platforms: [darwin]
       - task: remove_legacy_fonts
         vars:
-          MOD_ROOT: '{{.STEAM_APPS}}/common/RimWorld/{{if eq OS "darwin"}}RimWorldMac.app/{{end}}Mods/rw-customfonts'
+          MOD_ROOT: '{{.DEPLOY_MOD_ROOT}}'
 
   remove_legacy_fonts:
     internal: true
@@ -228,23 +237,25 @@ tasks:
 
   release:
     desc: install the committed tree into the local Mods folder as players would get it
+    vars:
+      DEPLOY_MOD_ROOT: *deploy_mod_root
     cmds:
       - task: package
       - cmd: |
-          DEST="{{.STEAM_APPS}}/common/RimWorld/Mods/rw-customfonts"
+          DEST="{{.DEPLOY_MOD_ROOT}}"
           mkdir -p "${DEST}"
           7z x -y custom-fonts.zip -o"${DEST}"
           echo "Released to ${DEST}"
         platforms: [windows, linux]
       - cmd: |
-          DEST="{{.STEAM_APPS}}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts"
+          DEST="{{.DEPLOY_MOD_ROOT}}"
           mkdir -p "${DEST}"
           7zz x -y custom-fonts.zip -o"${DEST}"
           echo "Released to ${DEST}"
         platforms: [darwin]
       - task: remove_legacy_fonts
         vars:
-          MOD_ROOT: '{{.STEAM_APPS}}/common/RimWorld/{{if eq OS "darwin"}}RimWorldMac.app/{{end}}Mods/rw-customfonts'
+          MOD_ROOT: '{{.DEPLOY_MOD_ROOT}}'
 
 
   clean:
