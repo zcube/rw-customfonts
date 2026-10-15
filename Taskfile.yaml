@@ -226,26 +226,12 @@ tasks:
       - cmd: shasum -a 256 custom-fonts.zip > custom-fonts.zip.sha256
         platforms: [darwin]
 
-  stage:
-    desc: prepare a versioned local folder for Workshop upload
-    vars:
-      COMMIT:
-        sh: git rev-parse --short HEAD
-      STAGING: 'release/rw-customfonts-{{.COMMIT}}'
-    cmds:
-      - task: package
-      - cmd: '7z x -y custom-fonts.zip -o"{{.STAGING}}"'
-        platforms: [windows, linux]
-      - cmd: '7zz x -y custom-fonts.zip -o"{{.STAGING}}"'
-        platforms: [darwin]
-      - 'echo "Prepared {{.STAGING}}"'
-
   release:
     desc: install the committed tree into the local Mods folder as players would get it
     cmds:
       - task: package
       - cmd: |
-          DEST="${STEAM_APPS}/common/RimWorld/Mods/rw-customfonts"
+          DEST="{{.STEAM_APPS}}/common/RimWorld/Mods/rw-customfonts"
           mkdir -p "${DEST}"
           7z x -y custom-fonts.zip -o"${DEST}"
           # Absolute paths, so a bad DEST can never make this delete files in the repo.
@@ -255,7 +241,7 @@ tasks:
           echo "Released to ${DEST}"
         platforms: [windows, linux]
       - cmd: |
-          DEST="${STEAM_APPS}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts"
+          DEST="{{.STEAM_APPS}}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts"
           mkdir -p "${DEST}"
           7zz x -y custom-fonts.zip -o"${DEST}"
           rm -f "${DEST}"/Taskfile.* "${DEST}"/.git* "${DEST}"/.env.sample \

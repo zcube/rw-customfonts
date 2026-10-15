@@ -25,6 +25,40 @@ Set `DOTNET` in `.env` or on the task command line to select a particular SDK ex
 The 1.7 build references Harmony's `1.7/Assemblies/0Harmony.dll`; 1.6 uses its `1.6`
 folder, with a fallback to `Current` for older Harmony downloads.
 
+## Local deployment and Steam Workshop upload
+
+Run the deployment tasks in this order from the repository root:
+
+```bash
+task build
+task export
+task release
+```
+
+1. `task build` builds the 1.4, 1.5, 1.6 and 1.7 assemblies using their configured
+   installations. Run `task test` to validate the shared font code and license records.
+2. `task export` copies the current built assemblies, font files, metadata and notices
+   into the local RimWorld mod folder. Close RimWorld before replacing loaded DLLs.
+3. `task release` packages committed runtime files, creates the ZIP checksum, and
+   installs that package into the same local mod folder. Commit the validated source,
+   documentation and rebuilt DLLs before this step; release requires a clean tracked
+   tree and uses `HEAD`, so uncommitted changes are not included.
+
+`STEAM_APPS` selects the deployment installation; `STEAM_APPS_1_4` through
+`STEAM_APPS_1_7` select build references. Export and release use the same target:
+
+* Windows/Linux: `<STEAM_APPS>/common/RimWorld/Mods/rw-customfonts`
+* macOS: `<STEAM_APPS>/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts`
+
+To target another installation, pass the same `STEAM_APPS=...` to both `task export`
+and `task release`. The deployed folder contains all four game-version assemblies.
+
+After release completes, open RimWorld and use its Workshop upload/update function
+for the **local mod in that Mods folder**. The existing Workshop ID is retained in
+`About/PublishedFileId.txt`. Upload from the deployed local mod, not from the source
+checkout, the ZIP or another staging folder. Task prepares the files locally;
+Steam Workshop publication is performed inside RimWorld. Git push is separate.
+
 ## Engine implementations
 
 * `Source/CustomFonts/Shared`: system/user roots, file/folder search, OpenType metadata,
@@ -372,8 +406,8 @@ requires a clean committed tree and overlays verified, materialized Git LFS font
 `custom-fonts.zip`, so players receive TTF bytes rather than LFS pointer files.
 The ZIP contains only versioned assemblies, About/Fonts/Languages, LICENSE and README.
 It excludes development sources, tests and local settings. `task package` also writes
-`custom-fonts.zip.sha256`; `task stage` extracts the package into
-`release/rw-customfonts-<commit>` for Workshop upload. Neither task publishes or pushes.
+`custom-fonts.zip.sha256` and is called by `task release`. Follow the build → export →
+release sequence above, then upload the deployed local mod from inside RimWorld.
 
 The file-distribution migration passes all four builds and 188 standalone assertions,
 including independent UnityFS/SerializedFile inspection, all 15 original hashes and
