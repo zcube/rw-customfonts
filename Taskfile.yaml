@@ -234,24 +234,18 @@ tasks:
           DEST="{{.STEAM_APPS}}/common/RimWorld/Mods/rw-customfonts"
           mkdir -p "${DEST}"
           7z x -y custom-fonts.zip -o"${DEST}"
-          # Absolute paths, so a bad DEST can never make this delete files in the repo.
-          rm -f "${DEST}"/Taskfile.* "${DEST}"/.git* "${DEST}"/.env.sample \
-                "${DEST}"/.pre-commit-config.yaml "${DEST}"/.editorconfig
-          rm -rf "${DEST}/Source"
           echo "Released to ${DEST}"
         platforms: [windows, linux]
       - cmd: |
           DEST="{{.STEAM_APPS}}/common/RimWorld/RimWorldMac.app/Mods/rw-customfonts"
           mkdir -p "${DEST}"
           7zz x -y custom-fonts.zip -o"${DEST}"
-          rm -f "${DEST}"/Taskfile.* "${DEST}"/.git* "${DEST}"/.env.sample \
-                "${DEST}"/.pre-commit-config.yaml "${DEST}"/.editorconfig
-          rm -rf "${DEST}/Source"
           echo "Released to ${DEST}"
         platforms: [darwin]
       - task: remove_legacy_fonts
         vars:
           MOD_ROOT: '{{.STEAM_APPS}}/common/RimWorld/{{if eq OS "darwin"}}RimWorldMac.app/{{end}}Mods/rw-customfonts'
+
 
   clean:
     desc: remove build outputs and downloaded archives
