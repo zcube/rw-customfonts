@@ -89,7 +89,7 @@ tasks:
       VERSION: '{{default "1.7" .VERSION}}'
       ROOT: '{{default .STEAM_APPS .STEAM_APPS_1_7}}'
     preconditions:
-      - sh: 'test -f "{{.ROOT}}/common/RimWorld/UnityStubs.dll"'
+      - sh: 'test -f "{{.ROOT}}/common/RimWorld/UnityStubs.dll" || test -f "{{.ROOT}}/common/RimWorld/RimWorld.app/Contents/MacOS/UnityStubs.dll"'
         msg: STEAM_APPS_1_7 (or STEAM_APPS) must point to the Steam apps folder containing RimWorld 1.7.
       - sh: 'test -f packages/HarmonyMod/1.7/Assemblies/0Harmony.dll'
         msg: Run task prepare to install the Harmony 1.7 reference.

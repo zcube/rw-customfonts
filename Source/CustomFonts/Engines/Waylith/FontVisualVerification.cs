@@ -19,8 +19,8 @@ namespace CustomFonts
                 GuiBackend.Current.FontMetrics(style.FontIndex, out float importSize, out _, out _);
                 Require(importSize == pixels && NativeFontAccess.SourcesUseSize(style.FontIndex, pixels),
                     "primary and every merged fallback register at the UI size: " + size + "/" + pixels);
-                Require(GuiBackend.Current.MeasureText(style.FontIndex, 0, style.fontStyle, "Wgj 한글", -1)
-                    == GuiBackend.Current.MeasureText(style.FontIndex, pixels, style.fontStyle, "Wgj 한글", -1),
+                Require(WaylithTextMeasurement.Measure(GuiBackend.Current, style.FontIndex, 0, style.fontStyle, "Wgj 한글", -1)
+                    == WaylithTextMeasurement.Measure(GuiBackend.Current, style.FontIndex, pixels, style.fontStyle, "Wgj 한글", -1),
                     "size-0 input uses the same primary/fallback metrics: " + size);
             }
             Require(WaylithFontAtlasVerification.PendingFrames == 0, "all size changes upload before snapshot capture");

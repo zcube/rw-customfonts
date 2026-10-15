@@ -17,6 +17,8 @@
     <TargetFramework Condition="'$(Engine)' == 'Waylith'">net10.0</TargetFramework>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <GameDir Condition="'$(GameDir)' == ''">$(STEAM_APPS)/common/RimWorld</GameDir>
+    <WaylithGameDir>$(GameDir)</WaylithGameDir>
+    <WaylithGameDir Condition="!Exists('$(GameDir)/UnityStubs.dll') and Exists('$(GameDir)/RimWorld.app/Contents/MacOS/UnityStubs.dll')">$(GameDir)/RimWorld.app/Contents/MacOS</WaylithGameDir>
     <HarmonyUnityFolder Condition="Exists('$(MSBuildProjectDirectory)/../../packages/HarmonyMod/1.6/Assemblies/0Harmony.dll')">1.6</HarmonyUnityFolder>
     <HarmonyUnityFolder Condition="'$(HarmonyUnityFolder)' == ''">Current</HarmonyUnityFolder>
     <FileAlignment>512</FileAlignment>
@@ -78,11 +80,11 @@
     <Compile Include="Engines/$(Engine)/**/*.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(Engine)' == 'Waylith'">
-    <Reference Include="Assembly-CSharp" HintPath="$(GameDir)/Assembly-CSharp.dll" Private="false" />
-    <Reference Include="UnityStubs" HintPath="$(GameDir)/UnityStubs.dll" Private="false" />
-    <Reference Include="Brutal.ImGui" HintPath="$(GameDir)/Brutal.ImGui.dll" Private="false" />
-    <Reference Include="Brutal.Core.Common" HintPath="$(GameDir)/Brutal.Core.Common.dll" Private="false" />
-    <Reference Include="Brutal.Core.Numerics" HintPath="$(GameDir)/Brutal.Core.Numerics.dll" Private="false" />
+    <Reference Include="Assembly-CSharp" HintPath="$(WaylithGameDir)/Assembly-CSharp.dll" Private="false" />
+    <Reference Include="UnityStubs" HintPath="$(WaylithGameDir)/UnityStubs.dll" Private="false" />
+    <Reference Include="Brutal.ImGui" HintPath="$(WaylithGameDir)/Brutal.ImGui.dll" Private="false" />
+    <Reference Include="Brutal.Core.Common" HintPath="$(WaylithGameDir)/Brutal.Core.Common.dll" Private="false" />
+    <Reference Include="Brutal.Core.Numerics" HintPath="$(WaylithGameDir)/Brutal.Core.Numerics.dll" Private="false" />
     <Reference Include="0Harmony" HintPath="../../packages/HarmonyMod/1.7/Assemblies/0Harmony.dll" Private="false" />
   </ItemGroup>
   <Choose>

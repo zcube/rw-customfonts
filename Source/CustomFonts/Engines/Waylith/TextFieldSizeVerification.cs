@@ -50,8 +50,8 @@ namespace CustomFonts
                     foreach (bool multiline in new[] { false, true })
                     {
                         string sample = multiline ? "abcdef 한글\nSecond 한글" : "abcdef 한글";
-                        Vector2 expected = backend.MeasureText(style.FontIndex, pixels, style.fontStyle, sample, -1f);
-                        Require(expected == backend.MeasureText(style.FontIndex, 0f, style.fontStyle, sample, -1f),
+                        Vector2 expected = WaylithTextMeasurement.Measure(backend, style.FontIndex, pixels, style.fontStyle, sample, -1f);
+                        Require(expected == WaylithTextMeasurement.Measure(backend, style.FontIndex, 0f, style.fontStyle, sample, -1f),
                             "native size-0 metrics match explicitly sized label: " + pixels);
                         var rect = new Rect(20, 100 + ((int)size * 2 + (multiline ? 1 : 0)) * 70, 600, 70);
                         if (multiline) GUI.TextArea(rect, sample, Text.textAreaStyles[(int)size]);

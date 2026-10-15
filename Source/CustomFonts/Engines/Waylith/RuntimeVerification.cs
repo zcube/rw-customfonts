@@ -78,7 +78,7 @@ namespace CustomFonts
         // the live renderer, text measurement, actual world labels and registration reuse.
         partial void OnEngineVerification()
         {
-            VerifyTextFieldSizeIfRequested();
+            if (_textFieldVerify) VerifyTextFieldSizeIfRequested();
             if (!_verificationEnabled || _verificationStep < 0 || Current.ProgramState != ProgramState.Playing
                 || Time.frameCount < _verificationFrame || Event.current.type != EventType.Repaint) return;
             try
@@ -254,7 +254,7 @@ namespace CustomFonts
             VerifyWorldRendering();
             Font font = CurrentFonts[GameFont.Small];
             Require(PreviewFonts.All(f => ReferenceEquals(Text.fontStyles[(int)f].font, CurrentFonts[f])), "all UI styles bound");
-            Require(GuiBackend.Current.MeasureText(font.GameFontIndex, 20, FontStyle.Normal, "Test 한글", 1000).x > 0,
+            Require(WaylithTextMeasurement.Measure(GuiBackend.Current, font.GameFontIndex, 20, FontStyle.Normal, "Test 한글", 1000).x > 0,
                 "native renderer measures Latin and Korean");
             // UI size variants are not world TMP fonts. Probe the UI rasterizer at
             // its actual size; the world asset's TMP mesh/atlas is checked below.
