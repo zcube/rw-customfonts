@@ -70,7 +70,11 @@ namespace CustomFonts
             || _fallbackFonts.Any(f => f != null && f.GameFontIndex == index)
             || _worldFontSource != null && _worldFontSource.GameFontIndex == index;
         private Font ResolveDefaultUIFont(Verse.GameFont size, int pixels) => ResolveScopedDefaultFont(DefaultFonts[size], SourcesFor((FontTarget)size), pixels);
-        private void ResetEngineFallbackPolicy() => NativeFontAccess.Invalidate();
+        private void ResetEngineFallbackPolicy()
+        {
+            // A policy change selects a different immutable registration. Existing
+            // UI/world faces keep their pointers and cached glyphs.
+        }
         private void ReleaseWorldFontResources(TMP_FontAsset asset)
         {
             // The TMP facade borrows the native renderer's atlas.

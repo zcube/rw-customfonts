@@ -24,6 +24,15 @@ namespace CustomFonts
                 {
                     GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect(); ProcessPendingDestroy();
                     VerifyRetiredFontResources();
+                    foreach (var size in PreviewFonts)
+                    {
+                        var current = Text.fontStyles[(int)size]; var original = DefaultFontStyle[size];
+                        Require(current.contentOffset == original.contentOffset,
+                            "unscaled Default restores the game's original content offset: " + size);
+                        var sample = new GUIContent("Wgj 한글");
+                        Require(current.CalcSize(sample) == original.CalcSize(sample),
+                            "unscaled Default retains the game's original rendered dimensions: " + size);
+                    }
                     Log.Message("[Custom Fonts][memory-verify] Default cleanup: "
                         + string.Join(", ", CaptureFontMemory().Select(p => p.Key + "=" + p.Value)));
                     WriteSettings();
@@ -34,6 +43,7 @@ namespace CustomFonts
                 {
                     FontVerificationOptions.TryGet("customfonts-memory-verify", out string path);
                     _settings.DebugLogging = false; _settings.UniformUIfonts = false;
+                    foreach (var size in PreviewFonts) _settings.SetVerticalOffset(size, 0);
                     _settings.FontSourcePaths.Clear(); _settings.FontSourcePaths.Add(path);
                     _settings.IncludeSystemFonts = true;
                     foreach (FontTarget t in Enum.GetValues(typeof(FontTarget))) _settings.GetFallbackFonts(t).Clear();

@@ -30,6 +30,7 @@ namespace CustomFonts
         public readonly Dictionary<GameFont, Font> DefaultFonts = new Dictionary<GameFont, Font>();
         public readonly Dictionary<GameFont, Font> CurrentFonts = new Dictionary<GameFont, Font>();
         public readonly Dictionary<GameFont, GUIStyle> DefaultFontStyle = new Dictionary<GameFont, GUIStyle>();
+        private readonly Dictionary<GameFont, Vector2[]> _defaultContentOffsets = new Dictionary<GameFont, Vector2[]>();
         public readonly Dictionary<string, string> OSFontPaths = new Dictionary<string, string>();
         public TMP_FontAsset DefaultTMPFontAsset;
 
@@ -82,6 +83,7 @@ namespace CustomFonts
 
                 DefaultFonts[value] = Text.fontStyles[(int)value].font;
                 DefaultFontStyle[value] = new GUIStyle(Text.fontStyles[(int)value]);
+                _defaultContentOffsets[value] = UIFontStyles(value).Select(style => style.contentOffset).ToArray();
             }
 
             ForceLegacyText = UseLegacyWorldText(_settings.CurrentWorldFontName);
@@ -692,7 +694,7 @@ namespace CustomFonts
                 fontName = CanonicalFontSelection(fontName);
                 _settings.SetCurrentUIFontName(fontIndex, fontName);
             }
-            var fontSize = (int)Math.Round(DefaultFonts[fontIndex].fontSize * _settings.GetScaleFactor(fontIndex));
+            var fontSize = (int)Math.Round(DefaultUIFontSize(fontIndex) * _settings.GetScaleFactor(fontIndex));
             string sizeKey = FontSizeKey(fontSize);
             var isBundled = BundledFonts.ContainsKey(fontName);
 
@@ -740,8 +742,7 @@ namespace CustomFonts
             _appliedFontKeys[fontIndex] = fontKey;
 
             CurrentFonts[fontIndex] = font;
-            foreach (var style in new[] { Text.fontStyles[(int)fontIndex], Text.textFieldStyles[(int)fontIndex],
-                Text.textAreaStyles[(int)fontIndex], Text.textAreaReadOnlyStyles[(int)fontIndex] })
+            foreach (var style in UIFontStyles(fontIndex))
             {
                 style.font = font;
                 style.fontSize = fontSize;
@@ -1025,21 +1026,21 @@ namespace CustomFonts
             if (!DefaultFonts.TryGetValue(fontIndex, out sizeFont) || sizeFont == null) return offset;
             if (mediumFont.fontSize <= 0) return offset;
 
-            return offset * sizeFont.fontSize / mediumFont.fontSize;
+            return offset * DefaultUIFontSize(fontIndex) / DefaultUIFontSize(GameFont.Medium);
         }
+
+        private int DefaultUIFontSize(GameFont size) => DefaultFontStyle[size].fontSize > 0
+            ? DefaultFontStyle[size].fontSize : DefaultFonts[size].fontSize;
+
+        private static GUIStyle[] UIFontStyles(GameFont size) => new[] { Text.fontStyles[(int)size], Text.textFieldStyles[(int)size],
+            Text.textAreaStyles[(int)size], Text.textAreaReadOnlyStyles[(int)size] };
 
         public void RecalcCustomLineHeights(GameFont fontIndex)
         {
-            // var isDefault = _settings.CurrentUIFontName(fontIndex) == FontSettings.DefaultFontName;
             var offsetVector = new Vector2(0f, EffectiveVerticalOffset(fontIndex));
-            // Text.fontStyles[(int)fontIndex].clipping = isDefault ? TextClipping.Clip : TextClipping.Overflow;
-            Text.fontStyles[(int)fontIndex].contentOffset = offsetVector;
-            // Text.textFieldStyles[(int)fontIndex].clipping = isDefault ? TextClipping.Clip : TextClipping.Overflow;
-            Text.textFieldStyles[(int)fontIndex].contentOffset = offsetVector;
-            // Text.textAreaStyles[(int)fontIndex].clipping = TextClipping.Clip;
-            Text.textAreaStyles[(int)fontIndex].contentOffset = offsetVector;
-            // Text.textAreaReadOnlyStyles[(int)fontIndex].clipping = TextClipping.Clip;
-            Text.textAreaReadOnlyStyles[(int)fontIndex].contentOffset = offsetVector;
+            var styles = UIFontStyles(fontIndex);
+            for (int i = 0; i < styles.Length; i++)
+                styles[i].contentOffset = _defaultContentOffsets[fontIndex][i] + offsetVector;
         }
 
     }

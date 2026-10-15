@@ -96,6 +96,7 @@ namespace CustomFonts
                 foreach (object key in _registered.Keys.Cast<object>().Where(k => (int)_registered[k] == index).ToArray())
                     _registered[key] = slot;
                 index = slot;
+                NativeFontAccess.Forget(index);
                 InvalidateLayouts();
             }
             Owned.Add(index);
@@ -116,7 +117,6 @@ namespace CustomFonts
         {
             _generation.SetValue(_host, (int)_generation.GetValue(_host) + 1);
             _atlasPixels.SetValue(_tmp, null);
-            NativeFontAccess.Invalidate();
         }
 
         // Must run before ImGui.NewFrame: a native font may still be referenced by
@@ -152,6 +152,7 @@ namespace CustomFonts
                 foreach (object key in _registered.Keys.Cast<object>().Where(k => (int)_registered[k] == index).ToArray()) _registered.Remove(key);
                 WaylithCjkFallbackPatch.Forget(index);
                 WaylithWorldGlyphPatch.Forget(index);
+                NativeFontAccess.Forget(index);
                 Owned.Remove(index); Pending.Remove(index); Free.Push(index);
                 RegistrationLocales.Remove(index);
                 ReleasedCount++; changed = true;

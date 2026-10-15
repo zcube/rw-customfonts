@@ -75,6 +75,7 @@ namespace CustomFonts
                 _textFieldVerifyStep++;
                 if (_textFieldVerifyStep == 6)
                 {
+                    Require(WaylithFontAtlasVerification.PendingFrames == 0, "native atlas uploads finish before every render snapshot");
                     WriteSettings();
                     Log.Message("[Custom Fonts][textfield-verify] PASS: " + _textFieldVerifySamples
                         + " unpatched file/bundle/Default input layouts at 12/14/21/24/28/42px; shared source data, size reuse, Hangul and live world glyphs");

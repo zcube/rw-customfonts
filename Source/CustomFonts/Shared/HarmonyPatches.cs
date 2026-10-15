@@ -35,7 +35,9 @@ namespace CustomFonts
                     _patcherInitialized = true;
                     var startupTimer = System.Diagnostics.Stopwatch.StartNew();
                     mod.DefaultTMPFontAsset = WorldFeatureTextMesh_TextMeshPro.WorldTextPrefab.GetComponent<TextMeshPro>().font;
+                    mod.LogVisualFontDefaults("before startup apply");
                     mod.UpdateFont();
+                    mod.LogVisualFontDefaults("after startup apply");
                     mod.LogFontTiming("startup font apply", startupTimer);
                     AccessTools.StaticFieldRefAccess<bool>(typeof(WorldFeatures), "ForceLegacyText") = mod.ForceLegacyText;
                     mod.DebugLog("font patcher initialised");
@@ -62,6 +64,7 @@ namespace CustomFonts
                 mod.TickFallbackVerification();
                 mod.TickScopedFallbackVerification();
                 mod.TickFontMemoryVerification();
+                mod.TickFontVisualVerification();
             }
         }
 

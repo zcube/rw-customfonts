@@ -270,6 +270,26 @@ The current Waylith general renderer check performs 20 family/scale switches acr
 frames so native retirement can run between changes; the separate memory check covers
 96 switches and verifies that settled resources stop growing.
 
+UI offsets are relative to the original game styles, including Small labels' -1px
+baseline adjustment. Explicit original style sizes take precedence over font import
+sizes. Returning to unscaled Default must preserve the original label dimensions and
+offsets. Font-slot retirement invalidates only the affected native pointer; changing a
+UI fallback does not discard unchanged world glyph caches.
+
+Waylith captures its TMP atlas after the renderer's initial native texture upload.
+Newly baked glyphs could therefore remain pending when the render snapshot was copied.
+The font compatibility adapter flushes those pending updates through the engine's own
+renderer before snapshot capture finishes. Integration checks count any uploads still
+pending at frame end, including during font switches, instead of checking only settled
+glyphs. The upload adapter is skipped if the capture entry point is absent.
+
+`-customfonts-visual-verify="<Hangul font folder>" -quicktest` opens an isolated visual
+comparison window with file/bundled/Default fonts, automatic switching, matching size
+and offset controls, measured label boxes, fixed-height buttons and input fields.
+`-customfonts-visual-fallback=1` starts with an explicit HangeulNuri fallback. Compare
+the same controls in 1.6 and 1.7; native Default fallback rendering can differ even
+with Custom Fonts disabled. This diagnostic window never opens without the flag.
+
 ## Verification
 
 `task test` checks shared catalog behavior (overlapping sources, family deduplication, Regular/source precedence and moved file selections, explicit nested files, missing/invalid sources and removal), OpenType names, invalid tables, Unicode paths, environment expansion,
