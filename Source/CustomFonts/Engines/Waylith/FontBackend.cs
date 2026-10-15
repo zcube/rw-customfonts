@@ -1,192 +1,89 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using HarmonyLib;
 using TMPro;
 using UnityEngine;
 using UnityStubs.Gui;
-using Verse;
 
 namespace CustomFonts
 {
     public partial class CustomFonts
     {
-        private readonly Dictionary<string, Font> _registeredFileFonts = new Dictionary<string, Font>();
-        private readonly Dictionary<string, string> _fileRevisions = new Dictionary<string, string>();
-        private readonly List<string> _fontSourceErrors = new List<string>();
-        private readonly Dictionary<string, BundledFontData> _bundledFontSources = new Dictionary<string, BundledFontData>();
-        private static readonly System.Reflection.MethodInfo SetFontData = AccessTools.Method(typeof(Font), "SetFontData");
-
-        // Waylith renders world labels through TMP; its legacy TextMesh is only a data shim.
-        // Keep the native TMP prefab for Default too, instead of Unity's legacy text path.
         private static bool UseLegacyWorldText(string name) => false;
+        private static FontPlatform CurrentFontPlatform() => OperatingSystem.IsWindows()
+            ? FontPlatform.Windows : OperatingSystem.IsMacOS() ? FontPlatform.MacOS : FontPlatform.Linux;
 
-        private static string DisplayFontName(string name)
+        // Waylith input uses the registered size when it requests size 0. Register
+        // each UI size explicitly instead of patching the input implementation.
+        private static float FileImportSize(float pixels) => pixels > 0 ? pixels : 24f;
+        private static string FontSizeKey(float pixels) => ":px=" + FileImportSize(pixels).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        private Font CreateFileFont(byte[] bytes, string name, string revision, FallbackFontSource[] fallbacks, int pixels)
+            => RegisterScopedFont(bytes, name, revision, FileImportSize(pixels), 0, fallbacks);
+        private Font RegisterScopedFont(byte[] bytes, string name, string revision, float size, int mode, FallbackFontSource[] fallbacks)
         {
-            if (name == null || !name.StartsWith("(File) ")) return name;
-            int at = name.LastIndexOf(" [", StringComparison.Ordinal);
-            if (at < 0 || !name.EndsWith("]")) return name;
-            string path = name.Substring(at + 2, name.Length - at - 3);
-            return name.Substring(0, at) + " — " + Path.GetFileName(path);
-        }
-
-        public void SetupOSInstalledFontNames()
-        {
-            if (_hasInstalledFontNames) return;
-            SetupOSFontPaths();
-            _fontNames = OSFontPaths.Keys.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
-            _hasInstalledFontNames = true;
-        }
-
-        public void SetupOSFontPaths()
-        {
-            if (_hasOSFontAssets) return;
-            _hasOSFontAssets = true;
-            _fontSourceErrors.Clear();
-            if (_settings.IncludeSystemFonts)
-            {
-                var paths = new HashSet<string>(Font.GetPathsToOSFonts(), OperatingSystem.IsWindows()
-                    ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
-                foreach (string root in AdditionalFontRoots.Get(OperatingSystem.IsLinux(), Environment.GetEnvironmentVariable))
-                {
-                    if (!Directory.Exists(root)) continue;
-                    try
-                    {
-                        foreach (string path in FontFiles.Enumerate(root, true).Where(FontFiles.Supported)) paths.Add(path);
-                    }
-                    catch (Exception ex) { SourceError(root, ex); }
-                }
-                foreach (string path in paths.OrderBy(x => x, StringComparer.Ordinal))
-                    AddFontPath(path, false);
-            }
-            foreach (string source in _settings.FontSourcePaths)
-            {
-                try
-                {
-                    string path = FontFiles.Normalize(source, _content.RootDir);
-                    foreach (string file in FontFiles.Enumerate(path, _settings.RecursiveFontFolders)
-                        .Where(FontFiles.Supported).OrderBy(x => x, StringComparer.Ordinal))
-                        AddFontPath(file, true);
-                }
-                catch (Exception ex) { SourceError(source, ex); }
-            }
-            DebugLog($"Waylith catalog: {OSFontPaths.Count} font files, {_fontSourceErrors.Count} errors");
-        }
-
-        private void AddFontPath(string path, bool custom)
-        {
+            fallbacks = FallbackFontSource.WithoutPrimary(fallbacks, bytes).ToArray();
+            var backend = GuiBackend.Current ?? throw new InvalidOperationException("Font renderer is not ready.");
+            var previous = WaylithCjkFallbackPatch.PendingSources;
+            WaylithCjkFallbackPatch.PendingSources = fallbacks;
             try
             {
-                string name = FontFiles.ReadName(path);
-                // Custom choices retain the absolute path, so equal family names never silently
-                // select a different file. Old system/world family names remain valid.
-                string key = custom ? $"(File) {name} [{path}]" : name;
-                if (!OSFontPaths.ContainsKey(key)) OSFontPaths.Add(key, path);
+                bytes = WaylithFontLifetime.ShareSource(bytes);
+                int index = backend.RegisterFont("CustomFonts:" + revision + ":" + size.ToString(System.Globalization.CultureInfo.InvariantCulture) + ":" + mode, bytes, size, mode);
+                if (index < 0) throw new InvalidDataException("Waylith could not register " + name);
+                index = WaylithFontLifetime.Adopt(index);
+                WaylithCjkFallbackPatch.Register(index, fallbacks);
+                DebugLog($"Waylith registered '{name}' as index {index}");
+                return new Font { name = name, GameFontIndex = index };
             }
-            catch (Exception ex) { SourceError(path, ex); }
+            finally { WaylithCjkFallbackPatch.PendingSources = previous; WaylithFontLifetime.PruneSourceData(); }
         }
-
-        private void SourceError(string path, Exception ex)
+        private Font CreateFallbackOnlyFont(FallbackFontSource source) => LoadFontFile(source.Path);
+        private Font CreateBundledFont(byte[] bytes, BundledFontData data, FallbackFontSource[] fallbacks, int pixels)
+            => RegisterScopedFont(bytes, data.Name, FallbackFontSource.Hash(bytes) + ":" + FontFallbackLists.PolicyKey(fallbacks),
+                pixels > 0 ? pixels : data.Size, data.RenderingMode, fallbacks);
+        private Font ResolveScopedDefaultFont(Font original, FallbackFontSource[] fallbacks, int pixels = 0)
         {
-            _fontSourceErrors.Add(path + ": " + ex.Message);
-            Log.Warning("[Custom Fonts] Font source skipped: " + path + ": " + ex.Message);
+            if (pixels <= 0) pixels = original.fontSize;
+            if (fallbacks.Length == 0 && pixels == original.fontSize) return original;
+            string key = original.GameFontIndex + ":" + FontFallbackLists.PolicyKey(fallbacks) + FontSizeKey(pixels);
+            if (_scopedDefaultFonts.TryGetValue(key, out var cached)) return cached;
+            var gui = GuiBackend.Current;
+            object host = AccessTools.Field(gui.GetType(), "host").GetValue(gui);
+            object source = ((IList)AccessTools.Field(host.GetType(), "fontSources").GetValue(host))[original.GameFontIndex];
+            byte[] bytes = (byte[])AccessTools.Property(source.GetType(), "Data").GetValue(source);
+            if (bytes == null) bytes = File.ReadAllBytes((string)AccessTools.Property(source.GetType(), "Path").GetValue(source));
+            uint flags = (uint)AccessTools.Property(source.GetType(), "LoaderFlags").GetValue(source);
+            int mode = flags == 656u ? 2 : flags == 512u ? 1 : 0;
+            return _scopedDefaultFonts[key] = RegisterScopedFont(bytes, "CustomFontsDefault-" + original.name,
+                "default:" + key, pixels, mode, fallbacks);
         }
-
-        public void SetupBundledFonts()
+        private bool ReleaseEngineResource(UnityEngine.Object target)
         {
-            if (_hasBundledFonts) return;
-            _hasBundledFonts = true;
-            try
-            {
-                if (SetFontData == null) throw new MissingMethodException("Waylith Font.SetFontData");
-                foreach (var data in BundledFontReader.Read(Path.Combine(_content.RootDir, "rimfonts")))
-                {
-                    string name = "(Bundled) " + data.FaceName;
-                    if (BundledFonts.ContainsKey(name)) continue;
-                    _bundledFontSources.Add(name, data);
-                    BundledFonts.Add(name, null);
-                }
-                Log.Message($"[Custom Fonts] Waylith cataloged {BundledFonts.Count} bundled fonts without retaining source data");
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"[Custom Fonts] Unable to read bundled fonts: {ex}");
-            }
+            if (target is Font font) WaylithFontLifetime.Queue(font.GameFontIndex);
+            return false; // The small Unity facade also needs to be destroyed.
         }
-
-        private Font ResolveBundledFont(string name)
-        {
-            if (BundledFonts[name] is Font existing) return existing;
-            var data = _bundledFontSources[name];
-            byte[] bytes = BundledFontReader.ReadData(Path.Combine(_content.RootDir, "rimfonts"), data);
-            var font = new Font { name = data.Name };
-            SetFontData.Invoke(font, new object[] { bytes, data.Size, data.RenderingMode });
-            BundledFonts[name] = font;
-            DebugLog($"Waylith loaded selected bundle font '{name}' ({bytes.Length} bytes)");
-            return font;
-        }
-
-        private Font ResolveOSFont(string fontKey, string fontName, int fontSize)
-        {
-            if (_osFontCache.TryGetValue(fontKey, out var cached) && cached != null) return cached;
-            SetupOSFontPaths();
-            if (!OSFontPaths.TryGetValue(fontName, out string path))
-            {
-                // Migrate Unity's family-only UI selection to the regular file face if possible.
-                path = OSFontPaths.FirstOrDefault(p => p.Key == fontName + " (Regular)").Value
-                    ?? OSFontPaths.FirstOrDefault(p => p.Key.StartsWith(fontName + " (", StringComparison.Ordinal)).Value;
-            }
-            if (path == null) return null;
-            Font font = LoadFontFile(path);
-            _osFontCache[fontKey] = font;
-            return font;
-        }
-
-        private Font LoadFontFile(string path)
-        {
-            // Refresh explicitly invalidates path revisions. Sizes are applied by GUIStyle and
-            // must not register another engine font every time the scale slider moves.
-            if (_fileRevisions.TryGetValue(path, out string revision)
-                && _registeredFileFonts.TryGetValue(revision, out Font existing)) return existing;
-            byte[] bytes = FontCollections.FirstFace(FontFiles.Read(path));
-            string name = OpenTypeNames.Read(bytes);
-            revision = Convert.ToHexString(SHA256.HashData(bytes));
-            if (!_registeredFileFonts.TryGetValue(revision, out Font font))
-            {
-                var backend = GuiBackend.Current ?? throw new InvalidOperationException("Font renderer is not ready.");
-                int index = backend.RegisterFont("CustomFonts:" + revision, bytes, 24f, 0);
-                if (index < 0) throw new InvalidDataException("Waylith could not register " + path);
-                font = new Font { name = name, GameFontIndex = index };
-                _registeredFileFonts.Add(revision, font);
-                DebugLog($"Waylith registered '{path}' as index {index} ({revision.Substring(0, 12)})");
-            }
-            _fileRevisions[path] = revision;
-            return font;
-        }
-
+        internal bool IsNativeFontReferenced(int index) => CurrentFonts.Values.Any(f => f != null && f.GameFontIndex == index)
+            || _worldFontAsset != null && _worldFontAsset.fontIndex == index
+            || _fallbackFonts.Any(f => f != null && f.GameFontIndex == index)
+            || _worldFontSource != null && _worldFontSource.GameFontIndex == index;
+        private Font ResolveDefaultUIFont(Verse.GameFont size, int pixels) => ResolveScopedDefaultFont(DefaultFonts[size], SourcesFor((FontTarget)size), pixels);
+        private void ResetEngineFallbackPolicy() => NativeFontAccess.Invalidate();
         private void ReleaseWorldFontResources(TMP_FontAsset asset)
         {
-            // Waylith's TMP facade borrows the renderer's atlas. It is not owned by the TMP
-            // wrapper and must never enter Unity's per-font texture/material destruction path.
+            // The TMP facade borrows the native renderer's atlas.
         }
-
-        private bool IsEngineOwned(UnityEngine.Object target) =>
-            target is Font font && _registeredFileFonts.ContainsValue(font);
-
-        private void RefreshFontSources()
+        private static bool UsesWorldFallbackAssets() => false;
+        private void VerifyWorldFallbackChain(TMP_FontAsset asset)
         {
-            _hasInstalledFontNames = false;
-            _hasOSFontAssets = false;
-            OSFontPaths.Clear();
-            _fileRevisions.Clear();
-            _osFontCache.Clear();
-            ReleaseWorldFontAsset();
-            SetupOSInstalledFontNames();
-            UpdateFont();
-            RefreshWorldFeatureTexts();
-            WriteSettings();
+            var expected = FallbackFontSource.WithoutPrimary(FallbackSources, WaylithFontLifetime.SourceBytes(asset.fontIndex));
+            Require(WaylithCjkFallbackPatch.Sources(asset.fontIndex).Select(s => s.Revision).SequenceEqual(expected.Select(s => s.Revision)),
+                "Waylith world native face has the complete ordered fallback policy");
         }
+        private void PrepareWorldFontAsset(TMP_FontAsset asset) => WaylithWorldGlyphPatch.Register(asset.fontIndex);
+        private TMP_FontAsset CreateDefaultWorldFontAsset()
+            => TMP_FontAsset.CreateFontAsset(ResolveScopedDefaultFont(DefaultTMPFontAsset.sourceFontFile ?? DefaultFonts[Verse.GameFont.Medium], FallbackSources));
     }
 }

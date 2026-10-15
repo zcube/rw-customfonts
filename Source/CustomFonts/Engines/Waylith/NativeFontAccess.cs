@@ -16,6 +16,7 @@ namespace CustomFonts
         private static string _language;
         private static readonly Dictionary<int, ImFontPtr> Fonts = new Dictionary<int, ImFontPtr>();
         internal static int Generation { get; private set; }
+        internal static void Invalidate() { Fonts.Clear(); Generation++; }
 
         private static ImFontPtr Font(int index)
         {

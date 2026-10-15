@@ -22,7 +22,8 @@ namespace CustomFonts
 
     internal static class BundledFontReader
     {
-        internal static IEnumerable<BundledFontData> Read(string path)
+        internal static IEnumerable<BundledFontData> Read(string path, Func<BundledFontData, bool> extract = null,
+            Action<BundledFontData, byte[]> receive = null)
         {
             var file = new FileInfo(path);
             var manager = new AssetsManager();
@@ -70,7 +71,21 @@ namespace CustomFonts
                             }
                             if (reader.Position > end) throw new InvalidDataException("Truncated font asset.");
                         }
-                        if (data.DataLength > 0) yield return data;
+                        if (data.DataLength > 0)
+                        {
+                            // A cold catalog can save the selected payload from this same
+                            // decompression, avoiding another complete bundle read at startup.
+                            if (extract != null && receive != null && extract(data))
+                            {
+                                long position = reader.Position;
+                                reader.Position = data.DataOffset;
+                                byte[] bytes = new byte[data.DataLength];
+                                FontFiles.ReadExactly(reader.BaseStream, bytes);
+                                reader.Position = position;
+                                receive(data, bytes);
+                            }
+                            yield return data;
+                        }
                     }
                 }
             }
@@ -79,6 +94,17 @@ namespace CustomFonts
 
         // Catalog entries retain metadata and offsets, never source bytes or an open bundle.
         internal static byte[] ReadData(string path, BundledFontData data)
+        {
+            var file = new FileInfo(path);
+            if (file.Length != data.BundleLength || file.LastWriteTimeUtc != data.BundleModified)
+                throw new InvalidDataException("Font bundle changed; restart to rebuild its catalog.");
+            byte[] ranged = BundledFontRangeReader.Read(path, data);
+            if (ranged != null) return ranged;
+            return ReadDataFullyUnpacked(path, data);
+        }
+
+        // Compatibility fallback for non-LZMA formats, also retained for benchmarks.
+        internal static byte[] ReadDataFullyUnpacked(string path, BundledFontData data)
         {
             var file = new FileInfo(path);
             if (file.Length != data.BundleLength || file.LastWriteTimeUtc != data.BundleModified)
@@ -93,7 +119,7 @@ namespace CustomFonts
                     throw new InvalidDataException("Invalid bundled font bounds.");
                 stream.Position = data.DataOffset;
                 byte[] bytes = new byte[data.DataLength];
-                stream.ReadExactly(bytes);
+                FontFiles.ReadExactly(stream, bytes);
                 return bytes;
             }
             finally { manager.UnloadAll(); }

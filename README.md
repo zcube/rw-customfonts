@@ -26,14 +26,21 @@ folder, with a fallback to `Current` for older Harmony downloads.
 
 ## Engine implementations
 
-* `Source/CustomFonts/Shared`: settings, selection UI, text metrics, shared Harmony hooks and diagnostics.
-* `Source/CustomFonts/Engines/Unity`: existing Unity font discovery, dynamic fonts,
-  AssetBundles, resource destruction and Steam Deck patch. Builds target .NET Framework 4.7.2.
-* `Source/CustomFonts/Engines/Waylith`: OpenType metadata, file/folder discovery, native
-  renderer registration, efficient bundle reading and world-label binding. Builds target .NET 10.
+* `Source/CustomFonts/Shared`: system/user roots, file/folder search, OpenType metadata,
+  TTC first-face conversion, source catalog, content cache, lazy bundle discovery/selection,
+  settings and UI, text metrics, variant retirement, shared Harmony hooks and diagnostics.
+* `Source/CustomFonts/Engines/Unity`: Font creation through an imported Unity bundle,
+  native validation and resource destruction. Builds target .NET Framework 4.7.2.
+* `Source/CustomFonts/Engines/Waylith`: native renderer registration, bundle Font creation,
+  ownership rules and world-label compatibility patches. Builds target .NET 10.
 
-Each configuration compiles only its own engine directory. Unity's supported feature set
-is unchanged; the extra file and folder options are available only in 1.7.
+Each configuration compiles the shared directory and only its own engine directory.
+File/folder sources, recursion, system-font inclusion and refresh are available in 1.4–1.7.
+Both engines use the same source paths, metadata, selection and cache code. Only creation,
+native validation, ownership and rendering compatibility depend on the engine.
+`Shared/FontResources.cs` owns unused-variant pruning, bundled-font references and cache
+diagnostics for both engines. The adapters release their engine resources after the
+same shared reference and deferred-destruction checks.
 
 Engine selection compares `RimWorldVersion`: versions below 1.7 compile Unity with
 `net472`; 1.7 and above compile Waylith with `net10.0`. `Release <version>` sets this
@@ -41,13 +48,17 @@ property automatically. `build_version` uses that rule; the engine-specific task
 reject a version belonging to the other engine. A future version's engine can be selected
 by this rule, but its game API compatibility still needs verification against that install.
 
-The **etc** menu has separate implementations in each engine's `SettingsMenu.cs`.
-Unity keeps the Steam Deck host-font patch and its existing resource diagnostics.
-Waylith offers file/folder sources, recursive discovery, system-font inclusion and
-registration reuse diagnostics. Only the chosen engine's menu and settings fields are
-included in the DLL.
+The **etc** menu shares its source-management implementation. Each engine appends its own
+diagnostics: Unity keeps resource diagnostics; Waylith
+reports registration reuse. The source settings retain their existing `Waylith*` XML keys
+for compatibility, and both engines read/write them, preserving paths when switching versions.
 
-## Waylith font sources (1.7)
+## Font sources (1.4–1.7)
+
+The etc tab contains shared source discovery and developer diagnostics controls across 1.4–1.7.
+Backend resource counters remain engine-specific in the log. Font selection portability
+requires the same family to exist in the target machine's OS or configured folders;
+custom search folders still need to exist there (environment variables or `~` help).
 
 Open **Mod settings → Custom Fonts → etc** to add a `.ttf`, `.otf` or `.ttc` file,
 or a folder. Absolute paths, paths relative to the installed mod folder, environment
@@ -55,34 +66,105 @@ variables such as `%LOCALAPPDATA%`, `$HOME` or `${HOME}`, and `~` are supported.
 font discovery can be enabled separately. Click **Refresh font list / apply search
 options** after changing these options or replacing a font file.
 
+Saved source lists may be shared across Windows, macOS and Linux. Missing or
+inaccessible locations are skipped without stopping other sources. Windows drive/UNC
+paths are skipped on Unix, and Unix absolute paths are skipped on Windows, rather
+than reinterpreted as local locations. Relative and home paths accept both `/` and
+`\` separators. Newly added paths retain their relative, `~` or environment-variable
+expression in settings; expansion happens on the current machine, and equivalent
+locations are deduplicated. Existing absolute entries remain unchanged.
+
 System fonts and recursive folder scanning are enabled by default. Additional file/folder
-sources start empty. The engine supplies Windows' system and per-user font directories,
+sources start empty. Shared discovery supplies Windows' system and per-user font directories,
 macOS' `/System/Library/Fonts`, `/Library/Fonts` and `~/Library/Fonts`, and Linux's
 `/usr/share/fonts`, `/usr/local/share/fonts`, `~/.fonts`, `~/.local/share/fonts` and
-Flatpak host font directories. Linux discovery also supplements configured
+Flatpak host font directories `/run/host/fonts` and `/run/host/user-fonts` (including Steam Deck). Linux discovery also supplements configured
 `XDG_DATA_HOME/fonts` and each `XDG_DATA_DIRS` entry's `fonts` directory; relative XDG
 values are ignored as required by the [XDG Base Directory specification](https://specifications.freedesktop.org/basedir/0.8/).
 Nonstandard directories can be added manually. File/folder sources include font-file
 symlinks, but do not descend into directory symlinks, preventing recursive link loops.
 
-Custom files appear as `(File)` choices in both the UI and world font lists. The full
-path is kept in the saved selection so equally named files remain distinct. Fonts do
-not have to be installed in the OS. Missing or invalid sources are skipped and reported
+System and configured file fonts appear once per OpenType family in the UI, world and
+fallback lists. Selections save the family name, without the font file's path. The
+current search roots resolve that family on each machine, so the same installed or
+configured family remains selectable after moving files or changing OS. A Regular,
+Normal, Roman or Book face is preferred; if none exists, the first available face is
+used. Equally suitable configured faces precede OS faces, then configured source order
+and sorted file paths break ties. Bundled choices retain their explicit family/style
+names, which are already independent of filesystem paths. Fonts do not have to be
+installed in the OS. Missing or invalid sources are skipped and reported
 in settings and the game log. TTC collections currently use their first face, repacked
-in memory as a standalone font for Waylith's registration API. The original file is
+in memory as a standalone font for both engines.
+The original file is
 unchanged. Fonts above 128 MiB and name tables above 1 MiB are rejected.
 
-Waylith owns registered fonts and shared atlases until the process exits. This mod reuses
-registrations by file content across sizes, UI/world selections and refreshes. Selecting
-new font files can increase engine memory for the rest of that session; removing a path
-removes its choices but does not free the renderer's existing registration.
+Unity imports custom font bytes into a small embedded Unity Font bundle template,
+then uses the engine's normal dynamic font and TMP loaders. A plain `new Font(path)`
+is only a TMP data source, so it cannot render the existing IMGUI UI. This distinction
+is described by the [TMP developer](https://discussions.unity.com/t/textmesh-pro-os-font/757769/5).
+The byte-based import supports Unicode paths and avoids OS installation or platform-specific
+registration. AssetsTools.NET 3.0.4 is restored by NuGet and shipped only with the Unity
+assemblies; its MIT notice is in `About/AssetsTools.NET-LICENSE.txt`.
+To regenerate the embedded template from `rimfonts`:
+
+```bash
+dotnet run --project Tools/UnityFontTemplate -- rimfonts Source/CustomFonts/Engines/Unity/FontTemplate.bundle
+```
+
+System and custom file fonts use a content cache with ordered fallback policies.
+Unity shares dynamic fonts across UI sizes and world text; Waylith also keys registrations
+by their pixel size, sharing the original source buffer across variants. Refresh invalidates path revisions and reuses unchanged
+content. Unity unloads unreferenced imports, including dependent materials and atlases;
+it keeps sources still bound to either UI or world text. Removed or unreadable selections
+render with Default while retaining the saved family for a later refresh or another OS.
+Old Unity family-only selections remain valid; old face and `(File)` selections migrate
+to family names, even when their former paths no longer exist. Unknown old engine names
+can also migrate through a still-configured path. Unity's OS-font APIs
+and the UnityPlayer binary patch are no longer used. Flatpak host paths are scanned directly.
+
+Both engines reuse active fonts by source content and ordered fallback policy, with
+the registered size included for Waylith. Unity
+unloads unused imported bundles and releases owned TMP materials and atlas textures.
+Waylith retires unused mod registrations, their locale/style copies and source buffers
+before a subsequent native frame. It preserves active UI/world indices and reuses freed
+slots, invalidating engine layout and glyph caches when a slot changes. Registered faces
+already contain their initial locale's fallbacks, so rendering does not duplicate them
+for the same locale. Changing language still resolves the corresponding locale copy.
+Game-owned fonts and the engine's shared atlas remain protected. Freed custom fallback
+file buffers are released only when no native atlas source borrows them; empty-glyph
+exclusion pins are released when the retired source bytes become collectible.
+Size variants share their managed source buffer, but each native registration and
+its merged fallbacks can still allocate separate resources. Scale changes retire
+unused variants; returning to unscaled Default releases the shared buffer cache too.
+Waylith world text uses the already merged native face; it does not create a second set
+of fallback font registrations for the TMP compatibility facade. Unity retains its real
+TMP fallback assets and releases them when the world policy changes.
+
+`-customfonts-memory-verify="<two Hangul font folder>" -quicktest` in an isolated profile
+switches UI/world fonts and four fallback policies 96 times, includes file/bundled/Default
+fonts, native bold/italic rendering and repeated source refreshes. Four settled snapshots
+of the same configuration check that font/asset counts, caches, native sources, atlas
+capacity and pinned ranges do not keep growing. Returning to Default with no defined
+fallbacks must release every custom import/registration and its cache aliases. Process memory also includes unrelated
+game resources and allocator reserves; font resource counters identify the owned allocations.
 
 Font discovery reads only the OpenType directory and name table, rather than allocating
 each complete file. Bundled choices initially retain names and payload locations only;
 selecting one loads its source data once for reuse by UI and world text. The 15 fonts in
 the current bundle contain 100,663,608 bytes (about 96 MiB) of source data, which is no
-longer retained upfront as separate font arrays. Opening the compressed bundle still
-requires temporary decompression memory. CJK coverage cache keys are weak references;
+longer retained upfront as separate font arrays. The original `rimfonts` remains unchanged.
+Its data is one LZMA block: seeking directly to a font is impossible, but the shared
+reader decodes only through the selected payload's end, discards preceding output and
+retains only that font plus the decoder dictionary. Fonts later in the block still
+require preceding data to be decoded. No original Unity bundle engine loader is used.
+A 998-byte embedded catalog, validated against the bundle's SHA-256, avoids decompressing
+the bundle merely to list its fonts. Changed bundles fall back to catalog regeneration.
+Default startup skips font discovery; file selections scan only their configured sources,
+and opening settings discovers the full list. File names and bundle metadata/payloads
+are cached under the profile's `Config/CustomFontsCache`, validated by source size and
+modification time. Cached payload checksums are verified; missing/corrupt cache files
+fall back to the source. Only selected bundle payloads are written to disk.
+CJK coverage cache keys are weak references;
 native glyph-exclusion ranges stay pinned while the engine may borrow them. Dynamic
 glyph generation still requires registered font data to remain available.
 
@@ -102,18 +184,106 @@ are also included. Coverage still depends on the available fonts. TrueType fonts
 map CJK characters to empty outlines are allowed to fall back; intentional spaces,
 combining marks and Hangul fillers are preserved. Font files are not modified.
 
+### Defined fallback fonts
+
+Open a **Tiny, Small, Medium or world font tab**. Search the existing candidate list
+and click the candidate's **+** button to add it as a fallback for that tab. The right
+pane lists priorities: use up/down to reorder and × to remove. Each UI size and world
+text has its own list. With **Uniform UI fonts** enabled, the Medium list also applies
+to Tiny and Small; world settings remain independent. **Merge another tab (union)**
+appends another tab's list, or all tab lists, while keeping current priority and removing
+duplicate names. Merging copies entries; subsequent edits remain independent.
+The shared keys are `FallbackFontsTiny`, `FallbackFontsSmall`, `FallbackFontsMedium`
+and `FallbackFontsWorld` across 1.4–1.7. Old `FallbackFontNames` settings are copied to
+all tabs on migration; an explicitly empty new tab list remains empty.
+The primary face keeps priority; missing characters use defined fallbacks in list order,
+then the engine's existing automatic fallbacks. A missing/removed source is skipped and
+reported. Identical file contents are deduplicated, and a primary never references itself.
+
+Unity imports only the primary and defined fallback data into a small runtime bundle,
+with ordered Font references and separate material/texture dependencies. It does not
+require OS installation. TMP world assets use the same ordered fallback asset table.
+With defined fallbacks, Default world text also uses TMP; clearing the list restores
+Unity's usual Default legacy renderer. Default UI wrappers retain the original font
+names before the defined fallbacks. Unity's Default world font does not contain source
+font bytes: its existing baked TMP asset is cloned, with borrowed game-owned atlas and
+material retained, rather than attempting to recreate it from that source Font.
+Defined TMP fallbacks precede any existing engine fallback assets. Waylith prepends the defined sources to a separate
+copy of its language/CJK list for each font policy. It does not mutate the engine's
+cached locale lists. Fonts with different ordered fallback contents have different
+registration identities; matching active policies reuse the same content font.
+World glyphs use that same merged source chain.
+Only explicitly defined fallback source bytes are loaded in addition to the primary;
+opening or searching the candidate list does not load the other bundled fonts. Fallback definitions
+therefore have their own memory cost. The original `rimfonts` remains unchanged.
+
+In an isolated Windows profile, add `-customfonts-fallback-verify="<two Hangul font folder>"`
+with `-quicktest` to exercise Arial with private fonts in both priority orders, removal,
+Default, bundled HangeulNuri and system Malgun Gothic fallbacks. The test compares actual
+glyphs in all three UI sizes, checks mixed-script meshes and actual visible world labels,
+and verifies Default and restored text again after 1,200 frames of resource cleanup.
+It migrates old face and moved-file selections to family identities and leaves the
+private list saved. `-customfonts-fallback-restart-verify=1 -quicktest` verifies those saved
+definitions and rendered glyphs, including visible world labels, on the next launch. These checks do not run normally.
+The implementation passes all four builds and 149 assertions with the real bundle,
+including private fallback payload preservation, duplicate/self exclusion and 16
+fallbacks beyond the template's original font count. Windows live checks pass in
+1.6.4871 and 1.7.4977 for private, bundled and system definitions, priority changes,
+removal and Default UI/world restoration. Unity's check verifies the actual TMP
+character uses the first defined fallback asset. Native UI glyph advances match the
+defined face; one-pixel horizontal raster differences are allowed in Waylith merges.
+Restart checks in both engines also confirm saved order and rendered glyphs. Computer
+Use confirms the settings list, live priority changes, three Korean UI previews and
+rendered Hangul world labels. Waylith world assets now register their CJK glyph path
+when created, so a newly created asset can render before world-view initialization.
+
+The Default world-font test previously checked fallback-table length alone. That was
+insufficient: vanilla fallback entries could satisfy it even when rebuilding the Default
+TMP asset had failed. The check now renders Hangul through the first configured fallback,
+checks live label geometry/textures after delayed cleanup, and checks every visible character in Waylith atlas pixels
+and UVs, plus Unity Hangul character identities to detect replacement squares. The removal stage now uses a Hangul-capable primary before clearing all defined
+fallbacks. Keeping Arial in that stage could intentionally remove Korean coverage
+and display replacement squares in Unity.
+
+The scoped integration check uses `-customfonts-scoped-fallback-verify="<two Hangul font folder>"`
+and `-quicktest` in an isolated profile. It verifies different native Hangul glyph
+priorities in all UI sizes and world labels, uniform sharing, ordered union, independent
+world removal and Default/restored rendering after 1,200 frames. UI-only changes retain
+the existing world asset and label objects. Saved independent priorities can be checked
+with `-customfonts-scoped-fallback-restart-verify=1 -quicktest`.
+
+Waylith 1.7's input shim ignores `GUIStyle.fontSize` and passes size zero to its
+renderer and editing metrics. A custom face imported at 24px consequently made
+the info-card search field larger than its 14px Small style, although labels used
+the correct size. UI fonts are now registered at each style's actual pixel size,
+including the configured scale, so the engine's size-zero drawing and editing metrics
+agree with labels without patching input methods. File, bundled and scaled Default
+fonts follow the same rule; unchanged variants are reused, and obsolete sizes are retired.
+Other mods' input styles that override the size of an existing font independently
+still follow the engine's size-zero behavior. Windows Computer Use checks
+compare the same Latin/Hangul text in the 1.6 and 1.7 info-card search fields.
+`-customfonts-textfield-verify="<Hangul font folder>" -quicktest` checks 36 actual
+single-line/multiline input layouts against label layouts for file/bundled/Default
+fonts at 12/14/21/24/28/42px. It also checks shared source buffers, registration reuse,
+Hangul glyphs and live world labels. Use an isolated profile for this check.
+The current Waylith general renderer check performs 20 family/scale switches across
+frames so native retirement can run between changes; the separate memory check covers
+96 switches and verifies that settled resources stop growing.
+
 ## Verification
 
-`task test` checks OpenType names, invalid tables, Unicode paths, environment expansion,
+`task test` checks shared catalog behavior (overlapping sources, family deduplication, Regular/source precedence and moved file selections, explicit nested files, missing/invalid sources and removal), OpenType names, invalid tables, Unicode paths, environment expansion,
 explicit files, recursive/non-recursive folders, supplementary Unicode decoding and
 empty CJK glyph coverage without starting RimWorld.
+It also verifies Unity imports preserve exact source bytes, contain only one populated
+font, keep the template small, use distinct bundle identities and pick up file replacements.
 
 The stream tests check that catalog reads stay within an embedded font's bounds and read
 less than 1 KiB from a padded 4 MiB fixture. To also verify all 15 actual bundled font
-payloads, supply the installed game's AssetsTools.NET reference and the bundle path:
+payloads, supply the bundle path:
 
 ```bash
-dotnet run --project Tests/WaylithFonts.Tests/WaylithFonts.Tests.csproj "-p:GameDir=<RimWorld 1.7 folder>" -- "<mod folder>/rimfonts"
+dotnet run --project Tests/WaylithFonts.Tests/WaylithFonts.Tests.csproj -- "<mod folder>/rimfonts"
 ```
 
 For a live 1.7 integration check, use a **separate save-data folder**, enable Core, Harmony
@@ -144,6 +314,67 @@ for visual inspection of the translated menus, settings previews and world map.
 Add `-customfonts-collection="<TTC file>"` to check first-face registration and mixed CJK
 glyphs in the live UI renderer and world meshes. Steam F12 captures the original game
 resolution, which is useful when a scaled desktop automation capture drops thin strokes.
+
+Unity 1.4–1.6 accept the same `-customfonts-verify` option with `RimWorldWin64.exe`.
+Use a folder containing two different Hangul fonts and an isolated profile. The check
+excludes system fonts, renders all three UI sizes and world labels, performs 20 file
+switches, refreshes the catalog and restores Default. It verifies imported bundle
+counts settle to one (shared UI/world source) and zero after Default restoration. It then leaves
+the first file selected for visual review. TMP can distribute glyphs across atlas
+submeshes, so the world check counts geometry from all submeshes.
+
+Shared-source implementation validated on Windows on 2026-10-14/15: 63 assertions
+without the bundle, 80 with all actual bundle payloads, and successful builds for
+1.4, 1.5, 1.6 and 1.7. The Unity 1.6 live check passed with uninstalled HangeulNuri
+and MaruBuri in a Unicode folder containing spaces, including 20 UI/world switches,
+refresh and complete imported-bundle cleanup on Default restoration. Computer Use
+confirmed all three Korean UI previews and actual world labels.
+The Waylith 1.7 check passed with those files, bundles, 200 font/size switches, mixed
+CJK glyphs and registration reuse. Visual review found transparent vertex colors
+that the previous geometry/atlas-only check missed. The world color patch keeps
+vertices white and uses the engine's material color for fading, preserving curved
+geometry. Added render-layer and vertex-alpha assertions reproduced the failure
+before the patch and passed after it; Computer Use confirmed Hangul labels after
+leaving and re-entering the world view. New 1.4/1.5 live runs and Linux/macOS execution
+are not verified by these results.
+
+The subsequent shared-loading refactor adds common Windows/macOS/Linux root discovery,
+engine-independent names (including Mac Roman), legacy-family/face/file-key migration,
+TTC conversion and content caching. The source-path, name and dynamic-OS-font APIs are
+no longer called in either engine. Both use metadata-only bundle catalogs and lazy
+selection. Shared tests pass 79 assertions without the real bundle and 96 with it.
+The Unity 1.6 and Waylith 1.7 live checks also verify the common catalog, migration of `Malgun Gothic`
+to `Malgun Gothic`, one source shared across UI sizes and world text,
+and lazy bundle selection. Unity passes 20 file switches and release after Default
+restoration; Waylith passes 200 font/scale switches and refresh checks. Computer Use
+also confirms rendered Hangul world labels in both engines after this refactor.
+All four version builds pass. These results do not establish live 1.4/1.5 or Linux/macOS
+compatibility; those game runs remain unverified.
+
+Startup performance work on 2026-10-15 preserves the original bundle and uses the same
+managed extraction path in Unity and Waylith. `task benchmark` compares full unpacking
+with manifest/range extraction and persistent caches on the current machine;
+`task font_catalog` regenerates/verifies the embedded catalog and also runs before
+`task build`. Add `-customfonts-profile=1` to log catalog, extraction, native creation
+and initial font-application times separately.
+On this Windows machine, a fresh standalone process measured full bundle listing at
+about 3 seconds and full-unpack extraction at about 3 seconds. The embedded manifest
+reduced fresh listing to 97 ms and range extraction of HangeulNuri Bold to 45 ms;
+subsequent processes measured 0.2 ms and 4 ms from disk caches. System enumeration
+took about 4 ms; name reads were about 22–27 ms with a warm filesystem and 15 ms
+from the persistent metadata cache (the first earlier read was 1.15 seconds).
+Unity 1.6's Mono runtime was substantially slower at full decompression: the measured
+initial font application took 91.2 seconds. With a fresh cache, manifest/range loading
+applied the same bundled HangeulNuri Bold font in 526 ms (400 ms catalog, 81 ms
+extraction and 38 ms native creation). These are mod font-operation timings, not total
+game startup times. Tests pass 124 assertions with the real bundle, including exact
+payload hashes for all 15 prefix-decoded fonts against one full decompression.
+Unity 1.6's repeated bundled start measured 117 ms, and a fresh Default profile
+measured 7.4 ms without catalog reads or cache creation. Waylith 1.7's fresh bundled
+start measured 208 ms (127 ms catalog, 72 ms extraction). Both live verification
+runs passed after the optimization, including three UI sizes, custom/bundled files,
+world text, font/scale switches and refresh. Computer Use confirmed rendered Hangul
+world labels in both engines and the Default main menu in 1.6.
 
 Validated on Windows with RimWorld 1.7.4977 rev1248 and Harmony 3 on 2026-10-14:
 45 metadata/path/Unicode/coverage assertions and 62 assertions with the actual bundle passed.

@@ -19,6 +19,13 @@ namespace CustomFonts
         private static FieldInfo _atlasPixels;
 
         internal static void Register(int fontIndex) => Fonts.Add(fontIndex);
+        internal static void Forget(int fontIndex)
+        {
+            Fonts.Remove(fontIndex);
+            foreach (var key in new List<(int, int)>(Requested.Keys))
+                if (key.Item1 == fontIndex) Requested.Remove(key);
+            WaylithWorldBakeLifetimePatch.Forget(fontIndex);
+        }
         internal static bool Handles(int fontIndex) => Fonts.Contains(fontIndex);
 
         private static MethodBase TargetMethod() => AccessTools.Method(
@@ -65,6 +72,7 @@ namespace CustomFonts
     internal static class WaylithWorldBakeLifetimePatch
     {
         private static readonly Dictionary<int, int> Touched = new Dictionary<int, int>();
+        internal static void Forget(int index) => Touched.Remove(index);
 
         [HarmonyPrefix]
         private static void Prefix(TextMeshPro __instance)

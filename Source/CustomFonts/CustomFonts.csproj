@@ -74,6 +74,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Shared/**/*.cs" />
+    <EmbeddedResource Include="Shared/BundledFonts.catalog" LogicalName="CustomFonts.BundledFonts.catalog" />
     <Compile Include="Engines/$(Engine)/**/*.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(Engine)' == 'Waylith'">
@@ -135,6 +136,8 @@
     </Otherwise>
   </Choose>
   <ItemGroup Condition="'$(Engine)' == 'Unity'">
+    <PackageReference Include="AssetsTools.NET" Version="3.0.4" />
+    <EmbeddedResource Include="Engines/Unity/FontTemplate.bundle" LogicalName="CustomFonts.FontTemplate.bundle" />
     <Reference Include="Assembly-CSharp">
       <HintPath>$(GameDir)/$(STEAM_OS)/Managed/Assembly-CSharp.dll</HintPath>
       <Private>False</Private>

@@ -5,8 +5,8 @@ namespace CustomFonts
 {
     internal static class FontCollections
     {
-        // Waylith's registration metrics reader only understands standalone SFNT files.
-        // Repack the first collection face in memory, leaving the original file intact.
+        // Both engines receive the same standalone first face of a collection.
+        // Repack in memory, leaving the original file intact.
         internal static byte[] FirstFace(byte[] data)
         {
             uint Read(int p) { if (p < 0 || p > data.Length - 4) throw new InvalidDataException("Truncated font collection."); return ((uint)data[p] << 24) | ((uint)data[p + 1] << 16) | ((uint)data[p + 2] << 8) | data[p + 3]; }

@@ -13,8 +13,8 @@ using TMPro;
 namespace CustomFonts
 {
 
-    // Discovery, font creation, platform settings and resource ownership are implemented
-    // by the single Engines/<engine> directory selected in the project configuration.
+    // Source management and selection are shared. The selected engine supplies font
+    // metadata/creation, platform diagnostics and native resource ownership.
     public partial class CustomFonts : Mod
     {
         public readonly FontSettings _settings;
@@ -81,7 +81,7 @@ namespace CustomFonts
                 }
 
                 DefaultFonts[value] = Text.fontStyles[(int)value].font;
-                DefaultFontStyle[value] = Text.fontStyles[(int)value];
+                DefaultFontStyle[value] = new GUIStyle(Text.fontStyles[(int)value]);
             }
 
             ForceLegacyText = UseLegacyWorldText(_settings.CurrentWorldFontName);
@@ -277,7 +277,7 @@ namespace CustomFonts
                     break;
                 case 4:
                     fullRect = listingStandard.GetRect(scrollHeight);
-                    DrawEngineSettings(fullRect);
+                    DrawFontSourceSettings(fullRect);
                     break;
             }
 
@@ -350,11 +350,11 @@ namespace CustomFonts
                 inRect.width - 10f, inRect.height);
             var fontListScrollInner = new Rect(fontListScrollOuter.x, fontListScrollOuter.y,
                 fontListScrollOuter.width - 24f,
-                23.6f * (3 + bundledFontsCount + fontNameCount));
+                (Text.LineHeight + 4f) * (3 + bundledFontsCount + fontNameCount));
             Widgets.BeginScrollView(fontListScrollOuter, ref scrollPosition, fontListScrollInner);
             var listingStandard = fontListScrollInner.BeginListingStandard();
 
-            if (listingStandard.RadioButton(FontSettings.DefaultFontName, _settings.GetCurrentUIFontName(fontIndex) == FontSettings.DefaultFontName))
+            if (DrawFontChoice(listingStandard, (FontTarget)fontIndex, FontSettings.DefaultFontName, _settings.GetCurrentUIFontName(fontIndex) == FontSettings.DefaultFontName))
             {
                 if (_settings.UniformUIfonts)
                     SaveFontAll(FontSettings.DefaultFontName);
@@ -366,7 +366,7 @@ namespace CustomFonts
             {
                 if (name.ToLower().Contains(searchText.ToLower()))
                 {
-                    if (listingStandard.RadioButton(DisplayFontName(name), _settings.GetCurrentUIFontName(fontIndex) == name, tooltip: name))
+                    if (DrawFontChoice(listingStandard, (FontTarget)fontIndex, name, _settings.GetCurrentUIFontName(fontIndex) == name))
                     {
                         if (_settings.UniformUIfonts)
                             SaveFontAll(name);
@@ -380,7 +380,7 @@ namespace CustomFonts
             {
                 if (name.ToLower().Contains(searchText.ToLower()))
                 {
-                    if (listingStandard.RadioButton(DisplayFontName(name), _settings.GetCurrentUIFontName(fontIndex) == name, tooltip: name))
+                    if (DrawFontChoice(listingStandard, (FontTarget)fontIndex, name, _settings.GetCurrentUIFontName(fontIndex) == name))
                     {
                         if (_settings.UniformUIfonts)
                             SaveFontAll(name);
@@ -417,18 +417,18 @@ namespace CustomFonts
                 inRect.width - 10f, inRect.height);
             var fontListScrollInner = new Rect(fontListScrollOuter.x, fontListScrollOuter.y,
                 fontListScrollOuter.width - 24f,
-                23.6f * (3 + BundledFonts.Count + OSFontPaths.Count));
+                (Text.LineHeight + 4f) * (3 + bundledFontsCount + osFontPathsCount));
             Widgets.BeginScrollView(fontListScrollOuter, ref scrollPosition, fontListScrollInner);
             var listingStandard = fontListScrollInner.BeginListingStandard();
 
-            if (listingStandard.RadioButton(FontSettings.DefaultFontName, _settings.CurrentWorldFontName == FontSettings.DefaultFontName))
+            if (DrawFontChoice(listingStandard, FontTarget.World, FontSettings.DefaultFontName, _settings.CurrentWorldFontName == FontSettings.DefaultFontName))
                 SaveWorldFont(FontSettings.DefaultFontName);
             listingStandard.GapLine();
             foreach (var name in BundledFonts.Keys.OrderBy(x => x))
             {
                 if (name.ToLower().Contains(searchText.ToLower()))
                 {
-                    if (listingStandard.RadioButton(DisplayFontName(name), _settings.CurrentWorldFontName == name, tooltip: name))
+                    if (DrawFontChoice(listingStandard, FontTarget.World, name, _settings.CurrentWorldFontName == name))
                         SaveWorldFont(name);
                 }
             }
@@ -437,7 +437,7 @@ namespace CustomFonts
             {
                 if (name.ToLower().Contains(searchText.ToLower()))
                 {
-                    if (listingStandard.RadioButton(DisplayFontName(name), _settings.CurrentWorldFontName == name, tooltip: name))
+                    if (DrawFontChoice(listingStandard, FontTarget.World, name, _settings.CurrentWorldFontName == name))
                         SaveWorldFont(name);
                 }
             }
@@ -448,8 +448,11 @@ namespace CustomFonts
 
         public void DrawPropertySettings(int toolbarInt, Rect inRect)
         {
+            var target = (FontTarget)toolbarInt;
+            var view = new Rect(0, 0, inRect.width - 20, Math.Max(inRect.height, _propertyContentHeight[toolbarInt]));
+            Widgets.BeginScrollView(inRect, ref _propertyScroll[toolbarInt], view);
             var listingStandard = new Listing_Standard();
-            listingStandard.Begin(inRect);
+            listingStandard.Begin(view);
 
             if (toolbarInt < 3)
             {
@@ -523,7 +526,10 @@ namespace CustomFonts
                 }
             }
 
+            DrawFallbackSettings(listingStandard, view.width, target);
+            _propertyContentHeight[toolbarInt] = listingStandard.CurHeight + 16;
             listingStandard.End();
+            Widgets.EndScrollView();
         }
 
         // Tiny and Small are copies of Medium while uniform fonts are on, and the Medium tab
@@ -611,9 +617,14 @@ namespace CustomFonts
 
         private void SaveWorldFont(string fontName)
         {
+            fontName = CanonicalFontSelection(fontName);
             if (fontName == _settings.CurrentWorldFontName) return;
             _settings.CurrentWorldFontName = fontName;
+            // Unity's Default uses legacy labels, which never request another TMP asset.
+            // Release the previous custom asset here even when the next renderer is legacy.
+            ReleaseWorldFontAsset();
             ForceLegacyText = UseLegacyWorldText(fontName);
+            ForceLegacyText = ForceLegacyText && !HasDefinedFallbacks;
             AccessTools.StaticFieldRefAccess<bool>(typeof(WorldFeatures), "ForceLegacyText") = ForceLegacyText;
             RefreshWorldFeatureTexts();
         }
@@ -659,17 +670,30 @@ namespace CustomFonts
 
         public void UpdateFont()
         {
-            SetupBundledFonts();
+            EnsureFallbackConfiguration();
+            _settings.CurrentWorldFontName = CanonicalFontSelection(_settings.CurrentWorldFontName);
             foreach (GameFont value in Enum.GetValues(typeof(GameFont)))
             {
                 UpdateFont(value);
             }
+            PruneScopedFonts();
         }
 
         private void UpdateFont(GameFont fontIndex)
         {
+            EnsureFallbackConfiguration();
+            var fallbacks = SourcesFor((FontTarget)fontIndex);
+            string policy = FallbackPolicy((FontTarget)fontIndex);
             var fontName = _settings.GetCurrentUIFontName(fontIndex);
+            if (fontName.StartsWith("(Bundled) ", StringComparison.Ordinal)) SetupBundledFonts();
+            if (fontName != FontSettings.DefaultFontName && !BundledFonts.ContainsKey(fontName))
+            {
+                SetupOSFontPaths();
+                fontName = CanonicalFontSelection(fontName);
+                _settings.SetCurrentUIFontName(fontIndex, fontName);
+            }
             var fontSize = (int)Math.Round(DefaultFonts[fontIndex].fontSize * _settings.GetScaleFactor(fontIndex));
+            string sizeKey = FontSizeKey(fontSize);
             var isBundled = BundledFonts.ContainsKey(fontName);
 
             Font font = null;
@@ -679,17 +703,18 @@ namespace CustomFonts
             {
                 if (isBundled)
                 {
-                    font = ResolveBundledFont(fontName);
-                    fontKey = BundledFontKey(fontName);
+                    font = ResolveBundledFont(fontName, fallbacks, fontSize);
+                    fontKey = BundledFontKey(fontName) + "|" + policy + sizeKey;
                 }
                 else if (fontName != FontSettings.DefaultFontName)
                 {
-                    fontKey = OSFontKey(fontName, fontSize);
-                    font = ResolveOSFont(fontKey, fontName, fontSize);
+                    fontKey = FileFontKey(fontName) + "|" + policy + sizeKey;
+                    font = ResolveFileFont(fontKey, fontName, fallbacks, fontSize);
                 }
                 else
                 {
-                    font = DefaultFonts[fontIndex];
+                    font = ResolveDefaultUIFont(fontIndex, fontSize);
+                    fontKey += "|" + policy + sizeKey;
                 }
             }
             catch (Exception ex)
@@ -701,9 +726,10 @@ namespace CustomFonts
             if (font == null)
             {
                 Log.Message($"[Custom Fonts] Font {fontName} not found, using default font");
-                _settings.SetCurrentUIFontName(fontIndex, FontSettings.DefaultFontName);
-                font = DefaultFonts[fontIndex];
-                fontKey = DefaultFontKey;
+                // Keep unavailable portable selections so a refresh or another OS can
+                // resolve them later, while rendering with the default for this session.
+                font = ResolveDefaultUIFont(fontIndex, fontSize);
+                fontKey = DefaultFontKey + "|" + policy + sizeKey;
             }
 
             string previousKey;
@@ -714,17 +740,16 @@ namespace CustomFonts
             _appliedFontKeys[fontIndex] = fontKey;
 
             CurrentFonts[fontIndex] = font;
-            Text.fontStyles[(int)fontIndex].font = font;
-            Text.fontStyles[(int)fontIndex].fontSize = fontSize;
-            Text.textFieldStyles[(int)fontIndex].font = font;
-            Text.textFieldStyles[(int)fontIndex].fontSize = fontSize;
-            Text.textAreaStyles[(int)fontIndex].font = font;
-            Text.textAreaStyles[(int)fontIndex].fontSize = fontSize;
-            Text.textAreaReadOnlyStyles[(int)fontIndex].font = font;
-            Text.textAreaReadOnlyStyles[(int)fontIndex].fontSize = fontSize;
+            foreach (var style in new[] { Text.fontStyles[(int)fontIndex], Text.textFieldStyles[(int)fontIndex],
+                Text.textAreaStyles[(int)fontIndex], Text.textAreaReadOnlyStyles[(int)fontIndex] })
+            {
+                style.font = font;
+                style.fontSize = fontSize;
+            }
             ApplyFontToTextCaches(fontIndex, font);
             RecalcCustomLineHeights(fontIndex);
             PruneOSFontCache();
+            PruneScopedFonts();
         }
 
         // RimWorld derives its layout metrics from the fonts once, at startup, and caches them
@@ -781,7 +806,7 @@ namespace CustomFonts
 
         private static string BundledFontKey(string fontName) => "bundled:" + fontName;
 
-        private static string OSFontKey(string fontName, int fontSize) => "os:" + fontSize + ":" + fontName;
+        private static string FileFontKey(string fontName) => "file:" + fontName;
 
         // Only the dynamic fonts that are actually bound to a GameFont are kept alive; every
         // other one was created by an earlier font/size change and can go away.
@@ -808,10 +833,19 @@ namespace CustomFonts
 
         public TMP_FontAsset GetWorldFontAsset()
         {
+            EnsureFallbackConfiguration();
             var fontName = _settings.CurrentWorldFontName;
-            if (fontName == FontSettings.DefaultFontName)
+            if (fontName.StartsWith("(Bundled) ", StringComparison.Ordinal)) SetupBundledFonts();
+            if (fontName != FontSettings.DefaultFontName && !BundledFonts.ContainsKey(fontName))
+            {
+                SetupOSFontPaths();
+                fontName = CanonicalFontSelection(fontName);
+                _settings.CurrentWorldFontName = fontName;
+            }
+            if (fontName == FontSettings.DefaultFontName && !HasDefinedFallbacks)
             {
                 ReleaseWorldFontAsset();
+                PrepareWorldFontAsset(DefaultTMPFontAsset);
                 return DefaultTMPFontAsset;
             }
             if (_worldFontAssetKey == fontName && _worldFontAsset != null)
@@ -824,9 +858,14 @@ namespace CustomFonts
             Font source = null;
             try
             {
-                if (BundledFonts.ContainsKey(fontName))
+                if (fontName == FontSettings.DefaultFontName)
                 {
-                    fontAsset = TMP_FontAsset.CreateFontAsset(ResolveBundledFont(fontName));
+                    fontAsset = CreateDefaultWorldFontAsset();
+                }
+                else if (BundledFonts.ContainsKey(fontName))
+                {
+                    source = ResolveBundledFont(fontName, FallbackSources);
+                    fontAsset = TMP_FontAsset.CreateFontAsset(source);
                 }
                 else
                 {
@@ -834,7 +873,7 @@ namespace CustomFonts
                     string path;
                     if (OSFontPaths.TryGetValue(fontName, out path))
                     {
-                        source = LoadFontFile(path);
+                        source = LoadFontFile(path, FallbackSources);
                         fontAsset = TMP_FontAsset.CreateFontAsset(source);
                     }
                 }
@@ -851,13 +890,21 @@ namespace CustomFonts
             {
                 QueueDestroy(source);
                 Log.Message($"[Custom Fonts] World font {fontName} not found, using default font");
-                _settings.CurrentWorldFontName = FontSettings.DefaultFontName;
-                return DefaultTMPFontAsset;
+                if (!HasDefinedFallbacks)
+                {
+                    PrepareWorldFontAsset(DefaultTMPFontAsset);
+                    return DefaultTMPFontAsset;
+                }
+                fontAsset = CreateDefaultWorldFontAsset();
+                if (fontAsset == null) return DefaultTMPFontAsset;
             }
 
             _worldFontAsset = fontAsset;
+            PrepareWorldFontAsset(fontAsset);
+            AttachWorldFallbacks(fontAsset, fontName);
             _worldFontSource = source;
             _worldFontAssetKey = fontName;
+            PruneScopedFonts();
             DebugLog($"created world font asset '{fontName}' ({fontAsset.atlasWidth}x{fontAsset.atlasHeight})");
             return fontAsset;
         }
@@ -870,6 +917,7 @@ namespace CustomFonts
             {
                 DebugLog($"releasing world font asset '{_worldFontAssetKey}'");
                 ReleaseWorldFontResources(_worldFontAsset);
+                if (!IsProtected(_worldFontAsset.sourceFontFile)) QueueDestroy(_worldFontAsset.sourceFontFile);
                 QueueDestroy(_worldFontAsset);
             }
             QueueDestroy(_worldFontSource);
@@ -888,25 +936,20 @@ namespace CustomFonts
         private void QueueDestroy(UnityEngine.Object target)
         {
             if (target == null) return;
-            if (IsEngineOwned(target)) return;
             if (IsProtected(target))
             {
                 Log.Warning($"[Custom Fonts] Refusing to destroy game owned resource {target.name} ({target.GetType().Name})");
                 return;
             }
-            _pendingDestroy.Add(new PendingDestroy { Frame = Time.frameCount, Target = target });
+            if (!_pendingDestroy.Any(p => p.Target == target))
+                _pendingDestroy.Add(new PendingDestroy { Frame = Time.frameCount, Target = target });
         }
 
-        // The game's own fonts and everything that comes out of the asset bundle belong to
-        // RimWorld / Unity, never to this mod. Destroying one of those would break the UI for
-        // the rest of the session, so they are rejected here no matter who asks.
+        // Original game fonts and the baked world atlas belong to RimWorld. Imported
+        // font variants belong to this mod and stay alive while UI/world references them.
         private bool IsProtected(UnityEngine.Object target)
         {
             foreach (var font in DefaultFonts.Values)
-            {
-                if (target == font) return true;
-            }
-            foreach (var font in BundledFonts.Values)
             {
                 if (target == font) return true;
             }
@@ -945,10 +988,14 @@ namespace CustomFonts
             {
                 var entry = _pendingDestroy[i];
                 if (frame - entry.Frame < 2) continue;
+                // UI and world now share the same content font. Releasing a TMP asset
+                // must not destroy a source still bound to an active UI style or cache.
+                if (entry.Target is Font font && font != null && IsFontReferenced(font)) continue;
                 _pendingDestroy.RemoveAt(i);
                 if (entry.Target == null) continue;
+                if (entry.Target is Font released) _fileFontCache.Forget(released);
                 DebugLog($"destroy {entry.Target.GetType().Name} '{entry.Target.name}'");
-                UnityEngine.Object.Destroy(entry.Target);
+                if (!ReleaseEngineResource(entry.Target)) UnityEngine.Object.Destroy(entry.Target);
                 destroyed++;
             }
             if (destroyed > 0) DebugLog($"destroyed {destroyed} object(s), {_pendingDestroy.Count} still queued");

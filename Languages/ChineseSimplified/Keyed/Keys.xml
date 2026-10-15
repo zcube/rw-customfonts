@@ -26,7 +26,7 @@
     <CustomFonts.HasUnityPlayerSo>UnityPlayer.so</CustomFonts.HasUnityPlayerSo>
     <CustomFonts.HasRunHostFonts>/run/host/fonts</CustomFonts.HasRunHostFonts>
     <CustomFonts.DebugLogging>调试日志（字体资源追踪）</CustomFonts.DebugLogging>
-    <CustomFonts.DebugLoggingDesc>每30秒记录字体和图集的创建与释放情况，用于排查内存泄漏。正常游戏时请关闭。</CustomFonts.DebugLoggingDesc>
+    <CustomFonts.DebugLoggingDesc>每30秒记录字体资源使用情况和已应用设置。正常游戏时请关闭。</CustomFonts.DebugLoggingDesc>
     <CustomFonts.DebugLogStats>输出字体资源统计</CustomFonts.DebugLogStats>
     <CustomFonts.DebugLogNow>立即输出</CustomFonts.DebugLogNow>
     <CustomFonts.DebugStressTest>字体切换压力测试</CustomFonts.DebugStressTest>
@@ -34,7 +34,7 @@
     <CustomFonts.DebugWorldFontTest>世界地图字体测试</CustomFonts.DebugWorldFontTest>
     <CustomFonts.DebugWorldFontTestRun>执行世界地图测试</CustomFonts.DebugWorldFontTestRun>
     <CustomFonts.FontSources>字体文件和文件夹</CustomFonts.FontSources>
-    <CustomFonts.FontSourcesHelp>添加 TTF、OTF、TTC 文件或文件夹。相对路径以模组目录为起点，支持环境变量和 ~。TTC 使用第一个字体。点击刷新以应用搜索设置。已注册的字体会保留至游戏退出。</CustomFonts.FontSourcesHelp>
+    <CustomFonts.FontSourcesHelp>添加 TTF、OTF、TTC 文件或文件夹。相对路径以模组目录为起点，支持环境变量和 ~。TTC 使用第一个字体。点击刷新以应用搜索设置。 选择按字体族名称保存，不保存文件路径，并优先使用常规字形。</CustomFonts.FontSourcesHelp>
     <CustomFonts.IncludeSystemFonts>包含系统字体</CustomFonts.IncludeSystemFonts>
     <CustomFonts.RecursiveFolders>搜索子文件夹</CustomFonts.RecursiveFolders>
     <CustomFonts.FontPath>文件或文件夹路径</CustomFonts.FontPath>
@@ -42,8 +42,12 @@
     <CustomFonts.EmptyFontPath>请输入字体文件或文件夹路径。</CustomFonts.EmptyFontPath>
     <CustomFonts.RemoveFontPath>移除</CustomFonts.RemoveFontPath>
     <CustomFonts.RefreshFontSources>刷新字体列表 / 应用搜索设置</CustomFonts.RefreshFontSources>
-    <CustomFonts.FontSourceCount>{0} 个字体文件，跳过 {1} 个来源（详见日志）</CustomFonts.FontSourceCount>
-    <CustomFonts.WaylithFontRegistrations>文件字体注册数：{0}（保留至游戏退出）</CustomFonts.WaylithFontRegistrations>
-    <CustomFonts.WaylithDebugLoggingDesc>记录原生字体注册复用、界面字形和世界字体。已注册字体保留至游戏退出。</CustomFonts.WaylithDebugLoggingDesc>
-    <CustomFonts.WaylithDebugStressTest>字体与大小切换测试（注册复用）</CustomFonts.WaylithDebugStressTest>
+    <CustomFonts.FontSourceCount>{0} 个字体族，跳过 {1} 个来源（详见日志）</CustomFonts.FontSourceCount>
+    <CustomFonts.FallbackFonts>后备字体</CustomFonts.FallbackFonts>
+    <CustomFonts.FallbackFontsHelp>按从上到下的顺序补充当前字体缺失的字符。适用于界面和世界地图文字。</CustomFonts.FallbackFontsHelp>
+    <CustomFonts.AddFallbackFont>添加后备字体</CustomFonts.AddFallbackFont>
+    <CustomFonts.FallbackTabHelp>点击字体列表中的 + 添加。缺失字符按列表顺序补充。</CustomFonts.FallbackTabHelp>
+    <CustomFonts.FallbackEmpty>未定义后备字体</CustomFonts.FallbackEmpty>
+    <CustomFonts.UnionFallbacks>合并其他标签页 (union)</CustomFonts.UnionFallbacks>
+    <CustomFonts.AllTabs>所有标签页</CustomFonts.AllTabs>
 </LanguageData>

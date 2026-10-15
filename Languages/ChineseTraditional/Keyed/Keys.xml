@@ -26,7 +26,7 @@
     <CustomFonts.HasUnityPlayerSo>UnityPlayer.so</CustomFonts.HasUnityPlayerSo>
     <CustomFonts.HasRunHostFonts>/run/host/fonts</CustomFonts.HasRunHostFonts>
     <CustomFonts.DebugLogging>偵錯紀錄（字型資源追蹤）</CustomFonts.DebugLogging>
-    <CustomFonts.DebugLoggingDesc>每30秒記錄字型與圖集的建立及釋放情況，用於排查記憶體洩漏。正常遊戲時請關閉。</CustomFonts.DebugLoggingDesc>
+    <CustomFonts.DebugLoggingDesc>每30秒記錄字型資源使用情況和已套用設定。正常遊戲時請關閉。</CustomFonts.DebugLoggingDesc>
     <CustomFonts.DebugLogStats>輸出字型資源統計</CustomFonts.DebugLogStats>
     <CustomFonts.DebugLogNow>立即輸出</CustomFonts.DebugLogNow>
     <CustomFonts.DebugStressTest>字型切換壓力測試</CustomFonts.DebugStressTest>
@@ -34,7 +34,7 @@
     <CustomFonts.DebugWorldFontTest>世界地圖字型測試</CustomFonts.DebugWorldFontTest>
     <CustomFonts.DebugWorldFontTestRun>執行世界地圖測試</CustomFonts.DebugWorldFontTestRun>
     <CustomFonts.FontSources>字型檔案和資料夾</CustomFonts.FontSources>
-    <CustomFonts.FontSourcesHelp>新增 TTF、OTF、TTC 檔案或資料夾。相對路徑以模組目錄為起點，支援環境變數和 ~。TTC 使用第一個字型。按下重新整理以套用搜尋設定。已註冊的字型會保留至遊戲結束。</CustomFonts.FontSourcesHelp>
+    <CustomFonts.FontSourcesHelp>新增 TTF、OTF、TTC 檔案或資料夾。相對路徑以模組目錄為起點，支援環境變數和 ~。TTC 使用第一個字型。按下重新整理以套用搜尋設定。 選擇按字型家族名稱儲存，不儲存檔案路徑，並優先使用標準字形。</CustomFonts.FontSourcesHelp>
     <CustomFonts.IncludeSystemFonts>包含系統字型</CustomFonts.IncludeSystemFonts>
     <CustomFonts.RecursiveFolders>搜尋子資料夾</CustomFonts.RecursiveFolders>
     <CustomFonts.FontPath>檔案或資料夾路徑</CustomFonts.FontPath>
@@ -42,8 +42,12 @@
     <CustomFonts.EmptyFontPath>請輸入字型檔案或資料夾路徑。</CustomFonts.EmptyFontPath>
     <CustomFonts.RemoveFontPath>移除</CustomFonts.RemoveFontPath>
     <CustomFonts.RefreshFontSources>重新整理字型清單 / 套用搜尋設定</CustomFonts.RefreshFontSources>
-    <CustomFonts.FontSourceCount>{0} 個字型檔案，略過 {1} 個來源（詳見紀錄）</CustomFonts.FontSourceCount>
-    <CustomFonts.WaylithFontRegistrations>檔案字型註冊數：{0}（保留至遊戲結束）</CustomFonts.WaylithFontRegistrations>
-    <CustomFonts.WaylithDebugLoggingDesc>記錄原生字型註冊重用、介面字形和世界字型。已註冊字型保留至遊戲結束。</CustomFonts.WaylithDebugLoggingDesc>
-    <CustomFonts.WaylithDebugStressTest>字型與大小切換測試（註冊重用）</CustomFonts.WaylithDebugStressTest>
+    <CustomFonts.FontSourceCount>{0} 個字型家族，略過 {1} 個來源（詳見紀錄）</CustomFonts.FontSourceCount>
+    <CustomFonts.FallbackFonts>後備字型</CustomFonts.FallbackFonts>
+    <CustomFonts.FallbackFontsHelp>按由上而下的順序補充目前字型缺少的字元。適用於介面和世界地圖文字。</CustomFonts.FallbackFontsHelp>
+    <CustomFonts.AddFallbackFont>新增後備字型</CustomFonts.AddFallbackFont>
+    <CustomFonts.FallbackTabHelp>點擊字型列表中的 + 新增。缺失字元按列表順序補充。</CustomFonts.FallbackTabHelp>
+    <CustomFonts.FallbackEmpty>未定義後備字型</CustomFonts.FallbackEmpty>
+    <CustomFonts.UnionFallbacks>合併其他分頁 (union)</CustomFonts.UnionFallbacks>
+    <CustomFonts.AllTabs>所有分頁</CustomFonts.AllTabs>
 </LanguageData>

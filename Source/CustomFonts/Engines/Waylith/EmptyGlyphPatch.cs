@@ -15,8 +15,27 @@ namespace CustomFonts
     internal static class WaylithEmptyGlyphScopePatch
     {
         // Weak keys prevent failed registrations from retaining source byte arrays.
-        // Positive ranges stay pinned: native font sources borrow them for the session.
-        private sealed class RangePointer { internal nint Value; }
+        // The host retains the source bytes while native fonts borrow these ranges.
+        // Once the native fonts and their source are retired, the weak-key entry can
+        // collect and release its pin rather than leaking a GCHandle forever.
+        private sealed class RangePointer
+        {
+            private GCHandle _pin;
+            internal nint Value;
+            internal void Pin(uint[] ranges)
+            {
+                _pin = GCHandle.Alloc(ranges, GCHandleType.Pinned);
+                Value = _pin.AddrOfPinnedObject();
+                System.Threading.Interlocked.Increment(ref LivePins);
+            }
+            ~RangePointer()
+            {
+                if (!_pin.IsAllocated) return;
+                _pin.Free();
+                System.Threading.Interlocked.Decrement(ref LivePins);
+            }
+        }
+        internal static int LivePins;
         private static readonly ConditionalWeakTable<byte[], RangePointer> Ranges = new ConditionalWeakTable<byte[], RangePointer>();
         [ThreadStatic] internal static nint Pending;
 
@@ -41,7 +60,7 @@ namespace CustomFonts
                 try
                 {
                     uint[] ranges = FontCoverage.EmptyCjk(bytes);
-                    if (ranges.Length != 0) cached.Value = GCHandle.Alloc(ranges, GCHandleType.Pinned).AddrOfPinnedObject();
+                    if (ranges.Length != 0) cached.Pin(ranges);
                 }
                 catch (Exception ex) when (ex is InvalidDataException || ex is OverflowException)
                 {

@@ -26,15 +26,15 @@
     <CustomFonts.HasUnityPlayerSo>UnityPlayer.so</CustomFonts.HasUnityPlayerSo>
     <CustomFonts.HasRunHostFonts>/run/host/fonts</CustomFonts.HasRunHostFonts>
     <CustomFonts.DebugLogging>Debug logging (font resource tracking)</CustomFonts.DebugLogging>
-    <CustomFonts.DebugLoggingDesc>Writes font / atlas allocation and release counters to the log every 30 seconds. Use it to check for font memory leaks. Keep this off during normal play.</CustomFonts.DebugLoggingDesc>
+    <CustomFonts.DebugLoggingDesc>Logs font resource usage and applied settings every 30 seconds. Keep this off during normal play.</CustomFonts.DebugLoggingDesc>
     <CustomFonts.DebugLogStats>Log font resource stats</CustomFonts.DebugLogStats>
     <CustomFonts.DebugLogNow>Log now</CustomFonts.DebugLogNow>
-    <CustomFonts.DebugStressTest>Font switch stress test (leak check)</CustomFonts.DebugStressTest>
+    <CustomFonts.DebugStressTest>Font switch stress test</CustomFonts.DebugStressTest>
     <CustomFonts.DebugStressTestRun>Run 200 switches</CustomFonts.DebugStressTestRun>
     <CustomFonts.DebugWorldFontTest>World map font test</CustomFonts.DebugWorldFontTest>
     <CustomFonts.DebugWorldFontTestRun>Run world test</CustomFonts.DebugWorldFontTestRun>
     <CustomFonts.FontSources>Font files and folders</CustomFonts.FontSources>
-    <CustomFonts.FontSourcesHelp>Add a TTF, OTF or TTC file, or a folder. Relative paths start in this mod folder; environment variables and ~ are supported. TTC uses its first face. Apply search options with Refresh. Registered fonts stay in the renderer until the game exits.</CustomFonts.FontSourcesHelp>
+    <CustomFonts.FontSourcesHelp>Add a TTF, OTF or TTC file, or a folder. Relative paths start in this mod folder; environment variables and ~ are supported. TTC uses its first face. Apply search options with Refresh. Selections save family names instead of file paths and prefer regular faces.</CustomFonts.FontSourcesHelp>
     <CustomFonts.IncludeSystemFonts>Include system fonts</CustomFonts.IncludeSystemFonts>
     <CustomFonts.RecursiveFolders>Search subfolders</CustomFonts.RecursiveFolders>
     <CustomFonts.FontPath>File or folder path</CustomFonts.FontPath>
@@ -42,8 +42,12 @@
     <CustomFonts.EmptyFontPath>Enter a font file or folder path.</CustomFonts.EmptyFontPath>
     <CustomFonts.RemoveFontPath>Remove</CustomFonts.RemoveFontPath>
     <CustomFonts.RefreshFontSources>Refresh font list / apply search options</CustomFonts.RefreshFontSources>
-    <CustomFonts.FontSourceCount>{0} font files, {1} skipped sources (details in log)</CustomFonts.FontSourceCount>
-    <CustomFonts.WaylithFontRegistrations>File font registrations: {0} (retained until game exit)</CustomFonts.WaylithFontRegistrations>
-    <CustomFonts.WaylithDebugLoggingDesc>Log native font registration reuse, UI glyphs and world fonts. Registered fonts remain allocated until the game exits.</CustomFonts.WaylithDebugLoggingDesc>
-    <CustomFonts.WaylithDebugStressTest>Font / size switch test (registration reuse)</CustomFonts.WaylithDebugStressTest>
+    <CustomFonts.FontSourceCount>{0} font families, {1} skipped sources (details in log)</CustomFonts.FontSourceCount>
+    <CustomFonts.FallbackFonts>Fallback fonts</CustomFonts.FallbackFonts>
+    <CustomFonts.FallbackFontsHelp>Missing characters use these fonts from top to bottom. Applies to UI and world text.</CustomFonts.FallbackFontsHelp>
+    <CustomFonts.AddFallbackFont>Add fallback font</CustomFonts.AddFallbackFont>
+    <CustomFonts.FallbackTabHelp>Add from the font list with +. Missing characters use this list in order.</CustomFonts.FallbackTabHelp>
+    <CustomFonts.FallbackEmpty>No defined fallback fonts</CustomFonts.FallbackEmpty>
+    <CustomFonts.UnionFallbacks>Merge another tab (union)</CustomFonts.UnionFallbacks>
+    <CustomFonts.AllTabs>All tabs</CustomFonts.AllTabs>
 </LanguageData>

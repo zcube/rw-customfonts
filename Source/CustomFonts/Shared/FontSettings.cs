@@ -197,6 +197,8 @@ namespace CustomFonts
                 SetVerticalOffset(GameFont.Small, VerticalOffsetMedium);
                 SetFontWidthScaleFactor(GameFont.Tiny, FontWidthScaleFactorMedium);
                 SetFontWidthScaleFactor(GameFont.Small, FontWidthScaleFactorMedium);
+                SetFallbackFonts(FontTarget.Tiny, GetFallbackFonts(FontTarget.Medium));
+                SetFallbackFonts(FontTarget.Small, GetFallbackFonts(FontTarget.Medium));
             }
         }
 
@@ -210,7 +212,7 @@ namespace CustomFonts
         // Default) and stop retrying it every frame instead of rebuilding fonts forever.
         public string UniformSignature()
         {
-            return $"{CurrentUIFontNameMedium}|{ScaleFactorMedium:F2}|{VerticalOffsetMedium}|{FontWidthScaleFactorMedium:F2}";
+            return $"{CurrentUIFontNameMedium}|{ScaleFactorMedium:F2}|{VerticalOffsetMedium}|{FontWidthScaleFactorMedium:F2}|{FontFallbackLists.NamesKey(GetFallbackFonts(FontTarget.Medium))}";
         }
 
         public bool UniformOutOfSync()
@@ -222,6 +224,7 @@ namespace CustomFonts
                 if (Math.Abs(GetScaleFactor(value) - ScaleFactorMedium) > 0.001f) return true;
                 if (GetVerticalOffset(value) != VerticalOffsetMedium) return true;
                 if (Math.Abs(GetFontWidthScaleFactor(value) - FontWidthScaleFactorMedium) > 0.001f) return true;
+                if (!System.Linq.Enumerable.SequenceEqual(GetFallbackFonts((FontTarget)value), GetFallbackFonts(FontTarget.Medium))) return true;
             }
             return false;
         }

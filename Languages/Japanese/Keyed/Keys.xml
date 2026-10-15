@@ -25,24 +25,28 @@
     <CustomFonts.HasUnityPlayerSo>UnityPlayer.so</CustomFonts.HasUnityPlayerSo>
     <CustomFonts.HasRunHostFonts>/run/host/fonts</CustomFonts.HasRunHostFonts>
     <CustomFonts.DebugLogging>デバッグログ (フォントリソース追跡)</CustomFonts.DebugLogging>
-    <CustomFonts.DebugLoggingDesc>フォント / アトラスの生成・解放の数値を30秒ごとにログへ出力します。フォントのメモリリーク確認用です。通常プレイ時はオフにしてください。</CustomFonts.DebugLoggingDesc>
+    <CustomFonts.DebugLoggingDesc>フォントリソースの使用状況と適用設定を30秒ごとにログへ記録します。通常プレイ時はオフにしてください。</CustomFonts.DebugLoggingDesc>
     <CustomFonts.DebugLogStats>フォントリソース統計を出力</CustomFonts.DebugLogStats>
     <CustomFonts.DebugLogNow>今すぐ出力</CustomFonts.DebugLogNow>
-    <CustomFonts.DebugStressTest>フォント切替ストレステスト (リーク確認)</CustomFonts.DebugStressTest>
+    <CustomFonts.DebugStressTest>フォント切替ストレステスト</CustomFonts.DebugStressTest>
     <CustomFonts.DebugStressTestRun>200回切替を実行</CustomFonts.DebugStressTestRun>
     <CustomFonts.DebugWorldFontTest>ワールドマップ フォント反映テスト</CustomFonts.DebugWorldFontTest>
     <CustomFonts.DebugWorldFontTestRun>ワールドテスト実行</CustomFonts.DebugWorldFontTestRun>
     <CustomFonts.EmptyFontPath>フォントファイルまたはフォルダーのパスを入力してください。</CustomFonts.EmptyFontPath>
     <CustomFonts.AddFontPath>パスを追加</CustomFonts.AddFontPath>
-    <CustomFonts.FontSourcesHelp>TTF、OTF、TTC ファイルまたはフォルダーを追加します。相対パスは MOD フォルダーが基準で、環境変数と ~ に対応します。TTC は最初の書体を使用します。検索設定は更新ボタンで適用します。登録済みフォントはゲーム終了まで保持されます。</CustomFonts.FontSourcesHelp>
+    <CustomFonts.FontSourcesHelp>TTF、OTF、TTC ファイルまたはフォルダーを追加します。相対パスは MOD フォルダーが基準で、環境変数と ~ に対応します。TTC は最初の書体を使用します。検索設定は更新ボタンで適用します。 選択はファイルパスではなくファミリー名で保存し、標準の書体を優先します。</CustomFonts.FontSourcesHelp>
     <CustomFonts.FontPath>ファイルまたはフォルダーのパス</CustomFonts.FontPath>
     <CustomFonts.RecursiveFolders>サブフォルダーを検索</CustomFonts.RecursiveFolders>
     <CustomFonts.FontSources>フォントファイルとフォルダー</CustomFonts.FontSources>
-    <CustomFonts.FontSourceCount>フォント {0} 件、スキップした読み込み元 {1} 件（詳細はログ）</CustomFonts.FontSourceCount>
+    <CustomFonts.FontSourceCount>フォントファミリー {0} 件、スキップした読み込み元 {1} 件（詳細はログ）</CustomFonts.FontSourceCount>
     <CustomFonts.RefreshFontSources>フォント一覧を更新 / 検索設定を適用</CustomFonts.RefreshFontSources>
     <CustomFonts.RemoveFontPath>削除</CustomFonts.RemoveFontPath>
     <CustomFonts.IncludeSystemFonts>システムフォントを含める</CustomFonts.IncludeSystemFonts>
-    <CustomFonts.WaylithFontRegistrations>ファイルフォント登録数：{0}（ゲーム終了まで保持）</CustomFonts.WaylithFontRegistrations>
-    <CustomFonts.WaylithDebugLoggingDesc>ネイティブフォント登録の再利用、UI文字、ワールドフォントを記録します。登録済みフォントはゲーム終了まで保持されます。</CustomFonts.WaylithDebugLoggingDesc>
-    <CustomFonts.WaylithDebugStressTest>フォント・サイズ切替テスト（登録の再利用）</CustomFonts.WaylithDebugStressTest>
+    <CustomFonts.FallbackFonts>フォールバックフォント</CustomFonts.FallbackFonts>
+    <CustomFonts.FallbackFontsHelp>選択したフォントにない文字を上から順に補います。UIとワールドの文字に適用されます。</CustomFonts.FallbackFontsHelp>
+    <CustomFonts.AddFallbackFont>フォールバックフォントを追加</CustomFonts.AddFallbackFont>
+    <CustomFonts.FallbackTabHelp>フォント一覧の + で追加します。不足文字は上から順に補います。</CustomFonts.FallbackTabHelp>
+    <CustomFonts.FallbackEmpty>フォールバック未設定</CustomFonts.FallbackEmpty>
+    <CustomFonts.UnionFallbacks>他のタブと統合 (union)</CustomFonts.UnionFallbacks>
+    <CustomFonts.AllTabs>すべてのタブ</CustomFonts.AllTabs>
 </LanguageData>

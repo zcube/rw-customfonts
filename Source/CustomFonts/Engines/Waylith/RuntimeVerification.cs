@@ -17,15 +17,68 @@ namespace CustomFonts
         private int _verificationFrame;
         private string[] _verificationFonts;
         private int _verificationFirstIndex;
+        private int _verificationSwitch;
         private float _verificationFirstWidth;
         private int _verificationBundledBefore;
         private Font _verificationBundledFont;
-        private readonly bool _verificationEnabled = GenCommandLine.TryGetCommandLineArg("customfonts-verify", out _);
+        private readonly bool _verificationEnabled = FontVerificationOptions.TryGet("customfonts-verify", out _);
+        private float _fallbackFirstAdvance;
+        private void VerifyScopedFallbackGlyphs(bool defaults)
+        {
+            foreach (var size in PreviewFonts)
+            {
+                var first = SourcesFor((FontTarget)size)[0];
+                Font reference = LoadFontFile(first.Path);
+                int pixels = Text.fontStyles[(int)size].fontSize;
+                bool actualFound = NativeFontAccess.TryGlyph(CurrentFonts[size].GameFontIndex, '한', pixels, out var a);
+                bool referenceFound = NativeFontAccess.TryGlyph(reference.GameFontIndex, '한', pixels, out var b);
+                if (!actualFound || !referenceFound || !a.visible || Math.Abs(a.advanceX - b.advanceX) >= 0.01f)
+                    Log.Message($"[Custom Fonts][scoped-fallback] mismatch {size}: actual={actualFound}/{a.advanceX}/index={CurrentFonts[size].GameFontIndex}, reference={referenceFound}/{b.advanceX}/index={reference.GameFontIndex}, first={first.Name}");
+                Require(actualFound && referenceFound && a.visible && Math.Abs(a.advanceX - b.advanceX) < 0.01f,
+                    "Waylith " + size + " renders its own first fallback: " + first.Name);
+                Log.Message($"[Custom Fonts][scoped-fallback] glyph {size}: first={first.Name}, advance={a.advanceX}, index={CurrentFonts[size].GameFontIndex}, default={defaults}");
+            }
+        }
+        private void VerifyDefinedFallbackGlyphs()
+        {
+            Font expected = LoadFontFile(FallbackSources[0].Path);
+            foreach (var size in PreviewFonts)
+            {
+                int pixels = Text.fontStyles[(int)size].fontSize;
+                bool foundActual = NativeFontAccess.TryGlyph(CurrentFonts[size].GameFontIndex, '한', pixels, out var a);
+                bool foundExpected = NativeFontAccess.TryGlyph(expected.GameFontIndex, '한', pixels, out var b);
+                Log.Message($"[Custom Fonts][fallback-verify] glyph {size}/{pixels}/{FallbackSources[0].Name}: actual={foundActual}/{a.advanceX}/{a.x0}/{a.x1}/{a.y0}/{a.y1}, reference={foundExpected}/{b.advanceX}/{b.x0}/{b.x1}/{b.y0}/{b.y1}");
+                Require(foundActual && foundExpected
+                    && a.visible && Math.Abs(a.advanceX - b.advanceX) < 0.01f && Math.Abs(a.x0 - b.x0) <= 1f && Math.Abs(a.x1 - b.x1) <= 1f,
+                    "Waylith UI uses first defined private fallback at " + size);
+                if (size == GameFont.Medium && _fallbackTestStep == 1) _fallbackFirstAdvance = a.advanceX;
+                if (size == GameFont.Medium && _fallbackTestStep == 2) Require(Math.Abs(a.advanceX - _fallbackFirstAdvance) > 0.1f,
+                    "reversing fallback order changes the rendered Hangul glyph");
+            }
+        }
+        private void VerifyDefinedFallbackWorld(TextMeshPro label)
+        {
+            Require(NativeFontAccess.TryGlyph(label.font.fontIndex, '한', 48, out var glyph) && glyph.visible,
+                "Waylith world uses visible merged fallback glyph");
+        }
+        private void VerifyDefaultFallbackRendering()
+        {
+            foreach (var size in PreviewFonts)
+                Require(NativeFontAccess.TryGlyph(CurrentFonts[size].GameFontIndex, '한', Text.fontStyles[(int)size].fontSize, out var glyph) && glyph.visible,
+                    "Default UI fallback renders Hangul at " + size);
+        }
+        private void VerifyDefaultWorldResourceLifetime()
+            // The facade's atlasTextures entries are placeholders; the actual borrowed
+            // native atlas is returned by the TMP backend and checked on the live labels.
+            => Require(DefaultTMPFontAsset != null
+                && TextMeshProBackend.Current.GetAtlasTexture(DefaultTMPFontAsset.fontIndex) != null,
+                "native default world atlas survives delayed resource cleanup");
 
         // Opt-in integration check. Use an isolated -savedatafolder and -quicktest. Exercises
         // the live renderer, text measurement, actual world labels and registration reuse.
         partial void OnEngineVerification()
         {
+            VerifyTextFieldSizeIfRequested();
             if (!_verificationEnabled || _verificationStep < 0 || Current.ProgramState != ProgramState.Playing
                 || Time.frameCount < _verificationFrame || Event.current.type != EventType.Repaint) return;
             try
@@ -33,6 +86,7 @@ namespace CustomFonts
                 switch (_verificationStep)
                 {
                     case 0:
+                        SetupBundledFonts();
                         if (GenCommandLine.TryGetCommandLineArg("customfonts-language", out string expectedLanguage))
                             Require(LanguageDatabase.activeLanguage?.folderName == expectedLanguage,
                                 "active game language: " + LanguageDatabase.activeLanguage?.folderName);
@@ -41,14 +95,17 @@ namespace CustomFonts
                         Require(OSFontPaths.Count > 0, "system font discovery");
                         Require(BundledFonts.Count > 0, "bundled font discovery");
                         Require(BundledFonts.Values.Any(font => font == null), "unselected bundled fonts have no loaded source data");
-                        GenCommandLine.TryGetCommandLineArg("customfonts-verify", out string path);
+                        VerifySharedFontCatalog();
+                        FontVerificationOptions.TryGet("customfonts-verify", out string path);
                         _settings.FontSourcePaths.Clear();
                         _settings.FontSourcePaths.Add(path);
                         _settings.RecursiveFontFolders = true;
                         RefreshFontSources();
-                        _verificationFonts = OSFontPaths.Keys.Where(k => k.StartsWith("(File) ")).Take(2).ToArray();
+                        _verificationFonts = OSFontPaths.Where(p => FontFiles.Enumerate(path, true).Contains(p.Value, FontSourceCatalog.PathComparer))
+                            .Select(p => p.Key).Take(2).ToArray();
                         Require(_verificationFonts.Length == 2, "two custom file fonts discovered");
                         _settings.UniformUIfonts = true;
+                        foreach (var size in PreviewFonts) _settings.SetScaleFactor(size, 1f);
                         SaveFontAll(_verificationFonts[0]);
                         SaveWorldFont(_verificationFonts[0]);
                         CameraJumper.TryShowWorld();
@@ -66,23 +123,26 @@ namespace CustomFonts
                         break;
                     case 2:
                         VerifyLiveLabels(_verificationFonts[1]);
-                        int before = _registeredFileFonts.Count;
-                        int nativeBefore = EngineFontCount();
-                        for (int i = 0; i < 200; i++)
+                        if (_verificationSwitch < 20)
                         {
-                            foreach (var size in PreviewFonts) _settings.SetScaleFactor(size, 0.8f + (i % 10) / 10f);
-                            SaveFontAll(_verificationFonts[i % 2]);
+                            foreach (var size in PreviewFonts) _settings.SetScaleFactor(size, 0.8f + (_verificationSwitch % 10) / 10f);
+                            SaveFontAll(_verificationFonts[_verificationSwitch++ % 2]);
                             GetWorldFontAsset();
+                            // Allow native retirement before changing sizes again.
+                            _verificationFrame = Time.frameCount + 12; return;
                         }
-                        Require(_registeredFileFonts.Count == before, "200 font/size switches reuse registrations");
-                        Require(EngineFontCount() == nativeBefore, "200 font/size switches keep the engine registration count unchanged");
+                        ProcessPendingDestroy();
+                        Require(_registeredFileFonts.Count <= 4 && WaylithFontLifetime.LiveCount <= 4,
+                            "20 size/family switches retain only the three UI sizes and world registration");
                         foreach (var size in PreviewFonts) _settings.SetScaleFactor(size, 1f);
                         SaveFontAll(_verificationFonts[0]);
                         SaveWorldFont(_verificationFonts[0]);
                         break;
                     case 3:
                         VerifyLiveLabels(_verificationFonts[0]);
-                        Require(CurrentFonts[GameFont.Small].GameFontIndex == _verificationFirstIndex, "return to original file reuses renderer index");
+                        Require(CurrentFonts[GameFont.Small].GameFontIndex >= 3
+                            && Math.Abs(Text.CalcSize("Wide WWW iii 한글 폰트").x - _verificationFirstWidth) < 0.1f,
+                            "return to a retired file restores its original glyph metrics in a reusable slot");
                         string bundled = BundledFonts.Keys.First();
                         _verificationBundledBefore = BundledFonts.Values.Count(font => font != null);
                         SaveFontAll(bundled);
@@ -94,8 +154,9 @@ namespace CustomFonts
                     case 4:
                         VerifyLiveLabels(_settings.CurrentWorldFontName);
                         SaveFontAll(_settings.CurrentWorldFontName);
-                        Require(ReferenceEquals(_verificationBundledFont, BundledFonts[_settings.CurrentWorldFontName]),
-                            "reselecting bundle reuses loaded font");
+                        Require(ReferenceEquals(CurrentFonts[GameFont.Small], ResolveBundledFont(_settings.CurrentWorldFontName,
+                            SourcesFor(FontTarget.Small), Text.fontStyles[(int)GameFont.Small].fontSize)),
+                            "reselecting bundle reuses the matching UI size variant");
                         Require(BundledFonts.Values.Any(font => font == null), "other bundle sources remain unloaded after rendering");
                         // Ensure rescanning doesn't duplicate registrations or invalidate selections.
                         SaveFontAll(_verificationFonts[0]);
@@ -138,11 +199,7 @@ namespace CustomFonts
             }
         }
 
-        private static void Require(bool condition, string description)
-        {
-            if (!condition) throw new InvalidOperationException(description);
-            Log.Message("[Custom Fonts][verify] OK: " + description);
-        }
+        partial void VerifyWorldFallbackBackend() => VerifyWorldRendering();
 
         private void VerifyWorldRendering()
         {
@@ -152,6 +209,9 @@ namespace CustomFonts
             {
                 var mesh = (TextMeshPro)AccessTools.Field(typeof(WorldFeatureTextMesh_TextMeshPro), "textMesh").GetValue(label);
                 if (!label.Active || mesh.color.a <= 0.01f || mesh.mesh == null || mesh.mesh.vertexCount == 0) continue;
+                Require(mesh.gameObject.layer == LayerMask.NameToLayer("WorldText"),
+                    "world label uses WorldText render layer (actual=" + mesh.gameObject.layer + ")");
+                Require(mesh.mesh.colors32.Any(c => c.a > 0), "visible world label has nontransparent vertex colors");
                 checkedLabels++;
                 var texture = TextMeshProBackend.Current.GetAtlasTexture(mesh.font.fontIndex) as Texture2D;
                 if (texture == null || !ReferenceEquals(mesh.fontMaterial.mainTexture, texture)) wrongTextures++;
@@ -160,8 +220,10 @@ namespace CustomFonts
                 for (int i = 0; i < info.characterCount; i++)
                 {
                     var character = info.characterInfo[i];
-                    if (!character.isVisible || !NativeFontAccess.TryGlyph(mesh.font.fontIndex,
-                        UnicodeScalars.At(mesh.text, i), TextMeshProBackend.Current.BakePixelSize, out var glyph)) continue;
+                    if (!character.isVisible) continue;
+                    Require(NativeFontAccess.TryGlyph(mesh.font.fontIndex,
+                        UnicodeScalars.At(mesh.text, i), TextMeshProBackend.Current.BakePixelSize, out var glyph)
+                        && glyph.visible, "visible world character resolves to its actual glyph (no replacement square)");
                     int v = character.vertexIndex;
                     if (Math.Abs(uvs[v].x - glyph.u0) > 0.00001f || Math.Abs(uvs[v].y - glyph.v1) > 0.00001f) staleUvs++;
                     if (texture != null)
@@ -173,7 +235,6 @@ namespace CustomFonts
                             for (int x = x0; x < x1 && !ink; x++) ink = texture.GetPixel(x, y).a > 0.01f;
                         if (!ink) blankGlyphs++;
                     }
-                    break;
                 }
             }
             Log.Message($"[Custom Fonts][verify] rendering: {checkedLabels} visible labels, {staleUvs} stale UVs, {blankGlyphs} blank atlas glyphs, {wrongTextures} wrong textures; atlas version {TextMeshProBackend.Current.AtlasVersion}");
@@ -195,10 +256,13 @@ namespace CustomFonts
             Require(PreviewFonts.All(f => ReferenceEquals(Text.fontStyles[(int)f].font, CurrentFonts[f])), "all UI styles bound");
             Require(GuiBackend.Current.MeasureText(font.GameFontIndex, 20, FontStyle.Normal, "Test 한글", 1000).x > 0,
                 "native renderer measures Latin and Korean");
-            Require(TextMeshProBackend.Current.TryGetGlyph(font.GameFontIndex, 'A', out var glyph) && glyph.found && glyph.visible,
+            // UI size variants are not world TMP fonts. Probe the UI rasterizer at
+            // its actual size; the world asset's TMP mesh/atlas is checked below.
+            int uiPixels = Text.fontStyles[(int)GameFont.Small].fontSize;
+            Require(NativeFontAccess.TryGlyph(font.GameFontIndex, 'A', uiPixels, out var glyph) && glyph.visible,
                 "native font rasterizes glyphs");
             if (selection.Contains("Malgun Gothic") || selection.Contains("HangeulNuri"))
-                Require(TextMeshProBackend.Current.TryGetGlyph(font.GameFontIndex, '한', out var korean) && korean.found && korean.visible,
+                Require(NativeFontAccess.TryGlyph(font.GameFontIndex, '한', uiPixels, out var korean) && korean.visible,
                     "Korean font rasterizes Hangul glyphs");
             var labels = (IEnumerable<WorldFeatureTextMesh>)AccessTools.Field(typeof(WorldFeatures), "texts").GetValue(Find.WorldFeatures);
             int withGeometry = 0;

@@ -569,7 +569,6 @@ namespace CustomFonts
                 BeginWorldFontTest();
             }
             GUI.enabled = true;
-            GUI.enabled = true;
         }
     }
 }

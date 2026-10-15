@@ -16,19 +16,29 @@ namespace CustomFonts
     {
         private static object _host;
         private static object _sources;
-        private static readonly HashSet<object> ExtendedLists = new HashSet<object>();
+        [ThreadStatic] internal static FallbackFontSource[] PendingSources;
+        private static readonly Dictionary<int, FallbackFontSource[]> FontPolicies = new Dictionary<int, FallbackFontSource[]>();
+        internal static void Register(int index, FallbackFontSource[] sources) => FontPolicies[index] = sources;
+        internal static void Forget(int index) => FontPolicies.Remove(index);
+        internal static FallbackFontSource[] Sources(int index) => FontPolicies.TryGetValue(index, out var sources) ? sources : Array.Empty<FallbackFontSource>();
 
         private static MethodBase TargetMethod() => AccessTools.Method(
             AccessTools.TypeByName("RimWorldWaylith.Imgui.ImGuiHost"), "Fallbacks");
 
         [HarmonyPostfix]
-        private static void Postfix(object __result)
+        private static void Postfix(ref object __result)
         {
-            if (!ExtendedLists.Add(__result)) return;
             _sources ??= BuildSources();
-            var list = (IList)__result;
-            foreach (object source in (IEnumerable)_sources)
-                if (!list.Contains(source)) list.Add(source);
+            var type = AccessTools.TypeByName("RimWorldWaylith.Imgui.FontFallbacks");
+            var sourceType = type.GetNestedType("Source", BindingFlags.Public | BindingFlags.NonPublic);
+            var list = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(sourceType));
+            foreach (var configured in PendingSources ?? Array.Empty<FallbackFontSource>())
+                list.Add(Activator.CreateInstance(sourceType, new object[] { configured.Path, 0u, null }));
+            // Never mutate the engine's cached locale list: each native font gets its
+            // own ordered policy, followed by the game's locale and automatic CJK sources.
+            foreach (object source in (IEnumerable)__result) if (!list.Contains(source)) list.Add(source);
+            foreach (object source in (IEnumerable)_sources) if (!list.Contains(source)) list.Add(source);
+            __result = list;
         }
 
         internal static void InitializeHost(object host)
@@ -87,7 +97,15 @@ namespace CustomFonts
         }
 
         [HarmonyPrefix]
-        private static void Prefix(object __instance) => WaylithCjkFallbackPatch.InitializeHost(__instance);
+        [HarmonyPriority(Priority.First)]
+        private static void Prefix(object __instance, int __0, out FallbackFontSource[] __state)
+        {
+            WaylithCjkFallbackPatch.InitializeHost(__instance);
+            __state = WaylithCjkFallbackPatch.PendingSources;
+            WaylithCjkFallbackPatch.PendingSources = WaylithCjkFallbackPatch.Sources(__0);
+        }
+        [HarmonyFinalizer]
+        private static void Finalizer(FallbackFontSource[] __state) => WaylithCjkFallbackPatch.PendingSources = __state;
     }
 
     [HarmonyPatch]
@@ -101,7 +119,7 @@ namespace CustomFonts
             object ___localeFonts, object ___fontSources, ref ImFontPtr __result)
         {
             // The empty/English locale otherwise returns fonts created before mod loading.
-            if (___locale.Length != 0) return;
+            if (___locale.Length != 0 || WaylithFontLifetime.HasRegisteredLocale(fontIndex, ___locale)) return;
             var cache = (IDictionary)___localeFonts;
             var key = (fontIndex, "");
             if (!cache.Contains(key))

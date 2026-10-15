@@ -1,6 +1,35 @@
 using System.Text;
 using CustomFonts;
 
+if (args.Length > 0 && args[0] == "--write-manifest")
+{
+    BundledFontManifest.Write(args[1], args[2]);
+    Console.WriteLine("Font manifest generated/verified: " + args[2]);
+    return;
+}
+
+if (args.Length > 0 && args[0] == "--inspect-bundle")
+{
+    var manager = new AssetsTools.NET.Extra.AssetsManager();
+    try
+    {
+        var bundle = manager.LoadBundleFile(args[1], false);
+        Console.WriteLine($"Compression: {bundle.file.GetCompressionType()}; blocks: {bundle.file.BlockAndDirInfo.BlockInfos.Length}");
+        foreach (var block in bundle.file.BlockAndDirInfo.BlockInfos)
+            Console.WriteLine($"compressed={block.CompressedSize}, decompressed={block.DecompressedSize}, flags={block.Flags}");
+        manager.UnloadAll();
+        foreach (var entry in BundledFontReader.Read(args[1])) Console.WriteLine($"{entry.FaceName}: {entry.DataOffset} + {entry.DataLength}");
+    }
+    finally { manager.UnloadAll(); }
+    return;
+}
+
+if (args.Length > 0 && args[0] == "--benchmark")
+{
+    StartupBenchmark.Run(args.Skip(1).ToArray());
+    return;
+}
+
 int assertions = 0;
 void Check(bool condition, string name)
 {
@@ -12,8 +41,18 @@ void Reject(Action action, string name)
     try { action(); } catch (InvalidDataException) { assertions++; return; }
     throw new Exception("FAIL: " + name);
 }
+void RejectWith<T>(Action action, string name) where T : Exception
+{
+    try { action(); } catch (T) { assertions++; return; }
+    throw new Exception("FAIL: " + name);
+}
 void U16(byte[] b, int at, int v) { b[at] = (byte)(v >> 8); b[at + 1] = (byte)v; }
 void U32(byte[] b, int at, uint v) { U16(b, at, (int)(v >> 16)); U16(b, at + 2, (int)v); }
+Check(FontVerificationOptions.TryGet(new[] { "game", "-customfonts-verify=D:/개인 Fonts" }, "customfonts-verify", out string verificationPath)
+    && verificationPath == "D:/개인 Fonts", "verification options preserve Unicode paths with spaces on old Unity");
+Check(FontVerificationOptions.TryGet(new[] { "-customfonts-verify=\"D:/개인 Fonts\"" }, "customfonts-verify", out verificationPath)
+    && verificationPath == "D:/개인 Fonts", "verification options accept quoted paths");
+Check(!FontVerificationOptions.TryGet(new[] { "-other-customfonts-verify=D:/Fonts" }, "customfonts-verify", out _), "verification remains opt-in with exact option name");
 byte[] Font(bool collection = false)
 {
     var names = new[] { "Old Family", "Old Style", "테스트 Font", "Regular" };
@@ -61,6 +100,13 @@ Check(UnicodeScalars.At("\ud840x\udfb7", 0) == 0xfffd && UnicodeScalars.At("\ud8
 var mixed = Font();
 U16(mixed, 28 + 6 + 2 * 12, 1); U16(mixed, 28 + 6 + 2 * 12 + 2, 1);
 Check(OpenTypeNames.Read(mixed) == "Old Family (Regular)", "ignore legacy Japanese Mac bytes instead of misdecoding as Latin1");
+var macName = Font();
+for (int i = 0; i < 4; i++) U16(macName, 28 + 6 + i * 12, 2);
+int macEntry = 28 + 6 + 2 * 12;
+U16(macName, macEntry, 1); U16(macName, macEntry + 2, 0); U16(macName, macEntry + 8, 4);
+int macString = 28 + 54 + ((macName[macEntry + 10] << 8) | macName[macEntry + 11]);
+new byte[] { 67, 97, 102, 0x8e }.CopyTo(macName, macString);
+Check(OpenTypeNames.Read(macName) == "Café (Regular)", "Mac Roman names decode without engine or code-page providers");
 Reject(() => OpenTypeNames.Read(new byte[3]), "truncated header");
 Reject(() => OpenTypeNames.Read(Encoding.UTF8.GetBytes("not a font file")), "invalid signature");
 var bad = Font(); U32(bad, 20, (uint)(bad.Length - 1));
@@ -117,11 +163,28 @@ try
     File.WriteAllBytes(Path.Combine(folder, "nested", "other.otf"), Font());
     File.WriteAllText(Path.Combine(folder, "readme.txt"), "not a font");
     Check(FontFiles.Normalize("\"한글 Fonts/custom font.TTF\"", root) == path, "quoted relative Unicode path");
+    Check(FontFiles.Normalize(@"한글 Fonts\custom font.TTF", root) == path, "Windows relative separators resolve on current OS");
+    Check(FontFiles.NormalizeSeparators(@"Fonts\한글/mixed.ttf", true) == @"Fonts\한글\mixed.ttf", "mixed relative separators on Windows");
+    Check(FontFiles.NormalizeSeparators(@"Fonts\한글/mixed.ttf", false) == "Fonts/한글/mixed.ttf", "mixed relative separators on Linux/macOS");
+    Check(FontFiles.NormalizeSeparators("C:/Fonts/font.ttf", true) == @"C:\Fonts\font.ttf", "forward separators in Windows drive path");
+    Check(FontFiles.NormalizeSeparators("//server/fonts/font.ttf", true) == @"\\server\fonts\font.ttf", "forward separators in Windows UNC path");
+    Check(FontFiles.NormalizeSeparators(@"~/Fonts\font.ttf", false) == "~/Fonts/font.ttf", "mixed separators in Unix home path");
+    Check(FontFiles.NormalizeSeparators("/Library/Fonts", false) == "/Library/Fonts", "macOS absolute path retained");
+    Check(FontFiles.NormalizeSeparators("/run/host/fonts", false) == "/run/host/fonts", "Steam Deck absolute path retained");
+    foreach (string foreign in new[] { @"C:\Windows\Fonts", "C:/Windows/Fonts", @"\\server\fonts", "//server/fonts", @"\Windows\Fonts" })
+        RejectWith<NotSupportedException>(() => FontFiles.NormalizeSeparators(foreign, false), "Windows absolute path is not reinterpreted on Unix: " + foreign);
+    foreach (string foreign in new[] { "/usr/share/fonts", "/Library/Fonts", "/run/host/user-fonts" })
+        RejectWith<NotSupportedException>(() => FontFiles.NormalizeSeparators(foreign, true), "Unix absolute path is not mapped to current Windows drive: " + foreign);
+    RejectWith<ArgumentException>(() => FontFiles.NormalizeSeparators("C:Fonts", true), "drive-relative path cannot depend on another machine's drive working directory");
     Check(FontFiles.Normalize(path, root) == path, "absolute path");
     Environment.SetEnvironmentVariable("CUSTOMFONTS_TEST_PATH", folder);
     Check(FontFiles.Normalize("%CUSTOMFONTS_TEST_PATH%/custom font.TTF", root) == path, "environment expansion");
     Check(FontFiles.Normalize("$CUSTOMFONTS_TEST_PATH/custom font.TTF", root) == path, "Unix environment expansion");
     Check(FontFiles.Normalize("${CUSTOMFONTS_TEST_PATH}/custom font.TTF", root) == path, "braced Unix environment expansion");
+    Check(FontFiles.SameLocation(@"한글 Fonts\custom font.TTF", path, root), "portable relative expression deduplicates against absolute file");
+    Check(FontFiles.SameLocation("$CUSTOMFONTS_TEST_PATH/custom font.TTF", path, root), "environment expression deduplicates without rewriting saved text");
+    Check(!FontFiles.SameLocation("missing/other.ttf", path, root), "distinct portable paths are not duplicates");
+    Check(FontFiles.SameLocation("/another-os/fonts", "/another-os/fonts", root), "foreign expressions can still be compared without failing");
     Check(FontFiles.ExpandVariables("$MISSING/${MISSING}/%MISSING%", _ => null) == "$MISSING/${MISSING}/%MISSING%", "unknown variables preserved");
     Check(FontFiles.ExpandVariables("$FONT", _ => "fonts/$literal%name%") == "fonts/$literal%name%", "expanded path not recursively interpreted");
     Check(FontFiles.Normalize("~/font.ttf", root) == Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "font.ttf"), "home expansion");
@@ -131,6 +194,190 @@ try
     Check(OpenTypeNames.Read(FontFiles.Read(path)) == "테스트 Font (Regular)", "file content");
     Check(FontFiles.ReadName(path) == "테스트 Font (Regular)", "metadata-only file catalog");
     Reject(() => FontFiles.Enumerate(Path.Combine(folder, "readme.txt"), false).ToList(), "unsupported explicit file");
+    Check(FontFiles.Normalize(folder + Path.DirectorySeparatorChar, root) == folder, "folder trailing separator normalized");
+    var catalog = new Dictionary<string, string>();
+    var sourceErrors = new List<string>();
+    string nestedFont = Path.Combine(folder, "nested", "other.otf");
+    void Populate(IEnumerable<string> system, IEnumerable<string> custom, bool recursive)
+    {
+        catalog.Clear(); sourceErrors.Clear();
+        FontSourceCatalog.Populate(catalog, system, custom, root, recursive,
+            FontFiles.ReadName, (source, _) => sourceErrors.Add(source));
+    }
+    Populate(new[] { path, path }, new[] { folder, nestedFont, folder }, true);
+    Check(catalog.Count == 1 && sourceErrors.Count == 0, "system and configured files collapse to one portable family");
+    Check(catalog["테스트 Font"] == path, "equivalent configured faces use source order and sorted paths");
+    Check(FontSourceCatalog.DisplayName("(File) 테스트 Font (Regular) [" + path + "]") == "테스트 Font", "legacy file label displays portable family");
+    Check(FontSourceCatalog.DisplayName("Legacy OS family") == "Legacy OS family", "existing family selection remains unchanged");
+    Check(FontSourceCatalog.Family("Family (Example) (Regular)") == "Family (Example)", "metadata preserves parentheses in family names");
+    Check(FontSourceCatalog.FindKey(catalog, "테스트 Font") == "테스트 Font", "legacy Unity family retains its identity");
+    Check(FontSourceCatalog.FindKey(catalog, "테스트 Font (Regular)") == "테스트 Font", "old face selection migrates to family");
+    Check(FontSourceCatalog.FindKey(catalog, "테스트 Font (Bold)") == "테스트 Font", "old styled face migrates to family default");
+    Check(FontSourceCatalog.FindKey(catalog, "테스트 font") == "테스트 Font", "family resolution ignores case");
+    string oldFileKey = "(File) Old engine name [" + path + "]";
+    Check(FontSourceCatalog.FindKey(catalog, oldFileKey) == "테스트 Font", "unknown old engine file name migrates through configured path");
+    string movedSelection = "(File) 테스트 Font (Regular) [/old/other-machine/font.ttf]";
+    Check(FontSourceCatalog.FindKey(catalog, movedSelection) == "테스트 Font", "private selection migrates by family despite moved file or OS");
+    Populate(Array.Empty<string>(), new[] { folder }, false);
+    Check(catalog.Count == 1 && catalog.Keys.Single() == "테스트 Font", "system exclusion retains configured families");
+    Check(FontSourceCatalog.FindKey(catalog, "테스트 Font") == "테스트 Font", "family can resolve from a configured folder without OS installation");
+    Populate(Array.Empty<string>(), new[] { folder, nestedFont }, false);
+    Check(catalog.Count == 1, "explicit nested file deduplicates by family without recursion");
+    string invalidFont = Path.Combine(folder, "invalid.ttf");
+    File.WriteAllText(invalidFont, "invalid font content");
+    Populate(Array.Empty<string>(), new[] { "missing.ttf", folder }, true);
+    Check(catalog.Count == 1 && sourceErrors.Count == 2, "missing source and invalid font do not hide valid siblings");
+    File.Delete(invalidFont);
+    string[] sharedPaths = (Path.DirectorySeparatorChar == '\\'
+        ? new[] { "/usr/share/fonts", "/Library/Fonts", "/run/host/fonts" }
+        : new[] { @"C:\Windows\Fonts", "C:/Windows/Fonts", @"\\server\fonts" })
+        .Concat(new[] { "another-machine-missing", @"한글 Fonts\custom font.TTF" }).ToArray();
+    string[] savedSharedPaths = sharedPaths.ToArray();
+    Populate(Array.Empty<string>(), sharedPaths, false);
+    Check(catalog.Count == 1 && catalog["테스트 Font"] == path && sourceErrors.Count == 4,
+        "shared foreign/missing roots are skipped while valid backslash relative source is scanned");
+    Check(sharedPaths.SequenceEqual(savedSharedPaths), "scanning preserves shared path expressions for other machines");
+    FontSourceCatalog.Populate(catalog = new(), Array.Empty<string>(), new[] { nestedFont, path }, root, false,
+        f => f == nestedFont ? throw new UnauthorizedAccessException("test unreadable font") : FontFiles.ReadName(f),
+        (_, _) => { });
+    Check(catalog.Count == 1 && catalog["테스트 Font"] == path, "unreadable font does not prevent another source from resolving");
+    // The family resolver must choose Regular over lexically earlier Bold, regardless
+    // of source, and prefer configured sources when both contain a Regular face.
+    FontSourceCatalog.Populate(catalog = new(), new[] { nestedFont }, new[] { path }, root, false,
+        f => f == path ? "테스트 Font (Bold)" : "테스트 Font (Regular)", (_, _) => { });
+    Check(catalog["테스트 Font"] == nestedFont, "OS Regular precedes configured Bold");
+    FontSourceCatalog.Populate(catalog = new(), new[] { path }, new[] { nestedFont }, root, false,
+        _ => "테스트 Font (Regular)", (_, _) => { });
+    Check(catalog["테스트 Font"] == nestedFont, "configured Regular precedes OS Regular");
+    FontSourceCatalog.Populate(catalog = new(), new[] { path, nestedFont }, Array.Empty<string>(), root, false,
+        f => f == path ? "테스트 Font (Bold)" : "테스트 Font (Normal)", (_, _) => { });
+    Check(catalog["테스트 Font"] == nestedFont, "Normal is a regular family face");
+    FontSourceCatalog.Populate(catalog = new(), new[] { path, nestedFont }, Array.Empty<string>(), root, false,
+        f => f == path ? "Family (Example) (Bold)" : "family (example) (Regular)", (_, _) => { });
+    Check(catalog.Count == 1 && FontSourceCatalog.FindKey(catalog, "Family (Example)") == "Family (Example)", "case-insensitive families preserve parenthesized names");
+    Populate(Array.Empty<string>(), Array.Empty<string>(), true);
+    Check(catalog.Count == 0, "removing sources clears selectable family choices");
+    Check(FontSourceCatalog.PortableSelection(catalog, movedSelection) == "테스트 Font", "unavailable old private selection drops machine path and retains family");
+    Check(FontSourceCatalog.PortableSelection(catalog, "Missing family") == "Missing family", "unavailable family remains portable for another OS or refresh");
+    Check(FontSourceCatalog.PortableSelection(catalog, "Family (Example)") == "Family (Example)", "unavailable new family with parentheses retains exact identity");
+    Check(FontSourceCatalog.FindKey(catalog, oldFileKey) == null, "stale path is never opened outside configured sources");
+
+    string[] legacyFallbacks = { "HangeulNuri", "MaruBuri", "HangeulNuri", "Default", "" };
+    Check(FontFallbackLists.Migrate(null, legacyFallbacks).SequenceEqual(new[] { "HangeulNuri", "MaruBuri" }), "legacy global fallback migrates to ordered per-tab lists");
+    Check(FontFallbackLists.Migrate(Array.Empty<string>(), legacyFallbacks).Count == 0, "explicit empty per-tab fallback does not inherit legacy settings");
+    var migratedA = FontFallbackLists.Migrate(null, legacyFallbacks); var migratedB = FontFallbackLists.Migrate(null, legacyFallbacks);
+    migratedA.Reverse(); Check(migratedB[0] == "HangeulNuri", "migrated tab lists are independent copies");
+    Check(FontFallbackLists.Union(new[] { "A", "B" }, new[] { "b", "C" }, new[] { "D", "A" }).SequenceEqual(new[] { "A", "B", "C", "D" }), "union preserves current priority and deduplicates families ignoring case");
+    Check(FontFallbackLists.NamesKey(new[] { "A|B", "C" }) != FontFallbackLists.NamesKey(new[] { "A", "B|C" }), "ordered fallback signatures encode name boundaries");
+    var policies = new[] { new FallbackFontSource { Revision = "A" }, new FallbackFontSource { Revision = "B" } };
+    Check(FontFallbackLists.PolicyKey(policies) != FontFallbackLists.PolicyKey(policies.Reverse()), "different fallback priority has a different font cache identity");
+    Check(FontFallbackLists.PolicyKey(Array.Empty<FallbackFontSource>()) == "", "empty fallback preserves bare content identity");
+    var scopedCache = new FontContentCache<object>(); int scopedCreated = 0;
+    object ScopedCreate(byte[] bytes, string name, string revision) { scopedCreated++; return new object(); }
+    var policyA = scopedCache.Get(path, ScopedCreate, _ => true, "A");
+    var policyB = scopedCache.Get(path, ScopedCreate, _ => true, "B");
+    Check(!ReferenceEquals(policyA, policyB) && scopedCreated == 2, "same primary with different tab fallback policies creates independent fonts");
+    Check(ReferenceEquals(policyA, scopedCache.Get(nestedFont, ScopedCreate, _ => true, "A")), "matching policies share content across paths and UI sizes");
+    scopedCache.Invalidate();
+    Check(ReferenceEquals(policyB, scopedCache.Get(path, ScopedCreate, _ => true, "B")), "refresh reuses unchanged scoped font variants");
+    scopedCache.Get(path, ScopedCreate, _ => true, "A");
+    scopedCache.Get(nestedFont, ScopedCreate, _ => true, "A");
+    scopedCache.Forget(policyA);
+    Check(scopedCache.Fonts.Count == 1 && scopedCache.RevisionCount == 1, "retirement removes all aliases and revisions of the released font");
+    Check(ReferenceEquals(policyB, scopedCache.Get(path, ScopedCreate, _ => true, "B")), "retirement preserves another active fallback policy");
+    Check(!ReferenceEquals(policyA, scopedCache.Get(path, ScopedCreate, _ => true, "A")) && scopedCreated == 3, "retired font content can be loaded again without stale cache entries");
+
+    var sizedCache = new FontContentCache<object>();
+    var tiny = sizedCache.Get(path, ScopedCreate, _ => true, "A:px=12");
+    var small = sizedCache.Get(path, ScopedCreate, _ => true, "A:px=14");
+    Check(!ReferenceEquals(tiny, small), "different registered UI sizes keep separate renderer fonts");
+    Check(ReferenceEquals(small, sizedCache.Get(nestedFont, ScopedCreate, _ => true, "A:px=14")), "same content, fallback policy and pixel size reuse one font across paths");
+    sizedCache.Forget(tiny);
+    Check(sizedCache.Fonts.Count == 1 && ReferenceEquals(small, sizedCache.Get(path, ScopedCreate, _ => true, "A:px=14")), "retiring a size variant preserves another active size");
+    sizedCache.Invalidate();
+    Check(ReferenceEquals(small, sizedCache.Get(path, ScopedCreate, _ => true, "A:px=14")), "refresh preserves unchanged registered size variants");
+    sizedCache.Forget(small);
+    Check(sizedCache.Fonts.Count == 0 && sizedCache.RevisionCount == 0, "retiring all sizes clears their content and path aliases");
+
+    var cache = new FontContentCache<object>();
+    int created = 0;
+    byte[] payload = null;
+    object Create(byte[] bytes, string name, string hash) { created++; payload = bytes; return new object(); }
+    object first = cache.Get(path, Create, _ => true);
+    object copy = cache.Get(nestedFont, Create, _ => true);
+    Check(ReferenceEquals(first, copy) && created == 1, "system/manual paths with equal content share one font creation");
+    cache.Invalidate();
+    Check(ReferenceEquals(first, cache.Get(path, Create, _ => true)) && created == 1, "refresh reuses unchanged file content");
+    byte[] replacement = Font(); replacement[^1] ^= 1; File.WriteAllBytes(path, replacement);
+    cache.Invalidate();
+    Check(!ReferenceEquals(first, cache.Get(path, Create, _ => true)) && created == 2, "refresh detects changed font content");
+    cache.Forget(copy);
+    Check(!cache.Contains(first) && cache.Fonts.Count == 1, "released content font is removed from shared cache");
+    Check(!ReferenceEquals(copy, cache.Get(nestedFont, Create, _ => true)) && created == 3, "released cached font can be recreated from another path");
+    string collectionPath = Path.Combine(root, "collection.ttc"); File.WriteAllBytes(collectionPath, Font(true));
+    cache.Get(collectionPath, Create, _ => true);
+    Check(payload[0] == 0 && payload[1] == 1 && OpenTypeNames.Read(payload) == "테스트 Font (Regular)", "all engines receive standalone first-face bytes for TTC");
+    File.WriteAllBytes(path, Font());
+    string imported = Path.Combine(root, "import.bundle");
+    byte[] firstImport = UnityFontBundle.Create(FontFiles.Read(path));
+    File.WriteAllBytes(imported, firstImport);
+    var importedFonts = BundledFontReader.Read(imported).ToArray();
+    Check(importedFonts.Length == 1 && importedFonts[0].Name == "CustomFontsFile", "Unity import includes exactly one font payload");
+    Check(BundledFontReader.ReadData(imported, importedFonts[0]).SequenceEqual(FontFiles.Read(path)), "Unity import preserves exact Unicode-source font bytes");
+    Check(firstImport.Length < 64 * 1024 + new FileInfo(path).Length, "Unity font template retains no bundled font payloads");
+    Check(!firstImport.SequenceEqual(UnityFontBundle.Create(FontFiles.Read(path))), "concurrent Unity imports get separate bundle identities");
+    byte[] fallbackData = Font(); fallbackData[^1] ^= 1;
+    var fallbackSource = new FallbackFontSource { Name = "private fallback", Path = nestedFont, Bytes = fallbackData, Revision = FallbackFontSource.Hash(fallbackData) };
+    string fallbackBundle = Path.Combine(root, "fallback.bundle");
+    File.WriteAllBytes(fallbackBundle, UnityFontBundle.Create(FontFiles.Read(path), new[] { fallbackSource, fallbackSource }));
+    var fallbackCatalog = BundledFontReader.Read(fallbackBundle).ToArray();
+    Check(fallbackCatalog.Length == 2 && fallbackCatalog.Any(f => f.Name != "CustomFontsFile"), "Unity embeds only primary and deduplicated defined fallback");
+    Check(BundledFontReader.ReadData(fallbackBundle, fallbackCatalog.Single(f => f.Name != "CustomFontsFile")).SequenceEqual(fallbackData), "Unity fallback retains exact private-font bytes");
+    File.WriteAllBytes(fallbackBundle, UnityFontBundle.Create(new byte[0], new[] { fallbackSource }, new[] { "Arial" }));
+    Check(BundledFontReader.Read(fallbackBundle).Count() == 1, "default-font wrapper includes only defined fallback data");
+    var manyFallbacks = Enumerable.Range(0, 16).Select(i =>
+    {
+        byte[] data = Font(); data[^1] = (byte)i;
+        return new FallbackFontSource { Name = "fallback " + i, Path = nestedFont, Bytes = data, Revision = FallbackFontSource.Hash(data) };
+    }).ToArray();
+    File.WriteAllBytes(fallbackBundle, UnityFontBundle.Create(FontFiles.Read(path), manyFallbacks));
+    Check(BundledFontReader.Read(fallbackBundle).Count() == 17, "Unity fallback references are not limited by original template font count");
+    Check(!FallbackFontSource.WithoutPrimary(new[] { new FallbackFontSource { Bytes = FontFiles.Read(path), Revision = FallbackFontSource.Hash(FontFiles.Read(path)) } }, FontFiles.Read(path)).Any(),
+        "primary font cannot reference itself as a fallback");
+    byte[] revision = Font(); revision[^1] ^= 1;
+    File.WriteAllBytes(imported, UnityFontBundle.Create(revision));
+    Check(BundledFontReader.ReadData(imported, BundledFontReader.Read(imported).Single()).SequenceEqual(revision), "Unity import uses replacement font content");
+    string metadataRoot = Path.Combine(root, "metadata-cache");
+    var metadata = new FontMetadataCache(metadataRoot);
+    Check(metadata.ReadName(path) == FontFiles.ReadName(path) && metadata.Misses == 1, "metadata cache reads source on first lookup");
+    metadata.Save();
+    metadata = new FontMetadataCache(metadataRoot);
+    Check(metadata.ReadName(path) == FontFiles.ReadName(path) && metadata.Hits == 1 && metadata.Misses == 0, "metadata cache survives game restart");
+    File.SetLastWriteTimeUtc(path, File.GetLastWriteTimeUtc(path).AddSeconds(2));
+    metadata.ReadName(path);
+    Check(metadata.Misses == 1, "metadata cache detects modified font revision");
+    File.WriteAllBytes(Path.Combine(metadataRoot, "names-v1.bin"), new byte[] { 1, 2 });
+    metadata = new FontMetadataCache(metadataRoot);
+    Check(metadata.ReadName(path) == FontFiles.ReadName(path) && metadata.Misses == 1, "corrupt name cache falls back to source");
+    var diskCatalog = metadata.ReadBundle(imported, out bool diskHit);
+    Check(!diskHit && diskCatalog.Length == 1, "bundle catalog first lookup reads source");
+    metadata = new FontMetadataCache(metadataRoot);
+    var cachedCatalog = metadata.ReadBundle(imported, out diskHit);
+    Check(diskHit && cachedCatalog.Single().FaceName == diskCatalog.Single().FaceName, "bundle metadata survives restart without decompression");
+    byte[] extracted = metadata.ReadBundleData(imported, cachedCatalog.Single(), out diskHit);
+    Check(!diskHit && extracted.SequenceEqual(revision), "selected bundle payload cached on demand");
+    Check(new FontMetadataCache(metadataRoot).ReadBundleData(imported, cachedCatalog.Single(), out diskHit).SequenceEqual(revision) && diskHit,
+        "selected bundle payload survives restart without decompression");
+    string payloadCache = Directory.GetFiles(metadataRoot, "*.font").Single();
+    byte[] corrupted = File.ReadAllBytes(payloadCache); corrupted[^1] ^= 1; File.WriteAllBytes(payloadCache, corrupted);
+    Check(metadata.ReadBundleData(imported, cachedCatalog.Single(), out diskHit).SequenceEqual(revision) && !diskHit, "corrupt payload checksum falls back to bundle");
+    File.SetLastWriteTimeUtc(imported, File.GetLastWriteTimeUtc(imported).AddSeconds(2));
+    Reject(() => metadata.ReadBundleData(imported, cachedCatalog.Single(), out _), "stale bundle descriptor cannot reuse cached payload");
+    Check(metadata.ReadBundle(imported, out diskHit).Length == 1 && !diskHit, "modified bundle rebuilds metadata cache");
+    var coldSelected = new FontMetadataCache(Path.Combine(root, "selected-cache"));
+    var coldCatalog = coldSelected.ReadBundle(imported, out diskHit, new[] { "(Bundled) " + diskCatalog.Single().FaceName });
+    Check(!diskHit && coldSelected.ReadBundleData(imported, coldCatalog.Single(), out diskHit).SequenceEqual(revision) && diskHit,
+        "cold catalog extracts only selected payload during the same decompression");
     bool linksCreated = false;
     try
     {
@@ -161,11 +408,21 @@ Check(!AdditionalFontRoots.Get(false, Env).Any(), "Windows/macOS do not scan Lin
 Check(!AdditionalFontRoots.Get(true, _ => null).Any(), "unset XDG roots reuse engine defaults");
 Check(!AdditionalFontRoots.Get(true, _ => "").Any(), "empty XDG roots reuse engine defaults");
 Check(!AdditionalFontRoots.Get(true, _ => "relative").Any(), "relative XDG values ignored");
+string[] Roots(FontPlatform platform) => SystemFontRoots.Get(platform, "/home/사용자", "C:/Windows", "C:/Users/사용자/AppData/Local", Env)
+    .Select(p => p.Replace('\\', '/')).ToArray();
+Check(Roots(FontPlatform.Windows).SequenceEqual(new[] { "C:/Windows/Fonts", "C:/Users/사용자/AppData/Local/Microsoft/Windows/Fonts" }), "shared Windows system and per-user roots");
+Check(Roots(FontPlatform.MacOS).SequenceEqual(new[] { "/System/Library/Fonts", "/Library/Fonts", "/home/사용자/Library/Fonts" }), "shared macOS system and per-user roots");
+Check(Roots(FontPlatform.Linux).SequenceEqual(new[] { "/usr/share/fonts", "/usr/local/share/fonts", "/home/사용자/.fonts", "/home/사용자/.local/share/fonts", "/run/host/fonts", "/run/host/user-fonts", "/home/한글/custom data/fonts", "/opt/shared/fonts", "/srv/fonts-data/fonts" }), "shared Linux user, system, host and XDG roots");
+Check(!SystemFontRoots.Get(FontPlatform.Windows, "", "", "", _ => null).Any(), "missing Windows special folders cannot introduce relative scan roots");
 #if BUNDLE_TESTS
 if (args.Length > 0)
 {
-    var catalog = BundledFontReader.Read(args[0]).ToArray();
+    var hashes = new Dictionary<string, byte[]>();
+    var catalog = BundledFontReader.Read(args[0], _ => true, (entry, bytes) => hashes.Add(entry.Name, System.Security.Cryptography.SHA256.HashData(bytes))).ToArray();
     Check(catalog.Length == 15, "installed bundle catalog has all 15 fonts");
+    var manifest = BundledFontManifest.Read(args[0]);
+    Check(manifest != null && manifest.Select(p => (p.Name, p.FaceName, p.DataOffset, p.DataLength)).SequenceEqual(
+        catalog.Select(p => (p.Name, p.FaceName, p.DataOffset, p.DataLength))), "embedded manifest matches original bundle and payload offsets");
     Check(!typeof(BundledFontData).GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
         .Any(field => field.FieldType == typeof(byte[])), "bundle descriptors retain no font byte arrays");
     foreach (var entry in catalog)
@@ -173,6 +430,8 @@ if (args.Length > 0)
         byte[] bytes = BundledFontReader.ReadData(args[0], entry);
         Check(bytes.Length == entry.DataLength && OpenTypeNames.Read(bytes) == entry.FaceName,
             "selected bundle payload matches metadata: " + entry.Name);
+        Check(System.Security.Cryptography.SHA256.HashData(bytes).SequenceEqual(hashes[entry.Name]),
+            "prefix-only LZMA decode preserves exact font payload: " + entry.Name);
     }
     Console.WriteLine($"Bundle source data deferred: {catalog.Sum(font => (long)font.DataLength):N0} bytes across {catalog.Length} fonts");
 }

@@ -4,16 +4,16 @@ using System.Text;
 
 namespace CustomFonts
 {
-    // Read names without Unity's unimplemented FontEngine shim. TTC files use their first face,
-    // matching Waylith's AddFontFromMemoryTTF registration (which has no face-index argument).
+    // Use the same stable names for both engines; TTC files use their first face.
     internal static class OpenTypeNames
     {
-        static OpenTypeNames() => Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        // Mac Roman's upper half. Decode without a platform-specific code-page provider,
+        // which is not always available in the older game's Mono installation.
+        private const string MacRoman = "ÄÅÇÉÑÖÜáàâäãåçéèêëíìîïñóòôöõúùûü†°¢£§•¶ß®©™´¨≠ÆØ∞±≤≥¥µ∂∑∏π∫ªºΩæø¿¡¬√ƒ≈∆«»…\u00a0ÀÃÕŒœ–—“”‘’÷◊ÿŸ⁄€‹›ﬁﬂ‡·‚„‰ÂÊÁËÈÍÎÏÌÓÔ\uf8ffÒÚÛÙıˆ˜¯˘˙˚¸˝˛ˇ";
 
         internal static string Read(byte[] data)
         {
-            using var stream = new MemoryStream(data, false);
-            return Read(stream, 0, data.Length);
+            using (var stream = new MemoryStream(data, false)) return Read(stream, 0, data.Length);
         }
 
         // Read only the SFNT directory and name table. origin also allows a font embedded
@@ -28,7 +28,7 @@ namespace CustomFonts
                     throw new InvalidDataException("Truncated OpenType table.");
                 stream.Position = origin + at;
                 byte[] bytes = new byte[length];
-                stream.ReadExactly(bytes);
+                FontFiles.ReadExactly(stream, bytes);
                 return bytes;
             }
             byte[] header = ReadAt(0, 12);
@@ -70,8 +70,7 @@ namespace CustomFonts
                     int size = U16(table, entry + 8), stringAt = strings + U16(table, entry + 10);
                     if (stringAt > length - size) throw new InvalidDataException("Invalid name string.");
                     if (platform != 1 && size % 2 != 0) continue;
-                    string value = (platform == 1 ? Encoding.GetEncoding(10000) : Encoding.BigEndianUnicode)
-                        .GetString(table, stringAt, size).Trim('\0', ' ');
+                    string value = Decode(table, stringAt, size, platform == 1).Trim('\0', ' ');
                     if (value.Length == 0) continue;
                     int rank = (platform == 1 ? 0 : 1000) + (id >= 16 ? 100 : 0) + (language == 0x409 ? 20 : language == 0 ? 10 : 0)
                         + (platform == 3 ? 3 : platform == 0 ? 2 : 1);
@@ -86,5 +85,16 @@ namespace CustomFonts
 
         private static int U16(byte[] data, int at) => (data[at] << 8) | data[at + 1];
         private static uint U32(byte[] data, int at) => ((uint)U16(data, at) << 16) | (uint)U16(data, at + 2);
+        private static string Decode(byte[] data, int offset, int size, bool mac)
+        {
+            if (!mac) return Encoding.BigEndianUnicode.GetString(data, offset, size);
+            var chars = new char[size];
+            for (int i = 0; i < size; i++)
+            {
+                byte b = data[offset + i];
+                chars[i] = b < 128 ? (char)b : MacRoman[b - 128];
+            }
+            return new string(chars);
+        }
     }
 }
