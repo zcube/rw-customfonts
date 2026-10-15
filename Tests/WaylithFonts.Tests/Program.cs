@@ -1,26 +1,10 @@
 using System.Text;
 using CustomFonts;
 
-if (args.Length > 0 && args[0] == "--write-manifest")
+if (args.Length == 2 && args[0] == "--validate-fonts")
 {
-    BundledFontManifest.Write(args[1], args[2]);
-    Console.WriteLine("Font manifest generated/verified: " + args[2]);
-    return;
-}
-
-if (args.Length > 0 && args[0] == "--inspect-bundle")
-{
-    var manager = new AssetsTools.NET.Extra.AssetsManager();
-    try
-    {
-        var bundle = manager.LoadBundleFile(args[1], false);
-        Console.WriteLine($"Compression: {bundle.file.GetCompressionType()}; blocks: {bundle.file.BlockAndDirInfo.BlockInfos.Length}");
-        foreach (var block in bundle.file.BlockAndDirInfo.BlockInfos)
-            Console.WriteLine($"compressed={block.CompressedSize}, decompressed={block.DecompressedSize}, flags={block.Flags}");
-        manager.UnloadAll();
-        foreach (var entry in BundledFontReader.Read(args[1])) Console.WriteLine($"{entry.FaceName}: {entry.DataOffset} + {entry.DataLength}");
-    }
-    finally { manager.UnloadAll(); }
+    int count = FontDistributionValidation.Validate(args[1], (valid, message) => { if (!valid) throw new InvalidDataException(message); });
+    Console.WriteLine($"Verified {count} loose font files, original hashes, portable names and license notices.");
     return;
 }
 
@@ -321,32 +305,32 @@ try
     string imported = Path.Combine(root, "import.bundle");
     byte[] firstImport = UnityFontBundle.Create(FontFiles.Read(path));
     File.WriteAllBytes(imported, firstImport);
-    var importedFonts = BundledFontReader.Read(imported).ToArray();
+    var importedFonts = UnityFontInspection.Read(imported).ToArray();
     Check(importedFonts.Length == 1 && importedFonts[0].Name == "CustomFontsFile", "Unity import includes exactly one font payload");
-    Check(BundledFontReader.ReadData(imported, importedFonts[0]).SequenceEqual(FontFiles.Read(path)), "Unity import preserves exact Unicode-source font bytes");
+    Check(importedFonts[0].Bytes.SequenceEqual(FontFiles.Read(path)), "Unity import preserves exact Unicode-source font bytes");
     Check(firstImport.Length < 64 * 1024 + new FileInfo(path).Length, "Unity font template retains no bundled font payloads");
     Check(!firstImport.SequenceEqual(UnityFontBundle.Create(FontFiles.Read(path))), "concurrent Unity imports get separate bundle identities");
     byte[] fallbackData = Font(); fallbackData[^1] ^= 1;
     var fallbackSource = new FallbackFontSource { Name = "private fallback", Path = nestedFont, Bytes = fallbackData, Revision = FallbackFontSource.Hash(fallbackData) };
     string fallbackBundle = Path.Combine(root, "fallback.bundle");
     File.WriteAllBytes(fallbackBundle, UnityFontBundle.Create(FontFiles.Read(path), new[] { fallbackSource, fallbackSource }));
-    var fallbackCatalog = BundledFontReader.Read(fallbackBundle).ToArray();
+    var fallbackCatalog = UnityFontInspection.Read(fallbackBundle).ToArray();
     Check(fallbackCatalog.Length == 2 && fallbackCatalog.Any(f => f.Name != "CustomFontsFile"), "Unity embeds only primary and deduplicated defined fallback");
-    Check(BundledFontReader.ReadData(fallbackBundle, fallbackCatalog.Single(f => f.Name != "CustomFontsFile")).SequenceEqual(fallbackData), "Unity fallback retains exact private-font bytes");
+    Check(fallbackCatalog.Single(f => f.Name != "CustomFontsFile").Bytes.SequenceEqual(fallbackData), "Unity fallback retains exact private-font bytes");
     File.WriteAllBytes(fallbackBundle, UnityFontBundle.Create(new byte[0], new[] { fallbackSource }, new[] { "Arial" }));
-    Check(BundledFontReader.Read(fallbackBundle).Count() == 1, "default-font wrapper includes only defined fallback data");
+    Check(UnityFontInspection.Read(fallbackBundle).Count() == 1, "default-font wrapper includes only defined fallback data");
     var manyFallbacks = Enumerable.Range(0, 16).Select(i =>
     {
         byte[] data = Font(); data[^1] = (byte)i;
         return new FallbackFontSource { Name = "fallback " + i, Path = nestedFont, Bytes = data, Revision = FallbackFontSource.Hash(data) };
     }).ToArray();
     File.WriteAllBytes(fallbackBundle, UnityFontBundle.Create(FontFiles.Read(path), manyFallbacks));
-    Check(BundledFontReader.Read(fallbackBundle).Count() == 17, "Unity fallback references are not limited by original template font count");
+    Check(UnityFontInspection.Read(fallbackBundle).Count() == 17, "Unity fallback references are not limited by original template font count");
     Check(!FallbackFontSource.WithoutPrimary(new[] { new FallbackFontSource { Bytes = FontFiles.Read(path), Revision = FallbackFontSource.Hash(FontFiles.Read(path)) } }, FontFiles.Read(path)).Any(),
         "primary font cannot reference itself as a fallback");
     byte[] revision = Font(); revision[^1] ^= 1;
     File.WriteAllBytes(imported, UnityFontBundle.Create(revision));
-    Check(BundledFontReader.ReadData(imported, BundledFontReader.Read(imported).Single()).SequenceEqual(revision), "Unity import uses replacement font content");
+    Check(UnityFontInspection.Read(imported).Single().Bytes.SequenceEqual(revision), "Unity import uses replacement font content");
     string metadataRoot = Path.Combine(root, "metadata-cache");
     var metadata = new FontMetadataCache(metadataRoot);
     Check(metadata.ReadName(path) == FontFiles.ReadName(path) && metadata.Misses == 1, "metadata cache reads source on first lookup");
@@ -359,25 +343,6 @@ try
     File.WriteAllBytes(Path.Combine(metadataRoot, "names-v1.bin"), new byte[] { 1, 2 });
     metadata = new FontMetadataCache(metadataRoot);
     Check(metadata.ReadName(path) == FontFiles.ReadName(path) && metadata.Misses == 1, "corrupt name cache falls back to source");
-    var diskCatalog = metadata.ReadBundle(imported, out bool diskHit);
-    Check(!diskHit && diskCatalog.Length == 1, "bundle catalog first lookup reads source");
-    metadata = new FontMetadataCache(metadataRoot);
-    var cachedCatalog = metadata.ReadBundle(imported, out diskHit);
-    Check(diskHit && cachedCatalog.Single().FaceName == diskCatalog.Single().FaceName, "bundle metadata survives restart without decompression");
-    byte[] extracted = metadata.ReadBundleData(imported, cachedCatalog.Single(), out diskHit);
-    Check(!diskHit && extracted.SequenceEqual(revision), "selected bundle payload cached on demand");
-    Check(new FontMetadataCache(metadataRoot).ReadBundleData(imported, cachedCatalog.Single(), out diskHit).SequenceEqual(revision) && diskHit,
-        "selected bundle payload survives restart without decompression");
-    string payloadCache = Directory.GetFiles(metadataRoot, "*.font").Single();
-    byte[] corrupted = File.ReadAllBytes(payloadCache); corrupted[^1] ^= 1; File.WriteAllBytes(payloadCache, corrupted);
-    Check(metadata.ReadBundleData(imported, cachedCatalog.Single(), out diskHit).SequenceEqual(revision) && !diskHit, "corrupt payload checksum falls back to bundle");
-    File.SetLastWriteTimeUtc(imported, File.GetLastWriteTimeUtc(imported).AddSeconds(2));
-    Reject(() => metadata.ReadBundleData(imported, cachedCatalog.Single(), out _), "stale bundle descriptor cannot reuse cached payload");
-    Check(metadata.ReadBundle(imported, out diskHit).Length == 1 && !diskHit, "modified bundle rebuilds metadata cache");
-    var coldSelected = new FontMetadataCache(Path.Combine(root, "selected-cache"));
-    var coldCatalog = coldSelected.ReadBundle(imported, out diskHit, new[] { "(Bundled) " + diskCatalog.Single().FaceName });
-    Check(!diskHit && coldSelected.ReadBundleData(imported, coldCatalog.Single(), out diskHit).SequenceEqual(revision) && diskHit,
-        "cold catalog extracts only selected payload during the same decompression");
     bool linksCreated = false;
     try
     {
@@ -414,28 +379,7 @@ Check(Roots(FontPlatform.Windows).SequenceEqual(new[] { "C:/Windows/Fonts", "C:/
 Check(Roots(FontPlatform.MacOS).SequenceEqual(new[] { "/System/Library/Fonts", "/Library/Fonts", "/home/사용자/Library/Fonts" }), "shared macOS system and per-user roots");
 Check(Roots(FontPlatform.Linux).SequenceEqual(new[] { "/usr/share/fonts", "/usr/local/share/fonts", "/home/사용자/.fonts", "/home/사용자/.local/share/fonts", "/run/host/fonts", "/run/host/user-fonts", "/home/한글/custom data/fonts", "/opt/shared/fonts", "/srv/fonts-data/fonts" }), "shared Linux user, system, host and XDG roots");
 Check(!SystemFontRoots.Get(FontPlatform.Windows, "", "", "", _ => null).Any(), "missing Windows special folders cannot introduce relative scan roots");
-#if BUNDLE_TESTS
-if (args.Length > 0)
-{
-    var hashes = new Dictionary<string, byte[]>();
-    var catalog = BundledFontReader.Read(args[0], _ => true, (entry, bytes) => hashes.Add(entry.Name, System.Security.Cryptography.SHA256.HashData(bytes))).ToArray();
-    Check(catalog.Length == 15, "installed bundle catalog has all 15 fonts");
-    var manifest = BundledFontManifest.Read(args[0]);
-    Check(manifest != null && manifest.Select(p => (p.Name, p.FaceName, p.DataOffset, p.DataLength)).SequenceEqual(
-        catalog.Select(p => (p.Name, p.FaceName, p.DataOffset, p.DataLength))), "embedded manifest matches original bundle and payload offsets");
-    Check(!typeof(BundledFontData).GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-        .Any(field => field.FieldType == typeof(byte[])), "bundle descriptors retain no font byte arrays");
-    foreach (var entry in catalog)
-    {
-        byte[] bytes = BundledFontReader.ReadData(args[0], entry);
-        Check(bytes.Length == entry.DataLength && OpenTypeNames.Read(bytes) == entry.FaceName,
-            "selected bundle payload matches metadata: " + entry.Name);
-        Check(System.Security.Cryptography.SHA256.HashData(bytes).SequenceEqual(hashes[entry.Name]),
-            "prefix-only LZMA decode preserves exact font payload: " + entry.Name);
-    }
-    Console.WriteLine($"Bundle source data deferred: {catalog.Sum(font => (long)font.DataLength):N0} bytes across {catalog.Length} fonts");
-}
-#endif
+if (args.Length > 0) FontDistributionValidation.Validate(args[0], Check);
 Console.WriteLine($"PASS: {assertions} font metadata, CJK coverage, Unicode and path assertions");
 
 sealed class CountingStream : MemoryStream

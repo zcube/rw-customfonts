@@ -2,7 +2,7 @@ Font payload: MaruBuri-SemiBold.ttf
 Family/style: MaruBuri / SemiBold
 Version embedded in this payload: Version 2.000;hotconv 1.1.0;makeotfexe 2.6.0
 Payload size: 8111880 bytes
-SHA-256 of the exact payload shipped in rimfonts: d8f98594ef5b2f37936dc7ddcd3ba67b6249f27a641d203beef41e589f917e7c
+SHA-256 of the exact file shipped in Fonts/: d8f98594ef5b2f37936dc7ddcd3ba67b6249f27a641d203beef41e589f917e7c
 Verified: 2026-10-15
 
 Copyright notice embedded in the shipped font:

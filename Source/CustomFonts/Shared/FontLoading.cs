@@ -44,8 +44,7 @@ namespace CustomFonts
             _hasBundledFonts = true;
             try
             {
-                var selections = PreviewFonts.Select(f => _settings.GetCurrentUIFontName(f)).Concat(new[] { _settings.CurrentWorldFontName });
-                var catalog = MetadataCache.ReadBundle(Path.Combine(_content.RootDir, "rimfonts"), out bool hit, selections);
+                var catalog = BundledFontCatalog.Read(Path.Combine(_content.RootDir, "Fonts"));
                 foreach (var data in catalog)
                 {
                     string name = "(Bundled) " + data.FaceName;
@@ -54,7 +53,7 @@ namespace CustomFonts
                     BundledFonts.Add(name, null);
                 }
                 Log.Message($"[Custom Fonts] Cataloged {BundledFonts.Count} bundled fonts without retaining source data");
-                LogFontTiming("bundle catalog", timer, $"{BundledFonts.Count} choices; disk cache={hit}");
+                LogFontTiming("bundled file catalog", timer, $"{BundledFonts.Count} choices; metadata only");
             }
             catch (Exception ex) { Log.Error($"[Custom Fonts] Unable to read bundled fonts: {ex}"); }
         }
@@ -66,14 +65,14 @@ namespace CustomFonts
             string key = name + "|" + FontFallbackLists.PolicyKey(fallbacks) + FontSizeKey(pixels > 0 ? pixels : data.Size);
             if (_bundledFontVariants.TryGetValue(key, out Font existing) && existing != null) return existing;
             var timer = Stopwatch.StartNew();
-            byte[] bytes = MetadataCache.ReadBundleData(Path.Combine(_content.RootDir, "rimfonts"), data, out bool hit);
-            LogFontTiming("bundle extract", timer, $"{name}; disk cache={hit}");
+            byte[] bytes = FontFiles.Read(data.Path);
+            LogFontTiming("bundled file read", timer, name);
             timer.Restart();
             Font font = CreateBundledFont(bytes, data, fallbacks, pixels);
-            LogFontTiming("bundle native create", timer, name);
+            LogFontTiming("bundled font native create", timer, name);
             BundledFonts[name] = font;
             _bundledFontVariants[key] = font;
-            DebugLog($"Loaded selected bundle font '{name}' ({bytes.Length} bytes)");
+            DebugLog($"Loaded selected bundled file font '{name}' ({bytes.Length} bytes)");
             return font;
         }
 

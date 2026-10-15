@@ -2,7 +2,7 @@ Font payload: Nanum HaNaSonGeurSsi.ttf
 Family/style: ≥™¥Æº’±€ææ «œ≥™º’±€ææ / Regular
 Version embedded in this payload: Version 1.000
 Payload size: 6370284 bytes
-SHA-256 of the exact payload shipped in rimfonts: cd923b857b0af68b02f1e92b157c33f36a36d3e9137d980885e95a446b78cfcc
+SHA-256 of the exact file shipped in Fonts/: cd923b857b0af68b02f1e92b157c33f36a36d3e9137d980885e95a446b78cfcc
 Verified: 2026-10-15
 
 Copyright notice embedded in the shipped font:

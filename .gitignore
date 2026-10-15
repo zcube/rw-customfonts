@@ -38,8 +38,8 @@ msbuild.wrn
 .vs/
 Assemblies/CustomFonts.pdb
 HarmonyMod.zip
-rimfonts-decompressed
 *.tar.gz
 custom-fonts.zip
+custom-fonts-files.txt
 .env
 *.ps1

@@ -2,7 +2,7 @@ Font payload: NanumGothic.ttf
 Family/style: NanumGothic / Regular
 Version embedded in this payload: Version 3.021;PS 1;hotconv 1.0.57;makeotf.lib2.0.21895
 Payload size: 4691820 bytes
-SHA-256 of the exact payload shipped in rimfonts: 48a28e97b34fc8e5b157657633670cd1b7de126cfc414da65ce9c3d5bc8be733
+SHA-256 of the exact file shipped in Fonts/: 48a28e97b34fc8e5b157657633670cd1b7de126cfc414da65ce9c3d5bc8be733
 Verified: 2026-10-15
 
 Copyright notice embedded in the shipped font:

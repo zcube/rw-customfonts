@@ -1,13 +1,13 @@
 Bundled font licensing records
 =============================
 
-Each *.ttf.LICENSE.txt file describes one of the 15 exact font payloads currently
-inside rimfonts. fonts.csv maps each payload to its notice, publisher, version,
-size and SHA-256. The payload hashes refer to extracted TTF bytes, not the Unity
-container. No font binary was modified or replaced in this licensing review.
+Each *.ttf.LICENSE.txt file describes one exact TTF file distributed in ../../Fonts/.
+fonts.csv maps all 15 files to their notices, publishers, versions, sizes and SHA-256.
+The TTFs retain the exact bytes from the former font archive; no font binary was modified
+or replaced. Hashes identify the TTF itself, independently of any runtime container.
 
-When packaging these as loose TTF files, retain the corresponding notice files
-alongside the fonts and ship this whole directory. Keep the payload bytes intact.
+Ship Fonts/ together with this whole directory and retain the corresponding notices
+when copying a font separately. Keep the font bytes intact.
 The mod's MIT license does not replace the fonts' own licenses.
 
 OFL notices contain the full license text and relevant copyright notices.

@@ -16,20 +16,12 @@
     <Compile Include="../../Source/CustomFonts/Shared/FallbackFontSource.cs" Link="FallbackFontSource.cs" />
     <Compile Include="../../Source/CustomFonts/Shared/FontFallbackLists.cs" Link="FontFallbackLists.cs" />
     <Compile Include="../../Source/CustomFonts/Shared/FontMetadataCache.cs" Link="FontMetadataCache.cs" />
-    <Compile Include="../../Source/CustomFonts/Shared/BundledFontRangeReader.cs" Link="BundledFontRangeReader.cs" />
-    <Compile Include="../../Source/CustomFonts/Shared/BundledFontManifest.cs" Link="BundledFontManifest.cs" />
-    <EmbeddedResource Include="../../Source/CustomFonts/Shared/BundledFonts.catalog" LogicalName="CustomFonts.BundledFonts.catalog" Condition="Exists('../../Source/CustomFonts/Shared/BundledFonts.catalog')" />
+    <Compile Include="../../Source/CustomFonts/Shared/BundledFontCatalog.cs" />
+    <EmbeddedResource Include="../../Source/CustomFonts/Shared/BundledFonts.tsv" LogicalName="CustomFonts.BundledFonts.tsv" />
     <Compile Include="../../Source/CustomFonts/Engines/Unity/UnityFontBundle.cs" Link="UnityFontBundle.cs" />
-    <EmbeddedResource Include="../../Source/CustomFonts/Engines/Unity/FontTemplate.bundle" LogicalName="CustomFonts.FontTemplate.bundle" />
-    <PackageReference Include="AssetsTools.NET" Version="3.0.4" />
+    <EmbeddedResource Include="../../Source/CustomFonts/Engines/Unity/FontTemplate.bin" LogicalName="CustomFonts.FontTemplate.bin" />
     <Compile Include="../../Source/CustomFonts/Engines/Waylith/UnicodeScalars.cs" Link="UnicodeScalars.cs" />
     <Compile Include="../../Source/CustomFonts/Engines/Waylith/FontCoverage.cs" Link="FontCoverage.cs" />
     <Compile Include="../../Source/CustomFonts/Shared/FontCollections.cs" Link="FontCollections.cs" />
-  </ItemGroup>
-  <PropertyGroup>
-    <DefineConstants>$(DefineConstants);BUNDLE_TESTS</DefineConstants>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="../../Source/CustomFonts/Shared/BundledFontReader.cs" Link="BundledFontReader.cs" />
   </ItemGroup>
 </Project>

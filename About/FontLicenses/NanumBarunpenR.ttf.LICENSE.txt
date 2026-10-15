@@ -2,7 +2,7 @@ Font payload: NanumBarunpenR.ttf
 Family/style: NanumBarunpen / Regular
 Version embedded in this payload: Version 1.000;Build 20140922
 Payload size: 11033840 bytes
-SHA-256 of the exact payload shipped in rimfonts: f5bd6993e8376e7f0796837ba0e50e006eb1f568f5dbb571e18d66847ff4f9c0
+SHA-256 of the exact file shipped in Fonts/: f5bd6993e8376e7f0796837ba0e50e006eb1f568f5dbb571e18d66847ff4f9c0
 Verified: 2026-10-15
 
 Copyright notice embedded in the shipped font:

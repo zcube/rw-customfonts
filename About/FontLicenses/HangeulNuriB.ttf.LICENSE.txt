@@ -2,7 +2,7 @@ Font payload: HangeulNuriB.ttf
 Family/style: HangeulNuri / Bold
 Version embedded in this payload: Version 1.000;build 20140603
 Payload size: 1641492 bytes
-SHA-256 of the exact payload shipped in rimfonts: c98e346f9655cbada21ada7f948424ccd082e9544c4549db93747b974d1e372b
+SHA-256 of the exact file shipped in Fonts/: c98e346f9655cbada21ada7f948424ccd082e9544c4549db93747b974d1e372b
 Verified: 2026-10-15
 
 Copyright notice embedded in the shipped font:

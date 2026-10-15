@@ -2,7 +2,7 @@ Font payload: MaruBuri-Regular.ttf
 Family/style: MaruBuri / Regular
 Version embedded in this payload: Version 2.000;hotconv 1.1.0;makeotfexe 2.6.0
 Payload size: 7985424 bytes
-SHA-256 of the exact payload shipped in rimfonts: 254abb4c131316e10a55e04495211f1df8cf68c9f58929375311a41af77c4b9b
+SHA-256 of the exact file shipped in Fonts/: 254abb4c131316e10a55e04495211f1df8cf68c9f58929375311a41af77c4b9b
 Verified: 2026-10-15
 
 Copyright notice embedded in the shipped font:

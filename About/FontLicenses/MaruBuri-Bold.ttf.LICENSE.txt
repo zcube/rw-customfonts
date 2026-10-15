@@ -2,7 +2,7 @@ Font payload: MaruBuri-Bold.ttf
 Family/style: MaruBuri / Bold
 Version embedded in this payload: Version 2.000;hotconv 1.0.118;makeotfexe 2.5.65603
 Payload size: 8286724 bytes
-SHA-256 of the exact payload shipped in rimfonts: 092cb186de18d49adb55721257a63b33f0c9eebb3c7d495336082c3f1e7bdc0d
+SHA-256 of the exact file shipped in Fonts/: 092cb186de18d49adb55721257a63b33f0c9eebb3c7d495336082c3f1e7bdc0d
 Verified: 2026-10-15
 
 Copyright notice embedded in the shipped font:

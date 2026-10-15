@@ -5,7 +5,7 @@ internal static class StartupBenchmark
 {
     internal static void Run(string[] args)
     {
-        string bundle = args.Length > 0 ? args[0] : "rimfonts";
+        string directory = args.Length > 0 ? args[0] : "Fonts";
         var platform = OperatingSystem.IsWindows() ? FontPlatform.Windows : OperatingSystem.IsMacOS() ? FontPlatform.MacOS : FontPlatform.Linux;
         var roots = SystemFontRoots.Get(platform, Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             Environment.GetFolderPath(Environment.SpecialFolder.Windows), Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Environment.GetEnvironmentVariable);
@@ -20,12 +20,12 @@ internal static class StartupBenchmark
             foreach (string file in files) { try { FontFiles.ReadName(file); valid++; } catch { } }
             Console.WriteLine($"Uncached names {run + 1}: {valid} files, {timer.Elapsed.TotalMilliseconds:F1} ms");
             timer.Restart();
-            var catalog = BundledFontReader.Read(bundle).ToArray();
-            Console.WriteLine($"Uncached bundle catalog {run + 1}: {catalog.Length} fonts, {timer.Elapsed.TotalMilliseconds:F1} ms");
+            var catalog = BundledFontCatalog.Read(directory).ToArray();
+            Console.WriteLine($"Loose catalog {run + 1}: {catalog.Length} fonts, {timer.Elapsed.TotalMilliseconds:F1} ms");
             timer.Restart();
             var selected = catalog.First(p => p.Name.Contains("HangeulNuri", StringComparison.OrdinalIgnoreCase));
-            byte[] bytes = BundledFontReader.ReadDataFullyUnpacked(bundle, selected);
-            Console.WriteLine($"Uncached selected bundle {run + 1}: {bytes.Length} bytes, {timer.Elapsed.TotalMilliseconds:F1} ms");
+            byte[] bytes = FontFiles.Read(selected.Path);
+            Console.WriteLine($"Selected loose file {run + 1}: {bytes.Length} bytes, {timer.Elapsed.TotalMilliseconds:F1} ms");
         }
         string root = Path.Combine(Path.GetTempPath(), "customfonts-benchmark-" + Guid.NewGuid().ToString("N"));
         try
@@ -37,12 +37,7 @@ internal static class StartupBenchmark
                 foreach (string file in files) { try { cache.ReadName(file); } catch { } }
                 cache.Save();
                 Console.WriteLine($"Persistent names {run + 1}: {timer.Elapsed.TotalMilliseconds:F1} ms, hits={cache.Hits}, misses={cache.Misses}");
-                timer.Restart();
-                var catalog = cache.ReadBundle(bundle, out bool hit, new[] { "(Bundled) HangeulNuri (Bold)" });
-                Console.WriteLine($"Persistent bundle catalog {run + 1}: {timer.Elapsed.TotalMilliseconds:F1} ms, hit={hit}");
-                timer.Restart();
-                byte[] bytes = cache.ReadBundleData(bundle, catalog.First(p => p.Name.Contains("HangeulNuri", StringComparison.OrdinalIgnoreCase)), out hit);
-                Console.WriteLine($"Persistent selected bundle {run + 1}: {timer.Elapsed.TotalMilliseconds:F1} ms, hit={hit}");
+
             }
         }
         finally { if (Directory.Exists(root)) Directory.Delete(root, true); }

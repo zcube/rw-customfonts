@@ -2,7 +2,7 @@ Font payload: SarasaUiJ-Regular.ttf
 Family/style: Sarasa UI J / Regular
 Version embedded in this payload: Version 1.0.10; ttfautohint (v1.8.4)
 Payload size: 23775396 bytes
-SHA-256 of the exact payload shipped in rimfonts: 70c2f18ae4c2d6cf35c8c341daa9e5bbd8a6295265886339affff1186dba45d2
+SHA-256 of the exact file shipped in Fonts/: 70c2f18ae4c2d6cf35c8c341daa9e5bbd8a6295265886339affff1186dba45d2
 Verified: 2026-10-15
 
 Copyright notice embedded in the shipped font:

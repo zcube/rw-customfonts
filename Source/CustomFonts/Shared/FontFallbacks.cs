@@ -50,7 +50,7 @@ namespace CustomFonts
                                 if (name.StartsWith("(Bundled) ", StringComparison.Ordinal))
                                 {
                                     SetupBundledFonts();
-                                    bytes = MetadataCache.ReadBundleData(Path.Combine(_content.RootDir, "rimfonts"), _bundledFontSources[name], out _);
+                                    bytes = FontFiles.Read(_bundledFontSources[name].Path);
                                 }
                                 else
                                 {

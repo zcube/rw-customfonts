@@ -6,11 +6,12 @@
 
 # Build
 
-Requires .NET SDK (10 for Waylith), task, curl and 7zip. Copy `.env.sample` to
+Requires Git LFS, .NET SDK (10 for Waylith), task, curl and 7zip. Copy `.env.sample` to
 `.env` and configure the installed game paths. Unity builds need the corresponding
 1.4, 1.5 or 1.6 installation. Waylith reads assemblies from the 1.7 game root.
 
 ```bash
+git lfs pull
 task prepare
 task build
 # Or build only the installed engine/version:
@@ -27,11 +28,11 @@ folder, with a fallback to `Current` for older Harmony downloads.
 ## Engine implementations
 
 * `Source/CustomFonts/Shared`: system/user roots, file/folder search, OpenType metadata,
-  TTC first-face conversion, source catalog, content cache, lazy bundle discovery/selection,
+  TTC first-face conversion, source catalog, content cache, lazy bundled-file selection,
   settings and UI, text metrics, variant retirement, shared Harmony hooks and diagnostics.
 * `Source/CustomFonts/Engines/Unity`: Font creation through an imported Unity bundle,
   native validation and resource destruction. Builds target .NET Framework 4.7.2.
-* `Source/CustomFonts/Engines/Waylith`: native renderer registration, bundle Font creation,
+* `Source/CustomFonts/Engines/Waylith`: native renderer registration, file-backed Font creation,
   ownership rules and world-label compatibility patches. Builds target .NET 10.
 
 Each configuration compiles the shared directory and only its own engine directory.
@@ -98,18 +99,20 @@ in memory as a standalone font for both engines.
 The original file is
 unchanged. Fonts above 128 MiB and name tables above 1 MiB are rejected.
 
-Unity imports custom font bytes into a small embedded Unity Font bundle template,
-then uses the engine's normal dynamic font and TMP loaders. A plain `new Font(path)`
-is only a TMP data source, so it cannot render the existing IMGUI UI. This distinction
-is described by the [TMP developer](https://discussions.unity.com/t/textmesh-pro-os-font/757769/5).
-The byte-based import supports Unicode paths and avoids OS installation or platform-specific
-registration. AssetsTools.NET 3.0.4 is restored by NuGet and shipped only with the Unity
-assemblies; its MIT notice is in `About/AssetsTools.NET-LICENSE.txt`.
-To regenerate the embedded template from `rimfonts`:
+Bundled fonts are distributed as 15 unchanged TTF files in `Fonts/`, with individual
+notices and exact hashes in `About/FontLicenses`. The small embedded
+`Shared/BundledFonts.tsv` index preserves existing `(Bundled) Family (Style)` settings
+and import sizes without reading font payloads. A selected primary or defined fallback
+uses the same `FontFiles` reader as OS/user sources. No compressed font archive,
+extraction cache or asset-processing package is needed by either engine.
 
-```bash
-dotnet run --project Tools/UnityFontTemplate -- rimfonts Source/CustomFonts/Engines/Unity/FontTemplate.bundle
-```
+Unity IMGUI requires a dynamic Font resource: a plain `new Font(path)` is only a TMP
+data source. `UnityFontBundle` assembles an uncompressed in-memory Unity resource from
+a fixed 9,938-byte metadata template plus only the selected font and fallbacks. Unity's
+normal dynamic-font/TMP loaders then render it. The template contains no font payloads;
+its format and engine constraints are documented in
+[`FontTemplate.md`](Source/CustomFonts/Engines/Unity/FontTemplate.md). Waylith registers
+the TTF bytes directly. Both paths support Unicode filenames without OS installation.
 
 System and custom file fonts use a content cache with ordered fallback policies.
 Unity shares dynamic fonts across UI sizes and world text; Waylith also keys registrations
@@ -149,24 +152,20 @@ fallbacks must release every custom import/registration and its cache aliases. P
 game resources and allocator reserves; font resource counters identify the owned allocations.
 
 Font discovery reads only the OpenType directory and name table, rather than allocating
-each complete file. Bundled choices initially retain names and payload locations only;
-selecting one loads its source data once for reuse by UI and world text. The 15 fonts in
-the current bundle contain 100,663,608 bytes (about 96 MiB) of source data, which is no
-longer retained upfront as separate font arrays. The original `rimfonts` remains unchanged.
-Its data is one LZMA block: seeking directly to a font is impossible, but the shared
-reader decodes only through the selected payload's end, discards preceding output and
-retains only that font plus the decoder dictionary. Fonts later in the block still
-require preceding data to be decoded. No original Unity bundle engine loader is used.
-A 998-byte embedded catalog, validated against the bundle's SHA-256, avoids decompressing
-the bundle merely to list its fonts. Changed bundles fall back to catalog regeneration.
+each complete file. The bundled-file index holds metadata only; opening/searching its
+list does not load the 100,663,608 bytes of font source data (about 96 MiB). Selecting
+a primary/fallback reads that file only. There is no archive decompression or disk
+payload cache. Existing obsolete bundle/cache files are never read.
+
 Default startup skips font discovery; file selections scan only their configured sources,
-and opening settings discovers the full list. File names and bundle metadata/payloads
-are cached under the profile's `Config/CustomFontsCache`, validated by source size and
-modification time. Cached payload checksums are verified; missing/corrupt cache files
-fall back to the source. Only selected bundle payloads are written to disk.
-CJK coverage cache keys are weak references;
-native glyph-exclusion ranges stay pinned while the engine may borrow them. Dynamic
-glyph generation still requires registered font data to remain available.
+and opening settings discovers the full list. OS/user names are cached locally under
+the profile's `Config/CustomFontsCache`, validated by source size and modification time.
+Missing/corrupt name caches fall back to the source. Defined fallback files still use
+content-addressed local materialization for native loader compatibility; this is a copy
+of a selected font, with no archive extraction. Lists and caches are not serialized into
+shared mod settings. CJK coverage cache keys are weak references; native glyph-exclusion
+ranges stay pinned while the engine may borrow them. Dynamic glyph generation still
+requires registered font data to remain available.
 
 World labels use Waylith's TMP renderer even with the Default selection. The 1.7.4977
 renderer preloads only Latin-1 into its world-text glyph cache, so this implementation
@@ -215,7 +214,7 @@ registration identities; matching active policies reuse the same content font.
 World glyphs use that same merged source chain.
 Only explicitly defined fallback source bytes are loaded in addition to the primary;
 opening or searching the candidate list does not load the other bundled fonts. Fallback definitions
-therefore have their own memory cost. The original `rimfonts` remains unchanged.
+therefore have their own memory cost. The distributed TTF bytes remain unchanged.
 
 In an isolated Windows profile, add `-customfonts-fallback-verify="<two Hangul font folder>"`
 with `-quicktest` to exercise Arial with private fonts in both priority orders, removal,
@@ -315,15 +314,15 @@ window; they never run in normal play.
 `task test` checks shared catalog behavior (overlapping sources, family deduplication, Regular/source precedence and moved file selections, explicit nested files, missing/invalid sources and removal), OpenType names, invalid tables, Unicode paths, environment expansion,
 explicit files, recursive/non-recursive folders, supplementary Unicode decoding and
 empty CJK glyph coverage without starting RimWorld.
-It also verifies Unity imports preserve exact source bytes, contain only one populated
-font, keep the template small, use distinct bundle identities and pick up file replacements.
+It also verifies Unity imports preserve exact primary/fallback bytes, deduplicate sources,
+keep the template small, use distinct bundle identities and pick up file replacements.
 
 The stream tests check that catalog reads stay within an embedded font's bounds and read
 less than 1 KiB from a padded 4 MiB fixture. To also verify all 15 actual bundled font
-payloads, supply the bundle path:
+payloads, supply the loose-font directory (also included by `task test`):
 
 ```bash
-dotnet run --project Tests/WaylithFonts.Tests/WaylithFonts.Tests.csproj -- "<mod folder>/rimfonts"
+dotnet run --project Tests/WaylithFonts.Tests/WaylithFonts.Tests.csproj -- "<mod folder>/Fonts"
 ```
 
 For a live 1.7 integration check, use a **separate save-data folder**, enable Core, Harmony
@@ -363,90 +362,31 @@ counts settle to one (shared UI/world source) and zero after Default restoration
 the first file selected for visual review. TMP can distribute glyphs across atlas
 submeshes, so the world check counts geometry from all submeshes.
 
-Shared-source implementation validated on Windows on 2026-10-14/15: 63 assertions
-without the bundle, 80 with all actual bundle payloads, and successful builds for
-1.4, 1.5, 1.6 and 1.7. The Unity 1.6 live check passed with uninstalled HangeulNuri
-and MaruBuri in a Unicode folder containing spaces, including 20 UI/world switches,
-refresh and complete imported-bundle cleanup on Default restoration. Computer Use
-confirmed all three Korean UI previews and actual world labels.
-The Waylith 1.7 check passed with those files, bundles, 200 font/size switches, mixed
-CJK glyphs and registration reuse. Visual review found transparent vertex colors
-that the previous geometry/atlas-only check missed. The world color patch keeps
-vertices white and uses the engine's material color for fading, preserving curved
-geometry. Added render-layer and vertex-alpha assertions reproduced the failure
-before the patch and passed after it; Computer Use confirmed Hangul labels after
-leaving and re-entering the world view. New 1.4/1.5 live runs and Linux/macOS execution
-are not verified by these results.
+`task font_catalog` verifies all 15 original payload hashes, selection names and matching
+license notices before `task build`. `task benchmark` measures metadata-only loose listing,
+selected file reads and OS name caching on this machine. Add `-customfonts-profile=1` to
+separate index reads, file reads, native creation and initial font-application timings.
+`task export` and `task release` also remove the obsolete font archive and library DLLs
+from their target mod folder when upgrading an existing installation. `task package`
+requires a clean committed tree and overlays verified, materialized Git LFS fonts into
+`custom-fonts.zip`, so players receive TTF bytes rather than LFS pointer files.
 
-The subsequent shared-loading refactor adds common Windows/macOS/Linux root discovery,
-engine-independent names (including Mac Roman), legacy-family/face/file-key migration,
-TTC conversion and content caching. The source-path, name and dynamic-OS-font APIs are
-no longer called in either engine. Both use metadata-only bundle catalogs and lazy
-selection. Shared tests pass 79 assertions without the real bundle and 96 with it.
-The Unity 1.6 and Waylith 1.7 live checks also verify the common catalog, migration of `Malgun Gothic`
-to `Malgun Gothic`, one source shared across UI sizes and world text,
-and lazy bundle selection. Unity passes 20 file switches and release after Default
-restoration; Waylith passes 200 font/scale switches and refresh checks. Computer Use
-also confirms rendered Hangul world labels in both engines after this refactor.
-All four version builds pass. These results do not establish live 1.4/1.5 or Linux/macOS
-compatibility; those game runs remain unverified.
+The file-distribution migration passes all four builds and 188 standalone assertions,
+including independent UnityFS/SerializedFile inspection, all 15 original hashes and
+matching per-file license notices. Windows RimWorld 1.6.4871 and 1.7.4977 each pass
+21 independent primary/fallback size combinations and 96 UI/world changes with four
+fallback policies; settled resource counts stay stable and Default releases all owned
+imports/registrations. Computer Use confirms Korean UI and world labels with loose
+bundled primaries/fallbacks, including zoom changes and world-view re-entry.
 
-Startup performance work on 2026-10-15 preserves the original bundle and uses the same
-managed extraction path in Unity and Waylith. `task benchmark` compares full unpacking
-with manifest/range extraction and persistent caches on the current machine;
-`task font_catalog` regenerates/verifies the embedded catalog and also runs before
-`task build`. Add `-customfonts-profile=1` to log catalog, extraction, native creation
-and initial font-application times separately.
-On this Windows machine, a fresh standalone process measured full bundle listing at
-about 3 seconds and full-unpack extraction at about 3 seconds. The embedded manifest
-reduced fresh listing to 97 ms and range extraction of HangeulNuri Bold to 45 ms;
-subsequent processes measured 0.2 ms and 4 ms from disk caches. System enumeration
-took about 4 ms; name reads were about 22–27 ms with a warm filesystem and 15 ms
-from the persistent metadata cache (the first earlier read was 1.15 seconds).
-Unity 1.6's Mono runtime was substantially slower at full decompression: the measured
-initial font application took 91.2 seconds. With a fresh cache, manifest/range loading
-applied the same bundled HangeulNuri Bold font in 526 ms (400 ms catalog, 81 ms
-extraction and 38 ms native creation). These are mod font-operation timings, not total
-game startup times. Tests pass 124 assertions with the real bundle, including exact
-payload hashes for all 15 prefix-decoded fonts against one full decompression.
-Unity 1.6's repeated bundled start measured 117 ms, and a fresh Default profile
-measured 7.4 ms without catalog reads or cache creation. Waylith 1.7's fresh bundled
-start measured 208 ms (127 ms catalog, 72 ms extraction). Both live verification
-runs passed after the optimization, including three UI sizes, custom/bundled files,
-world text, font/scale switches and refresh. Computer Use confirmed rendered Hangul
-world labels in both engines and the Default main menu in 1.6.
-
-Validated on Windows with RimWorld 1.7.4977 rev1248 and Harmony 3 on 2026-10-14:
-45 metadata/path/Unicode/coverage assertions and 62 assertions with the actual bundle passed.
-Symbolic-link assertions are skipped on this Windows account because link creation requires
-additional OS privileges; the existing settings are left unchanged.
-Live integration checks in Korean and English cover custom Arial/Malgun Gothic, bundled
-HangeulNuri, TTC first-face loading, mixed CJK world meshes, supplementary ideographs,
-200 font/size switches and Default restoration. An added atlas-pixel check reproduced the
-disappearing world labels before the bake-lifetime fix and passed after it. World labels
-were also checked on the game screen. Separate Japanese and Chinese game-language runs
-were not repeated for this fix; their glyph samples are included in the mixed CJK checks.
-The 1.7 **etc** menu was also tested manually through Computer Use in an isolated Korean
-profile on Windows. A Unicode folder with spaces adds both its root and nested fonts
-(285 system choices become 287); excluding system fonts leaves two file choices, and
-disabling recursion leaves one. An explicit nested TTF supplied through `%TEMP%` is still
-discoverable with recursion disabled. Overlapping sources and repeated path additions do
-not duplicate choices; an absent file shows an input error and is not saved. Restoring
-both search options returns all 287 choices. Bundled choices remain available with system
-discovery disabled. Custom Malgun Gothic and bundled HangeulNuri Bold render all three
-UI previews and Hangul world labels, including re-entry into the world view.
-The personal source, search options and bundled selection persist across a game restart.
-Default restoration also renders Korean previews and world labels; the original-resolution
-Steam capture confirms intact UI text where the scaled desktop capture loses thin strokes.
-Linux/macOS game execution has not been tested; their engine discovery paths and Linux XDG additions
-were reviewed, with deterministic path tests running on Windows.
-Unity 1.4/1.5/1.6 builds passed. Steam's public 1.6.4871 installation was also built
-and deployed with Task, then tested manually through Computer Use in a separate Korean
-profile. Default, bundled HangeulNuri Bold and system Malgun Gothic rendered in the UI
-and world view; world labels survived re-entry and Default restoration. At 1.5x UI font
-scaling, all three previews resized and wrapped correctly. Malgun Gothic's title clipping
-at vertical offset 0 was resolved with a +5 offset in the uniform UI settings; offsets
-depend on the selected font and scale. Runtime tests for 1.4/1.5 were not repeated.
+On this Windows machine, standalone first reads measured 2.3 ms for the metadata-only
+15-font index and 1.1 ms for HangeulNuri Bold (1.64 MB). Fresh isolated game profiles
+with bundled HangeulNuri Bold and bundled MaruBuri fallbacks measured index/file reads
+of 3.5/0.7 ms in 1.6 and 2.5/0.6 ms in 1.7; startup font application was about 224 ms
+in each engine. These are font-operation measurements, not total game startup times.
+New 1.4/1.5 runtime runs and Linux/macOS execution remain unverified; those versions
+build and platform roots have deterministic path tests. Symbolic-link tests are skipped
+when Windows denies link creation.
 
 # License
 

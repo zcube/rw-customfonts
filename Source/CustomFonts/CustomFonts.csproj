@@ -74,13 +74,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Shared/**/*.cs" />
-    <EmbeddedResource Include="Shared/BundledFonts.catalog" LogicalName="CustomFonts.BundledFonts.catalog" />
+    <EmbeddedResource Include="Shared/BundledFonts.tsv" LogicalName="CustomFonts.BundledFonts.tsv" />
     <Compile Include="Engines/$(Engine)/**/*.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(Engine)' == 'Waylith'">
     <Reference Include="Assembly-CSharp" HintPath="$(GameDir)/Assembly-CSharp.dll" Private="false" />
     <Reference Include="UnityStubs" HintPath="$(GameDir)/UnityStubs.dll" Private="false" />
-    <Reference Include="AssetsTools.NET" HintPath="$(GameDir)/AssetsTools.NET.dll" Private="false" />
     <Reference Include="Brutal.ImGui" HintPath="$(GameDir)/Brutal.ImGui.dll" Private="false" />
     <Reference Include="Brutal.Core.Common" HintPath="$(GameDir)/Brutal.Core.Common.dll" Private="false" />
     <Reference Include="Brutal.Core.Numerics" HintPath="$(GameDir)/Brutal.Core.Numerics.dll" Private="false" />
@@ -136,8 +135,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup Condition="'$(Engine)' == 'Unity'">
-    <PackageReference Include="AssetsTools.NET" Version="3.0.4" />
-    <EmbeddedResource Include="Engines/Unity/FontTemplate.bundle" LogicalName="CustomFonts.FontTemplate.bundle" />
+    <EmbeddedResource Include="Engines/Unity/FontTemplate.bin" LogicalName="CustomFonts.FontTemplate.bin" />
     <Reference Include="Assembly-CSharp">
       <HintPath>$(GameDir)/$(STEAM_OS)/Managed/Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
@@ -177,6 +175,9 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <Target Name="RemoveLegacyFontLibrary" AfterTargets="Build">
+    <Delete Files="$(OutputPath)AssetsTools.NET.dll;$(OutputPath)AssetsTools.NET.xml;$(OutputPath)AssetsTools.NET.pdb" />
+  </Target>
   <Target Name="ValidateEngineSelection" BeforeTargets="PrepareForBuild">
     <Error Condition="'$(Engine)' != '$(ExpectedEngine)'"
            Text="RimWorld $(RimWorldVersion) requires $(ExpectedEngine). The Engine property cannot override the version boundary." />

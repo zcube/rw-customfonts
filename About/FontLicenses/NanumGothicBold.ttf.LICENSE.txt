@@ -2,7 +2,7 @@ Font payload: NanumGothicBold.ttf
 Family/style: NanumGothic / Bold
 Version embedded in this payload: Version 3.021;PS 1;hotconv 1.0.57;makeotf.lib2.0.21895
 Payload size: 4642244 bytes
-SHA-256 of the exact payload shipped in rimfonts: 454eb3f503f377782a99eb84fc4bb7dde22a0f075d41b47427737f2985053bc9
+SHA-256 of the exact file shipped in Fonts/: 454eb3f503f377782a99eb84fc4bb7dde22a0f075d41b47427737f2985053bc9
 Verified: 2026-10-15
 
 Copyright notice embedded in the shipped font:
