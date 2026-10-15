@@ -4,6 +4,9 @@ Version embedded in this payload: Version 1.0.10; ttfautohint (v1.8.4)
 Payload size: 23775396 bytes
 SHA-256 of the exact file shipped in Fonts/: 70c2f18ae4c2d6cf35c8c341daa9e5bbd8a6295265886339affff1186dba45d2
 Verified: 2026-10-15
+Official archive: https://github.com/be5invis/Sarasa-Gothic/releases/download/v1.0.10/SarasaUiJ-TTF-1.0.10.7z
+Archive entry: SarasaUiJ-Regular.ttf
+Upstream comparison: byte-identical SHA-256 on 2026-10-15 (see provenance.csv).
 
 Copyright notice embedded in the shipped font:
 Copyright (c) 2015-2024, Renzhi Li (aka. Belleve Invis, belleve@typeof.net). Portions Copyright (c) 2016-2020 The Inter Project Authors. Portions Copyright (c) 2014, 2015 Adobe Systems Incorporated (http://www.adobe.com/). Portions Copyright (c) 2012 Google Inc.
@@ -13,9 +16,9 @@ License: SIL Open Font License 1.1
 Project: https://github.com/be5invis/Sarasa-Gothic
 License source: https://raw.githubusercontent.com/be5invis/Sarasa-Gothic/v1.0.10/LICENSE
 
-The embedded copyright/version above identifies the shipped payload. The upstream
-license below is retained as published; a version string alone is not a claim
-that this payload is byte-identical to an upstream release archive.
+The shipped bytes match the official v1.0.10 release archive. The embedded 2015-2024
+copyright and the tagged LICENSE's 2015-2022 copyright are both retained as published;
+their different years are not silently normalized.
 
 --- Upstream copyright notice and complete license ---
 Copyright (c) 2015-2022, Renzhi Li (aka. Belleve Invis, belleve@typeof.net).

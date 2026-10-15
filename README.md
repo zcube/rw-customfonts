@@ -399,6 +399,9 @@ Each of the 15 shipped font payloads has its own notice in
 in that file, publisher/source links, applicable terms and an exact payload SHA-256.
 [`fonts.csv`](About/FontLicenses/fonts.csv) maps every payload to its notice.
 The mod's MIT license does not replace the fonts' licenses.
+The additional review in [`REVIEW.txt`](About/FontLicenses/REVIEW.txt) records the
+Goyang redistribution restriction, HangeulNuri usage restrictions, and official
+archive hash comparisons for five files in [`provenance.csv`](About/FontLicenses/provenance.csv).
 
 * Sarasa UI J
     ```
@@ -407,9 +410,10 @@ The mod's MIT license does not replace the fonts' licenses.
     https://github.com/be5invis/Sarasa-Gothic
     ```
 
-* Nanum Fonts
+* NAVER: Nanum Fonts / MaruBuri / CLOVA handwritten fonts
     ```
-    Copyright (c) 2010, NAVER Corporation (https://www.navercorp.com/).
+    NAVER / NAVER Cultural Foundation and the credited font creators.
+    Original per-file copyright statements are retained in About/FontLicenses/.
     SIL Open Font License 1.1
     https://help.naver.com/service/30016/contents/18088?osType=PC&lang=ko
     ```

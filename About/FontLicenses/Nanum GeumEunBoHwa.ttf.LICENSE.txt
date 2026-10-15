@@ -1,5 +1,5 @@
 Font payload: Nanum GeumEunBoHwa.ttf
-Family/style: ≥™¥Æº’±€ææ ±›¿∫∫∏»≠ / Regular
+Family/style: Nanum GeumEunBoHwa / Regular
 Version embedded in this payload: Version 1.000
 Payload size: 4600756 bytes
 SHA-256 of the exact file shipped in Fonts/: d17f080244b53db33cb3efb7c337a64093b58809beb8afe2374d2685fb09cb0b

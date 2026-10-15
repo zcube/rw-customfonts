@@ -4,6 +4,9 @@ Version embedded in this payload: 1.000
 Payload size: 1562272 bytes
 SHA-256 of the exact file shipped in Fonts/: 7de08b11e1ede5dcf8c6bfafb8b8e5c5758d0b584b7798facd0ce763b5a9d372
 Verified: 2026-10-15
+Official archive: https://www.goyang.go.kr/component/resrce/file/ND_resrceFileDownload.do?resrceSn=167&resrceVer=1&fileSn=1
+Archive entry: GOYANGDEOGYANG EB.TTF
+Upstream comparison: byte-identical SHA-256 on 2026-10-15 (see provenance.csv).
 
 Copyright notice embedded in the shipped font:
 Copyright (c) 2018 by Goyang. All rights reserved.
@@ -16,3 +19,8 @@ KOGL terms: https://www.kogl.or.kr/info/license.do
 Attribution is required. The publisher additionally prohibits commercial
 redistribution and paid transfer or sale of the font. These additional terms
 must remain with the font; the general KOGL Type 1 label alone is incomplete.
+
+Additional review: the generic KOGL Type 1 commercial-use permission and the
+font-specific commercial-redistribution prohibition both appear in official sources.
+This record preserves both; it does not resolve that tension or grant permission
+for a paid/monetized redistribution. See REVIEW.txt.

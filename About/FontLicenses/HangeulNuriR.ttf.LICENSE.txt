@@ -4,10 +4,23 @@ Version embedded in this payload: Version 1.000;build 20140603
 Payload size: 1755476 bytes
 SHA-256 of the exact file shipped in Fonts/: bcd96a3e18225ab97fa0f0c0ab52ee93de42c5caad7efaab4ddd83f3d780a12f
 Verified: 2026-10-15
+Official archive: https://hanfont.hangeul.go.kr/fonts/HangeulNuri_TTF.zip
+Archive entry: HangeulNuriR.ttf
+Upstream comparison: byte-identical SHA-256 on 2026-10-15 (see provenance.csv).
 
 Copyright notice embedded in the shipped font:
 Copyright © 2014 Hangeulmuseum. & YoonDesign Inc. All rights reserved.
 This Font Software is protected by copyright laws of Korea, international copyright treaties. It may not be reproduced, copied, distributed, resold, rented, transferred without the written expression of Hangeulmuseum & Yoondesign Inc.
+
+
+Additional copyright records embedded in the shipped font (Windows Unicode):
+Language 0x0409:
+Copyright ⓒ 2014 Hangeulmuseum. & YoonDesign Inc. All rights reserved.
+This Font Software is protected by copyright laws of Korea, international copyright treaties. It may not be reproduced, copied, distributed, resold, rented, transferred without the written expression of Hangeulmuseum & Yoondesign Inc.
+
+Language 0x0412:
+Copyright ⓒ 2014 국립한글박물관 & (주)윤디자인연구소.
+본 폰트 소프트웨어의 모든 저작권은 국립한글박물관 & (주)윤디자인연구소에 있으며, 대한민국 저작권법과 국제 저작권 협약에 의해 보호받고 있습니다. 저작권자의 사전 승인 없이는 본 폰트 소프트웨어를 수정, 개작, 변형, 복사, 대여, 임대, 재판매, 배포 등을 할 수 없습니다.
 
 Publisher: National Hangeul Museum / YoonDesign Inc.
 License: KOGL Type 3 (attribution, no derivatives); publisher-specific terms
@@ -19,3 +32,8 @@ Selling or renting the font itself and use in harmful media are prohibited.
 Keep this font's original bytes and copyright notices.
 The embedded generic copyright notice above is preserved verbatim; the linked
 font-specific publisher terms are recorded separately rather than replacing it.
+
+The no-derivatives and harmful-media conditions apply independently of price.
+Byte identity alone does not establish that every usage context is permitted.
+The font OS/2 fsType is 0x0004 (Preview & Print document embedding metadata);
+it has not been changed. See REVIEW.txt for scope and interpretation limits.

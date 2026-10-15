@@ -16,6 +16,8 @@ links to the corresponding KOGL terms. HangeulNuri uses Type 3 (attribution,
 no derivatives), not a non-commercial license. Goyang's publisher adds a
 commercial-redistribution restriction to its Type 1 notice.
 
-Sources were checked on 2026-10-15. Copyright/version strings from shipped font
-metadata are retained separately from current website terms. No claim is made
-that the existing binary payloads match a newly downloaded upstream release.
+Sources were checked on 2026-10-15. REVIEW.txt records findings and unresolved scope
+questions. provenance.csv records byte-identical official-archive comparisons for
+Goyang (2), HangeulNuri (2) and Sarasa (1). NAVER family terms are verified, but its
+10 payloads were not compared against newly downloaded archives in this review.
+Embedded copyright/version metadata and current publisher terms remain separate.
