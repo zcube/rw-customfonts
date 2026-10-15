@@ -36,7 +36,7 @@ namespace CustomFonts
                     Log.Message("[Custom Fonts][memory-verify] Default cleanup: "
                         + string.Join(", ", CaptureFontMemory().Select(p => p.Key + "=" + p.Value)));
                     WriteSettings();
-                    Log.Message("[Custom Fonts][memory-verify] PASS: 96 UI/world switches across file/bundle/Default and four fallback policies; refresh, native styles, stable settled resources; Default releases all custom registrations/imports");
+                    Log.Message("[Custom Fonts][memory-verify] PASS: 96 UI/world switches across file/bundle/Default and four fallback policies; refresh, native styles, stable settled resources; reset clears all scoped/legacy fallbacks and releases all custom registrations/imports");
                     _memoryStep = -1; return;
                 }
                 if (_memoryKeys == null)
@@ -70,10 +70,14 @@ namespace CustomFonts
                     VerifyWorldFallbackRendering();
                     if (_memoryPhase == 4)
                     {
-                        foreach (FontTarget t in Enum.GetValues(typeof(FontTarget))) _settings.GetFallbackFonts(t).Clear();
-                        foreach (var size in PreviewFonts) _settings.SetScaleFactor(size, 1f);
-                        SaveFontAll(FontSettings.DefaultFontName); SaveWorldFont(FontSettings.DefaultFontName);
-                        ApplyFallbackChanges(FontTarget.Medium);
+                        _settings.FallbackFontNames.Add(_memoryKeys[0]);
+                        ResetToDefault();
+                        Require(_settings.FallbackFontNames.Count == 0 && Enum.GetValues(typeof(FontTarget)).Cast<FontTarget>()
+                            .All(t => _settings.GetFallbackFonts(t).Count == 0 && SourcesFor(t).Length == 0 && FallbackPolicy(t) == ""),
+                            "reset clears all scoped/legacy fallback settings and active sources");
+                        Require(_settings.UniformUIfonts && _settings.CurrentWorldFontName == FontSettings.DefaultFontName
+                            && _settings.WorldScaleFactor == 1f && PreviewFonts.All(s => _settings.GetCurrentUIFontName(s) == FontSettings.DefaultFontName),
+                            "reset restores primary selections, uniform UI and world scale");
                         _memoryCleanup = true; _memoryFrame = Time.frameCount + 180; return;
                     }
                     // Move past the sample point without applying an extra configuration.

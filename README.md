@@ -229,6 +229,8 @@ duplicate names. Merging copies entries; subsequent edits remain independent.
 The shared keys are `FallbackFontsTiny`, `FallbackFontsSmall`, `FallbackFontsMedium`
 and `FallbackFontsWorld` across 1.4–1.7. Old `FallbackFontNames` settings are copied to
 all tabs on migration; an explicitly empty new tab list remains empty.
+**Reset to default** also clears the Tiny/Small/Medium/world fallback lists and legacy
+fallback settings, applies the original fonts immediately and saves the reset.
 The primary face keeps priority; missing characters use defined fallbacks in list order,
 then the engine's existing automatic fallbacks. A missing/removed source is skipped and
 reported. Identical file contents are deduplicated, and a primary never references itself.

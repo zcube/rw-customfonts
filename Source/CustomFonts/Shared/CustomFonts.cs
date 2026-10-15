@@ -130,18 +130,7 @@ namespace CustomFonts
             var listingStandard = new Listing_Standard();
             listingStandard.Begin(inRect);
             if (listingStandard.ButtonTextLabeled("CustomFonts.ResetToDefault".Translate(), "CustomFonts.Apply".Translate()))
-            {
-                foreach (GameFont value in Enum.GetValues(typeof(GameFont)))
-                {
-                    _settings.SetScaleFactor(value, 1.0f);
-                    _settings.SetVerticalOffset(value, 0);
-                    _settings.SetFontWidthScaleFactor(value, 1.0f);
-                    SaveFont(value, FontSettings.DefaultFontName, true);
-                }
-                _settings.UniformUIfonts = true;
-                _settings.WorldScaleFactor = 1.0f;
-                SaveWorldFont(FontSettings.DefaultFontName);
-            }
+                ResetToDefault();
             var uniformBefore = _settings.UniformUIfonts;
             listingStandard.CheckboxLabeled("CustomFonts.UniformUIfonts".Translate(), ref _settings.UniformUIfonts, "CustomFonts.UniformUIfonts".Translate());
             if (_settings.UniformUIfonts != uniformBefore)
@@ -596,6 +585,32 @@ namespace CustomFonts
             _settings.SetCurrentUIFontName(fontIndex, fontName);
             UpdateFont(fontIndex);
             RecalcTextMetricsIfNeeded();
+        }
+
+        private void ResetToDefault()
+        {
+            // Clear every scope before rebinding fonts. Uniform mode must not copy an
+            // old Medium fallback list back into Tiny/Small during reset or saving.
+            _settings.FallbackFontNames.Clear();
+            foreach (FontTarget target in Enum.GetValues(typeof(FontTarget)))
+                _settings.SetFallbackFonts(target, new string[0]);
+            foreach (GameFont size in Enum.GetValues(typeof(GameFont)))
+            {
+                _settings.SetCurrentUIFontName(size, FontSettings.DefaultFontName);
+                _settings.SetScaleFactor(size, 1f);
+                _settings.SetVerticalOffset(size, 0);
+                _settings.SetFontWidthScaleFactor(size, 1f);
+            }
+            _settings.UniformUIfonts = true;
+            _settings.CurrentWorldFontName = FontSettings.DefaultFontName;
+            _settings.WorldScaleFactor = 1f;
+            _worldScalePending = false;
+            _fallbackConfiguration = null;
+            ReleaseWorldFontAsset();
+            UpdateFont();
+            // Default may already be selected, but its fallback policy or scale changed.
+            RefreshWorldFeatureTexts();
+            WriteSettings();
         }
 
         // Every size is written and re-applied unconditionally: SaveFont skips a size whose
