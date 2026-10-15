@@ -11,6 +11,11 @@ namespace CustomFonts
     public partial class CustomFonts
     {
         private readonly List<string> _fontSourceErrors = new List<string>();
+        private string[] _systemFontSearchRoots;
+        private string[] SystemFontSearchRoots => _systemFontSearchRoots ?? (_systemFontSearchRoots = SystemFontRoots.Get(CurrentFontPlatform(),
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Environment.GetEnvironmentVariable).ToArray());
         private static string DisplayFontName(string name) => FontSourceCatalog.DisplayName(name);
         private string CanonicalFontSelection(string selection)
         {
@@ -36,10 +41,7 @@ namespace CustomFonts
             var systemFiles = new HashSet<string>(FontSourceCatalog.PathComparer);
             if (_settings.IncludeSystemFonts)
             {
-                foreach (string root in SystemFontRoots.Get(CurrentFontPlatform(),
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    Environment.GetFolderPath(Environment.SpecialFolder.Windows),
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Environment.GetEnvironmentVariable))
+                foreach (string root in SystemFontSearchRoots)
                 {
                     if (!Directory.Exists(root)) continue;
                     try { systemFiles.UnionWith(FontFiles.Enumerate(root, true).Where(FontFiles.Supported)); }
@@ -63,6 +65,7 @@ namespace CustomFonts
         {
             _hasInstalledFontNames = false;
             _hasOSFontAssets = false;
+            _systemFontSearchRoots = null;
             OSFontPaths.Clear();
             ReleaseWorldFontAsset();
             foreach (Font font in _osFontCache.Values.Distinct()) QueueDestroy(font);

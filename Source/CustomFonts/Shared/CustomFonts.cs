@@ -190,16 +190,12 @@ namespace CustomFonts
                     break;
             }
 
-            var specimenText = "CustomFonts.Specimen".Translate();
-
-            // The preview used to reserve a hard coded 100px. Listing_Standard.Label sizes each
-            // line with Text.CalcHeight, so a long translated sentence wraps and a large scaling
-            // factor grows every line - both push the preview past 100px and it then draws over
-            // whatever follows. Measure the exact height instead.
-            var previewHeight = MeasureSpecimenHeight(specimenText, listingStandard.ColumnWidth);
-
-            Rect fontViewRect = listingStandard.GetRect(previewHeight);
+            if (toolbarInt < 4)
             {
+                var specimenText = "CustomFonts.Specimen".Translate();
+                // Measure translated/scaled previews instead of reserving a fixed height.
+                var previewHeight = MeasureSpecimenHeight(specimenText, listingStandard.ColumnWidth);
+                Rect fontViewRect = listingStandard.GetRect(previewHeight);
                 var fontViewListingStandard = new Listing_Standard();
                 fontViewListingStandard.Begin(fontViewRect);
 

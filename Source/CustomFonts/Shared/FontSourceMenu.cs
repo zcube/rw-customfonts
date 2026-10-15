@@ -22,6 +22,11 @@ namespace CustomFonts
             list.Label("CustomFonts.FontSourcesHelp".Translate());
             list.CheckboxLabeled("CustomFonts.IncludeSystemFonts".Translate(), ref _settings.IncludeSystemFonts);
             list.CheckboxLabeled("CustomFonts.RecursiveFolders".Translate(), ref _settings.RecursiveFontFolders);
+            list.GapLine();
+            list.Label("CustomFonts.SystemFontDirectories".Translate(CurrentFontPlatform().ToString()));
+            list.Label("CustomFonts.SystemFontDirectoriesHelp".Translate());
+            foreach (string path in SystemFontSearchRoots) list.Label(path);
+            list.GapLine();
             _newFontSource = list.TextEntryLabeled("CustomFonts.FontPath".Translate(), _newFontSource);
             if (list.ButtonText("CustomFonts.AddFontPath".Translate()))
             {

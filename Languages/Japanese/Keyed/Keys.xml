@@ -42,6 +42,8 @@
     <CustomFonts.RefreshFontSources>フォント一覧を更新 / 検索設定を適用</CustomFonts.RefreshFontSources>
     <CustomFonts.RemoveFontPath>削除</CustomFonts.RemoveFontPath>
     <CustomFonts.IncludeSystemFonts>システムフォントを含める</CustomFonts.IncludeSystemFonts>
+    <CustomFonts.SystemFontDirectories>システムの標準フォントフォルダー ({0})</CustomFonts.SystemFontDirectories>
+    <CustomFonts.SystemFontDirectoriesHelp>システムフォントを含める場合に検索します。存在しないフォルダーはスキップします。</CustomFonts.SystemFontDirectoriesHelp>
     <CustomFonts.FallbackFonts>フォールバックフォント</CustomFonts.FallbackFonts>
     <CustomFonts.FallbackFontsHelp>選択したフォントにない文字を上から順に補います。UIとワールドの文字に適用されます。</CustomFonts.FallbackFontsHelp>
     <CustomFonts.AddFallbackFont>フォールバックフォントを追加</CustomFonts.AddFallbackFont>

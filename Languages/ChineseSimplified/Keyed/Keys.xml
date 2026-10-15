@@ -36,6 +36,8 @@
     <CustomFonts.FontSources>字体文件和文件夹</CustomFonts.FontSources>
     <CustomFonts.FontSourcesHelp>添加 TTF、OTF、TTC 文件或文件夹。相对路径以模组目录为起点，支持环境变量和 ~。TTC 使用第一个字体。点击刷新以应用搜索设置。 选择按字体族名称保存，不保存文件路径，并优先使用常规字形。</CustomFonts.FontSourcesHelp>
     <CustomFonts.IncludeSystemFonts>包含系统字体</CustomFonts.IncludeSystemFonts>
+    <CustomFonts.SystemFontDirectories>系统默认字体目录 ({0})</CustomFonts.SystemFontDirectories>
+    <CustomFonts.SystemFontDirectoriesHelp>包含系统字体时搜索这些目录。不存在的目录会被跳过。</CustomFonts.SystemFontDirectoriesHelp>
     <CustomFonts.RecursiveFolders>搜索子文件夹</CustomFonts.RecursiveFolders>
     <CustomFonts.FontPath>文件或文件夹路径</CustomFonts.FontPath>
     <CustomFonts.AddFontPath>添加路径</CustomFonts.AddFontPath>

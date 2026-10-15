@@ -36,6 +36,8 @@
     <CustomFonts.FontSources>字型檔案和資料夾</CustomFonts.FontSources>
     <CustomFonts.FontSourcesHelp>新增 TTF、OTF、TTC 檔案或資料夾。相對路徑以模組目錄為起點，支援環境變數和 ~。TTC 使用第一個字型。按下重新整理以套用搜尋設定。 選擇按字型家族名稱儲存，不儲存檔案路徑，並優先使用標準字形。</CustomFonts.FontSourcesHelp>
     <CustomFonts.IncludeSystemFonts>包含系統字型</CustomFonts.IncludeSystemFonts>
+    <CustomFonts.SystemFontDirectories>系統預設字型目錄 ({0})</CustomFonts.SystemFontDirectories>
+    <CustomFonts.SystemFontDirectoriesHelp>包含系統字型時搜尋這些目錄。不存在的目錄會被略過。</CustomFonts.SystemFontDirectoriesHelp>
     <CustomFonts.RecursiveFolders>搜尋子資料夾</CustomFonts.RecursiveFolders>
     <CustomFonts.FontPath>檔案或資料夾路徑</CustomFonts.FontPath>
     <CustomFonts.AddFontPath>新增路徑</CustomFonts.AddFontPath>

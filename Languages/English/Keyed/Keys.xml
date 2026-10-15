@@ -36,6 +36,8 @@
     <CustomFonts.FontSources>Font files and folders</CustomFonts.FontSources>
     <CustomFonts.FontSourcesHelp>Add a TTF, OTF or TTC file, or a folder. Relative paths start in this mod folder; environment variables and ~ are supported. TTC uses its first face. Apply search options with Refresh. Selections save family names instead of file paths and prefer regular faces.</CustomFonts.FontSourcesHelp>
     <CustomFonts.IncludeSystemFonts>Include system fonts</CustomFonts.IncludeSystemFonts>
+    <CustomFonts.SystemFontDirectories>Default system font directories ({0})</CustomFonts.SystemFontDirectories>
+    <CustomFonts.SystemFontDirectoriesHelp>Searched when system fonts are included. Missing directories are skipped.</CustomFonts.SystemFontDirectoriesHelp>
     <CustomFonts.RecursiveFolders>Search subfolders</CustomFonts.RecursiveFolders>
     <CustomFonts.FontPath>File or folder path</CustomFonts.FontPath>
     <CustomFonts.AddFontPath>Add path</CustomFonts.AddFontPath>
