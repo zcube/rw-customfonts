@@ -40,6 +40,7 @@ Assemblies/CustomFonts.pdb
 HarmonyMod.zip
 *.tar.gz
 custom-fonts.zip
+custom-fonts.zip.sha256
 custom-fonts-files.txt
 .env
 *.ps1

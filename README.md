@@ -370,6 +370,10 @@ separate index reads, file reads, native creation and initial font-application t
 from their target mod folder when upgrading an existing installation. `task package`
 requires a clean committed tree and overlays verified, materialized Git LFS fonts into
 `custom-fonts.zip`, so players receive TTF bytes rather than LFS pointer files.
+The ZIP contains only versioned assemblies, About/Fonts/Languages, LICENSE and README.
+It excludes development sources, tests and local settings. `task package` also writes
+`custom-fonts.zip.sha256`; `task stage` extracts the package into
+`release/rw-customfonts-<commit>` for Workshop upload. Neither task publishes or pushes.
 
 The file-distribution migration passes all four builds and 188 standalone assertions,
 including independent UnityFS/SerializedFile inspection, all 15 original hashes and
