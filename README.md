@@ -448,15 +448,21 @@ scaling, all three previews resized and wrapped correctly. Malgun Gothic's title
 at vertical offset 0 was resolved with a +5 offset in the uniform UI settings; offsets
 depend on the selected font and scale. Runtime tests for 1.4/1.5 were not repeated.
 
-# Licnese
+# License
 
 * MIT License
 
 ## Bundled Fonts
 
+Each of the 15 shipped font payloads has its own notice in
+[`About/FontLicenses`](About/FontLicenses/README.txt), including the copyright embedded
+in that file, publisher/source links, applicable terms and an exact payload SHA-256.
+[`fonts.csv`](About/FontLicenses/fonts.csv) maps every payload to its notice.
+The mod's MIT license does not replace the fonts' licenses.
+
 * Sarasa UI J
     ```
-    Copyright (c) 2015-2022, Renzhi Li (aka. Belleve Invis, belleve@typeof.net).
+    Copyright (c) 2015-2024, Renzhi Li and other credited contributors (see the payload notice).
     SIL Open Font License 1.1
     https://github.com/be5invis/Sarasa-Gothic
     ```
@@ -470,12 +476,12 @@ depend on the selected font and scale. Runtime tests for 1.4/1.5 were not repeat
 
 * GoYangDeogYang B, EB
     ```
-    공공누리 제1유형(출처표시)
+    공공누리 제1유형(출처표시). 배포처는 상업적 재배포 및 유료 양도·판매를 별도로 금지합니다.
     https://www.goyang.go.kr/www/www05/www05_3/www05_3_6/www05_3_6_tab2.jsp
     ```
 
 * hangeulnuri
     ```
-    공공누리 3유형(출처표시-변경금지-비영리)
+    공공누리 제3유형(출처표시-변경금지). 배포처는 상업적 사용을 허용하며 글꼴 자체의 유료 판매·대여 및 유해매체 사용은 금지합니다.
     https://hanfont.hangeul.go.kr/relaxfont/font/hangeulnuri.do
     ```

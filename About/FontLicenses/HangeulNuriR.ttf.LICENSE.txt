@@ -1,0 +1,21 @@
+Font payload: HangeulNuriR.ttf
+Family/style: HangeulNuri / Regular
+Version embedded in this payload: Version 1.000;build 20140603
+Payload size: 1755476 bytes
+SHA-256 of the exact payload shipped in rimfonts: bcd96a3e18225ab97fa0f0c0ab52ee93de42c5caad7efaab4ddd83f3d780a12f
+Verified: 2026-10-15
+
+Copyright notice embedded in the shipped font:
+Copyright © 2014 Hangeulmuseum. & YoonDesign Inc. All rights reserved.
+This Font Software is protected by copyright laws of Korea, international copyright treaties. It may not be reproduced, copied, distributed, resold, rented, transferred without the written expression of Hangeulmuseum & Yoondesign Inc.
+
+Publisher: National Hangeul Museum / YoonDesign Inc.
+License: KOGL Type 3 (attribution, no derivatives); publisher-specific terms
+Official source and usage terms: https://hanfont.hangeul.go.kr/relaxfont/font/hangeulnuri.do
+KOGL terms: https://www.kogl.or.kr/info/license.do
+
+The publisher permits commercial use with attribution and no font modifications.
+Selling or renting the font itself and use in harmful media are prohibited.
+Keep this font's original bytes and copyright notices.
+The embedded generic copyright notice above is preserved verbatim; the linked
+font-specific publisher terms are recorded separately rather than replacing it.

@@ -47,22 +47,24 @@ url: https://github.com/nmkj-io/rw-customfonts
 <size=17><b>Bundled Fonts</b></size>
 
 <b>- GoYangDeogYang B, EB </b>
-공공누리 제1유형(출처표시)
+공공누리 제1유형(출처표시), 상업적 재배포 금지
 https://www.goyang.go.kr/www/www05/www05_3/www05_3_6/www05_3_6_tab2.jsp
 
 <b>- HangeulNuri R, B </b>
-공공누리 3유형(출처표시-변경금지-비영리)
+공공누리 제3유형(출처표시-변경금지)
 https://hanfont.hangeul.go.kr/relaxfont/font/hangeulnuri.do
 
-<b>- Nanum Fonts</b>
+<b>- Nanum Fonts / MaruBuri / CLOVA handwritten fonts</b>
 Copyright (c) 2010, NAVER Corporation (https://www.navercorp.com/).
 SIL Open Font License 1.1
 https://help.naver.com/service/30016/contents/18088?osType=PC&lang=ko
 
 <b>- Sarasa UI J</b>
-Copyright (c) 2015-2022, Renzhi Li (aka. Belleve Invis, belleve@typeof.net).
+Copyright (c) 2015-2024, Renzhi Li and other credited contributors.
 SIL Open Font License 1.1
-https://github.com/be5invis/Sarasa-Gothic]]></description>
+https://github.com/be5invis/Sarasa-Gothic
+
+Individual copyright notices, license terms and payload hashes: About/FontLicenses/]]></description>
   <modDependencies>
     <li>
       <packageId>brrainz.harmony</packageId>

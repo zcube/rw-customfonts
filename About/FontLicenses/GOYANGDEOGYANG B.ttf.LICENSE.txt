@@ -1,0 +1,18 @@
+Font payload: GOYANGDEOGYANG B.ttf
+Family/style: GoyangDeogyang B / Regular
+Version embedded in this payload: 1.000
+Payload size: 1650540 bytes
+SHA-256 of the exact payload shipped in rimfonts: 3d0dee4a6f4d95a6d4ce977cd461a160e3e8454240f9b66a7071e319ff7d44cf
+Verified: 2026-10-15
+
+Copyright notice embedded in the shipped font:
+Copyright (c) 2018 by Goyang. All rights reserved.
+
+Publisher: Goyang City
+License: KOGL Type 1 (attribution); commercial redistribution prohibited by publisher
+Official source and usage terms: https://www.goyang.go.kr/www/www05/www05_3/www05_3_6/www05_3_6_tab2.jsp
+KOGL terms: https://www.kogl.or.kr/info/license.do
+
+Attribution is required. The publisher additionally prohibits commercial
+redistribution and paid transfer or sale of the font. These additional terms
+must remain with the font; the general KOGL Type 1 label alone is incomplete.
