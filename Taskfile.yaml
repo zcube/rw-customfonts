@@ -206,9 +206,9 @@ tasks:
             exit 1
           fi
       - git archive --format=zip HEAD -o custom-fonts.zip -- 1.4 1.5 1.6 1.7 About Fonts Languages LICENSE README.md
-      # Ensure the ZIP has real fonts even with archive implementations that leave LFS
-      # pointers. Use only tracked paths from the clean checkout, excluding local extras.
-      - git -c core.quotepath=false ls-files Fonts > custom-fonts-files.txt
+      # Replace archived LFS pointers with real DLLs and fonts from the checkout.
+      # Use only tracked runtime paths, excluding local extras.
+      - git -c core.quotepath=false ls-files 1.4 1.5 1.6 1.7 Fonts > custom-fonts-files.txt
       - cmd: 7z a -y custom-fonts.zip @custom-fonts-files.txt
         platforms: [windows, linux]
       - cmd: 7zz a -y custom-fonts.zip @custom-fonts-files.txt

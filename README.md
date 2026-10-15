@@ -10,6 +10,10 @@ Requires Git LFS, .NET SDK (10 for Waylith), task, curl and 7zip. Copy `.env.sam
 `.env` and configure the installed game paths. Unity builds need the corresponding
 1.4, 1.5 or 1.6 installation. Waylith reads assemblies from the 1.7 game root.
 
+DLLs and TTF, TTC, OTF, OTC, WOFF, WOFF2 and EOT font files use Git LFS, including
+uppercase extensions. Run `git lfs pull` before building or packaging; release ZIPs
+and local mod exports contain the actual binaries.
+
 ```bash
 git lfs pull
 task prepare
