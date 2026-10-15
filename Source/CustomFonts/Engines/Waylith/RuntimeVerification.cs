@@ -28,8 +28,8 @@ namespace CustomFonts
             foreach (var size in PreviewFonts)
             {
                 var first = SourcesFor((FontTarget)size)[0];
-                Font reference = LoadFontFile(first.Path);
                 int pixels = Text.fontStyles[(int)size].fontSize;
+                Font reference = LoadFontFile(first.Path, null, pixels);
                 bool actualFound = NativeFontAccess.TryGlyph(CurrentFonts[size].GameFontIndex, '한', pixels, out var a);
                 bool referenceFound = NativeFontAccess.TryGlyph(reference.GameFontIndex, '한', pixels, out var b);
                 if (!actualFound || !referenceFound || !a.visible || Math.Abs(a.advanceX - b.advanceX) >= 0.01f)

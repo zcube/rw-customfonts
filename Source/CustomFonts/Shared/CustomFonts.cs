@@ -80,10 +80,6 @@ namespace CustomFonts
                 {
                     _settings.SetVerticalOffset(value, 0);
                 }
-
-                DefaultFonts[value] = Text.fontStyles[(int)value].font;
-                DefaultFontStyle[value] = new GUIStyle(Text.fontStyles[(int)value]);
-                _defaultContentOffsets[value] = UIFontStyles(value).Select(style => style.contentOffset).ToArray();
             }
 
             ForceLegacyText = UseLegacyWorldText(_settings.CurrentWorldFontName);
@@ -603,6 +599,7 @@ namespace CustomFonts
             if (fontName == _settings.GetCurrentUIFontName(fontIndex) && !forceUpdate) return;
             _settings.SetCurrentUIFontName(fontIndex, fontName);
             UpdateFont(fontIndex);
+            RecalcTextMetricsIfNeeded();
         }
 
         // Every size is written and re-applied unconditionally: SaveFont skips a size whose
@@ -679,6 +676,7 @@ namespace CustomFonts
                 UpdateFont(value);
             }
             PruneScopedFonts();
+            RecalcTextMetricsIfNeeded();
         }
 
         private void UpdateFont(GameFont fontIndex)
@@ -771,20 +769,19 @@ namespace CustomFonts
             _textMetricsDirty = true;
         }
 
-        // CalcHeight needs a live GUI context, and fonts also change from places that are not
-        // inside OnGUI, so the metrics are refreshed from the per frame hook instead.
+        // Refresh before the rest of the current GUI event draws with the new font.
+        // Changes outside OnGUI stay dirty until the next StartOfOnGUI hook.
         public void RecalcTextMetricsIfNeeded()
         {
-            if (!_textMetricsDirty) return;
-            _textMetricsDirty = false;
+            if (!_textMetricsDirty || Event.current == null) return;
 
+            var backup = Text.Font;
             try
             {
                 var lineHeights = AccessTools.StaticFieldRefAccess<float[]>(typeof(Text), "lineHeights");
                 var spaceBetweenLines = AccessTools.StaticFieldRefAccess<float[]>(typeof(Text), "spaceBetweenLines");
                 if (lineHeights == null || spaceBetweenLines == null) return;
 
-                var backup = Text.Font;
                 foreach (GameFont value in Enum.GetValues(typeof(GameFont)))
                 {
                     var index = (int)value;
@@ -795,7 +792,7 @@ namespace CustomFonts
                     lineHeights[index] = lineHeight;
                     spaceBetweenLines[index] = Text.CalcHeight("W\nW", 999f) - lineHeight * 2f;
                 }
-                Text.Font = backup;
+                _textMetricsDirty = false;
 
                 DebugLog($"refreshed Text line metrics: {DescribeLineMetrics()}");
             }
@@ -803,6 +800,7 @@ namespace CustomFonts
             {
                 Log.Warning($"[Custom Fonts] unable to refresh Text line metrics: {ex.Message}");
             }
+            finally { Text.Font = backup; }
         }
 
         private static string BundledFontKey(string fontName) => "bundled:" + fontName;
@@ -1027,6 +1025,19 @@ namespace CustomFonts
             if (mediumFont.fontSize <= 0) return offset;
 
             return offset * DefaultUIFontSize(fontIndex) / DefaultUIFontSize(GameFont.Medium);
+        }
+
+        internal void CaptureDefaultUIFonts()
+        {
+            // Text's static constructor loads Unity resources and reads GUI.skin.
+            // First StartOfOnGUI is the safe point, before applying any selections.
+            if (DefaultFonts.Count != 0) return;
+            foreach (var size in PreviewFonts)
+            {
+                DefaultFonts[size] = Text.fontStyles[(int)size].font;
+                DefaultFontStyle[size] = new GUIStyle(Text.fontStyles[(int)size]);
+                _defaultContentOffsets[size] = UIFontStyles(size).Select(style => style.contentOffset).ToArray();
+            }
         }
 
         private int DefaultUIFontSize(GameFont size) => DefaultFontStyle[size].fontSize > 0

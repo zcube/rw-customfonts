@@ -41,6 +41,15 @@ namespace CustomFonts
             return font;
         }
 
+        internal static bool SourcesUseSize(int index, float pixels)
+        {
+            var font = Font(index);
+            if (font.IsNull() || font.Sources.Count == 0) return false;
+            foreach (var source in font.Sources)
+                if (Math.Abs(source.SizePixels - pixels) > 0.01f) return false;
+            return true;
+        }
+
         internal static bool TryGlyph(int index, int scalar, float size, out TmpGlyphMetrics glyph)
         {
             glyph = default;

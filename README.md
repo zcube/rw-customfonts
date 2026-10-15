@@ -276,6 +276,18 @@ sizes. Returning to unscaled Default must preserve the original label dimensions
 offsets. Font-slot retirement invalidates only the affected native pointer; changing a
 UI fallback does not discard unchanged world glyph caches.
 
+Mod constructors may run on the loading worker. Original UI fonts/styles are captured
+on the first StartOfOnGUI, and saved families, sizes and scoped fallbacks are applied
+before that UI is drawn. Engine lifecycle hooks remain installed at mod construction.
+Font changes inside OnGUI also update cached line heights in the same event. Changes
+outside OnGUI defer measurement until the next StartOfOnGUI.
+
+With uniform UI fonts disabled, scaling Medium leaves Tiny/Small sizes and fallbacks
+unchanged. Uniform mode intentionally mirrors the scale and fallback policy to all
+three sizes, while retaining their original size ratios. Waylith registers primary and
+merged fallback sources at each actual UI pixel size. Unity dynamic fonts share source
+objects and rasterize both primary and fallback glyphs at the requested GUIStyle size.
+
 Waylith captures its TMP atlas after the renderer's initial native texture upload.
 Newly baked glyphs could therefore remain pending when the render snapshot was copied.
 The font compatibility adapter flushes those pending updates through the engine's own
@@ -289,6 +301,14 @@ and offset controls, measured label boxes, fixed-height buttons and input fields
 `-customfonts-visual-fallback=1` starts with an explicit HangeulNuri fallback. Compare
 the same controls in 1.6 and 1.7; native Default fallback rendering can differ even
 with Custom Fonts disabled. This diagnostic window never opens without the flag.
+
+`-customfonts-size-verify="<folder containing HangeulNuri and MaruBuri>"` checks 21
+independent file/bundle/Default scale combinations, including Medium-only 2x/3x changes,
+same-event line metrics, unchanged-size glyph dimensions and per-size fallback rendering.
+Run in an isolated profile without `-quicktest` to include the normal mod-loading path.
+Restart that profile with `-customfonts-size-restart-verify=1` to check the saved 12/14/63px
+configuration before the first UI draw and after loading. Both flags open a comparison
+window; they never run in normal play.
 
 ## Verification
 

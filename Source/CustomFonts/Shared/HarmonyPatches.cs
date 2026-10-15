@@ -34,6 +34,7 @@ namespace CustomFonts
                 {
                     _patcherInitialized = true;
                     var startupTimer = System.Diagnostics.Stopwatch.StartNew();
+                    mod.CaptureDefaultUIFonts();
                     mod.DefaultTMPFontAsset = WorldFeatureTextMesh_TextMeshPro.WorldTextPrefab.GetComponent<TextMeshPro>().font;
                     mod.LogVisualFontDefaults("before startup apply");
                     mod.UpdateFont();
@@ -56,6 +57,7 @@ namespace CustomFonts
 
                 mod.EnsureUniformFonts();
                 mod.RecalcTextMetricsIfNeeded();
+                mod.TickFontSizeVerification();
                 mod.TickFontStressTest();
                 mod.TickWorldFontTest();
                 mod.ProcessPendingDestroy();
@@ -75,7 +77,7 @@ namespace CustomFonts
             public static void Postfix()
             {
                 var mod = Mod;
-                mod.UpdateFont();
+                if (mod != null && mod.DefaultFonts.Count != 0) mod.UpdateFont();
             }
         }
 
