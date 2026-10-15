@@ -7,6 +7,7 @@ env:
 
 vars:
   DOTNET: '{{default "dotnet" .DOTNET}}'
+  RSVG_CONVERT: '{{default "rsvg-convert" .RSVG_CONVERT}}'
 
 tasks:
   prepare:
@@ -111,6 +112,18 @@ tasks:
     cmds:
       - '"{{.DOTNET}}" run --project Tests/WaylithFonts.Tests/WaylithFonts.Tests.csproj -- --validate-fonts Fonts'
 
+  preview:
+    desc: render About/preview.svg to the 1280x720 Workshop preview PNG (requires librsvg)
+    sources:
+      - About/preview.svg
+    generates:
+      - About/preview.png
+    preconditions:
+      - sh: '"{{.RSVG_CONVERT}}" --version'
+        msg: Install librsvg (rsvg-convert), or set RSVG_CONVERT to its executable path.
+    cmds:
+      - '"{{.RSVG_CONVERT}}" --format=png --width=1280 --height=720 --output=About/preview.png About/preview.svg'
+
   export:
     desc: copy the built assemblies and mod metadata into the local Mods folder
     vars:
@@ -123,6 +136,7 @@ tasks:
             printf '%s' "${GAME_ROOT}/Mods/rw-customfonts"
           fi
     cmds:
+      - task: preview
       # Also copy assets/notices so exporting to a fresh test install is self-contained.
       - cmd: |
           copy_dir() {
@@ -208,6 +222,7 @@ tasks:
   package:
     desc: package committed runtime files and font notices (requires a clean tree)
     cmds:
+      - task: preview
       - task: font_catalog
       - cmd: |
           if ! git diff --quiet HEAD --; then

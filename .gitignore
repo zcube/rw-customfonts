@@ -43,4 +43,5 @@ custom-fonts.zip
 custom-fonts.zip.sha256
 custom-fonts-files.txt
 .env
+.task/
 *.ps1

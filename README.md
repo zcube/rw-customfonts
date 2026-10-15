@@ -29,6 +29,12 @@ Set `DOTNET` in `.env` or on the task command line to select a particular SDK ex
 The 1.7 build references Harmony's `1.7/Assemblies/0Harmony.dll`; 1.6 uses its `1.6`
 folder, with a fallback to `Current` for older Harmony downloads.
 
+Edit `About/preview.svg` for the white Workshop preview, then run `task preview` to
+render `About/preview.png` at 1280×720. This requires librsvg's `rsvg-convert`;
+set `RSVG_CONVERT` to use an executable outside `PATH`. Export and package also run
+this task. Commit the SVG and generated PNG before release. Text uses Arial with
+Helvetica and sans-serif fallbacks.
+
 ## Local deployment and Steam Workshop upload
 
 Run the deployment tasks in this order from the repository root:

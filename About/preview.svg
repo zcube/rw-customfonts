@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720"
+     role="img" aria-labelledby="title description">
+  <title id="title">Custom Fonts - Forked</title>
+  <desc id="description">Custom Fonts Workshop preview. Supports RimWorld 1.4 through 1.7.</desc>
+  <rect width="1280" height="720" fill="#ffffff"/>
+  <g font-family="Arial, Helvetica, sans-serif" text-anchor="middle">
+    <text x="640" y="354" fill="#111111" font-size="120" font-weight="700">Custom Fonts</text>
+    <text x="640" y="429" fill="#606060" font-size="56">Forked</text>
+    <text x="640" y="655" fill="#606060" font-size="34">1.4–1.7</text>
+  </g>
+</svg>
