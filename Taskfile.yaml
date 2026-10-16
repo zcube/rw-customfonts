@@ -203,13 +203,16 @@ tasks:
       - cmd: >-
           powershell -NoProfile -Command '$modRoot = [IO.Path]::GetFullPath("{{.MOD_ROOT}}");
           if ([IO.Path]::GetFileName($modRoot) -ne "rw-customfonts" -or [IO.Path]::GetFileName([IO.Path]::GetDirectoryName($modRoot)) -ne "Mods") { throw "Unexpected mod export directory" };
-          foreach ($relative in @("rimfonts", "About/AssetsTools.NET-LICENSE.txt", "Assemblies/AssetsTools.NET.dll", "1.4/Assemblies/AssetsTools.NET.dll", "1.5/Assemblies/AssetsTools.NET.dll", "1.6/Assemblies/AssetsTools.NET.dll", "1.7/Assemblies/AssetsTools.NET.dll")) {
+          foreach ($relative in @("Fonts/NanumBarunpenB.ttf", "About/FontLicenses/NanumBarunpenB.ttf.LICENSE.txt", "Fonts/NanumGothicExtraBold.ttf", "About/FontLicenses/NanumGothicExtraBold.ttf.LICENSE.txt", "Fonts/NanumBarunpenR.ttf", "About/FontLicenses/NanumBarunpenR.ttf.LICENSE.txt", "Fonts/MaruBuri-Bold.ttf", "About/FontLicenses/MaruBuri-Bold.ttf.LICENSE.txt", "Fonts/NanumGothic.ttf", "About/FontLicenses/NanumGothic.ttf.LICENSE.txt", "Fonts/NanumGothicBold.ttf", "About/FontLicenses/NanumGothicBold.ttf.LICENSE.txt", "Fonts/MaruBuri-SemiBold.ttf", "About/FontLicenses/MaruBuri-SemiBold.ttf.LICENSE.txt", "Fonts/Nanum GeumEunBoHwa.ttf", "About/FontLicenses/Nanum GeumEunBoHwa.ttf.LICENSE.txt", "Fonts/MaruBuri-Regular.ttf", "About/FontLicenses/MaruBuri-Regular.ttf.LICENSE.txt", "Fonts/Nanum HaNaSonGeurSsi.ttf", "About/FontLicenses/Nanum HaNaSonGeurSsi.ttf.LICENSE.txt", "Fonts/GOYANGDEOGYANG B.ttf", "About/FontLicenses/GOYANGDEOGYANG B.ttf.LICENSE.txt", "Fonts/GOYANGDEOGYANG EB.ttf", "About/FontLicenses/GOYANGDEOGYANG EB.ttf.LICENSE.txt", "Fonts/HangeulNuriB.ttf", "About/FontLicenses/HangeulNuriB.ttf.LICENSE.txt", "Fonts/HangeulNuriR.ttf", "About/FontLicenses/HangeulNuriR.ttf.LICENSE.txt", "rimfonts", "About/AssetsTools.NET-LICENSE.txt", "Assemblies/AssetsTools.NET.dll", "1.4/Assemblies/AssetsTools.NET.dll", "1.5/Assemblies/AssetsTools.NET.dll", "1.6/Assemblies/AssetsTools.NET.dll", "1.7/Assemblies/AssetsTools.NET.dll")) {
           $file = Join-Path $modRoot $relative; if (Test-Path -LiteralPath $file -PathType Leaf) { Remove-Item -LiteralPath $file -Force } }'
         platforms: [windows]
       - cmd: |
           DEST="{{.MOD_ROOT}}"
           case "${DEST}" in /*/Mods/rw-customfonts) ;; *) echo "Unexpected mod export directory" >&2; exit 1;; esac
           rm -f "${DEST}/rimfonts" "${DEST}/About/AssetsTools.NET-LICENSE.txt" "${DEST}/Assemblies/AssetsTools.NET.dll"
+          for font in 'NanumBarunpenB.ttf' 'NanumGothicExtraBold.ttf' 'NanumBarunpenR.ttf' 'MaruBuri-Bold.ttf' 'NanumGothic.ttf' 'NanumGothicBold.ttf' 'MaruBuri-SemiBold.ttf' 'Nanum GeumEunBoHwa.ttf' 'MaruBuri-Regular.ttf' 'Nanum HaNaSonGeurSsi.ttf' 'GOYANGDEOGYANG B.ttf' 'GOYANGDEOGYANG EB.ttf' 'HangeulNuriB.ttf' 'HangeulNuriR.ttf'; do
+            rm -f "${DEST}/Fonts/${font}" "${DEST}/About/FontLicenses/${font}.LICENSE.txt"
+          done
           for version in 1.4 1.5 1.6 1.7; do rm -f "${DEST}/${version}/Assemblies/AssetsTools.NET.dll"; done
         platforms: [linux, darwin]
 

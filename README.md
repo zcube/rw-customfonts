@@ -10,7 +10,7 @@ Requires Git LFS, .NET SDK (10 for Waylith), task, curl and 7zip. Copy `.env.sam
 `.env` and configure the installed game paths. Unity builds need the corresponding
 1.4, 1.5 or 1.6 installation. Waylith reads assemblies from the 1.7 game root.
 
-DLLs and TTF, TTC, OTF, OTC, WOFF, WOFF2 and EOT font files use Git LFS, including
+DLLs, PDBs and TTF, TTC, OTF, OTC, WOFF, WOFF2 and EOT font files use Git LFS, including
 uppercase extensions. Run `git lfs pull` before building or packaging; release ZIPs
 and local mod exports contain the actual binaries.
 
@@ -34,6 +34,20 @@ render `About/preview.png` at 1280×720. This requires librsvg's `rsvg-convert`;
 set `RSVG_CONVERT` to use an executable outside `PATH`. Export and package also run
 this task. Commit the SVG and generated PNG before release. Text uses Arial with
 Helvetica and sans-serif fallbacks.
+
+## Reproducible DLL builds
+
+`global.json` pins .NET SDK 10.0.401. The project enables deterministic compilation,
+maps source paths to `/_/Source/CustomFonts`, and disables the Git commit suffix in
+`AssemblyInformationalVersion`. Moving the checkout or creating a commit without
+changing build inputs should therefore preserve the DLL SHA-256.
+
+Reproduction requires identical source/resource bytes, build configuration, SDK/compiler,
+NuGet reference packages, and RimWorld/Harmony reference DLLs. Different game versions
+produce different outputs. Keep line endings consistent with `.gitattributes`.
+Use a clean rebuild (`dotnet build ... -t:Rebuild`) when comparing hashes so an
+incremental build cannot hide a difference. Compiler/SDK or reference-assembly updates
+can change the output even when the C# source is unchanged.
 
 ## Local deployment and Steam Workshop upload
 
@@ -147,7 +161,7 @@ in memory as a standalone font for both engines.
 The original file is
 unchanged. Fonts above 128 MiB and name tables above 1 MiB are rejected.
 
-Bundled fonts are distributed as 15 unchanged TTF files in `Fonts/`, with individual
+Bundled fonts are distributed as two unchanged Sarasa UI J/K Regular v1.0.42 OFL 1.1 TTF files in `Fonts/`, with individual
 notices and exact hashes in `About/FontLicenses`. The small embedded
 `Shared/BundledFonts.tsv` index preserves existing `(Bundled) Family (Style)` settings
 and import sizes without reading font payloads. A selected primary or defined fallback
@@ -201,7 +215,7 @@ game resources and allocator reserves; font resource counters identify the owned
 
 Font discovery reads only the OpenType directory and name table, rather than allocating
 each complete file. The bundled-file index holds metadata only; opening/searching its
-list does not load the 100,663,608 bytes of font source data (about 96 MiB). Selecting
+list does not load the 48,741,212 bytes of font source data (about 46 MiB). Selecting
 a primary/fallback reads that file only. There is no archive decompression or disk
 payload cache. Existing obsolete bundle/cache files are never read.
 
@@ -268,7 +282,7 @@ therefore have their own memory cost. The distributed TTF bytes remain unchanged
 
 In an isolated Windows profile, add `-customfonts-fallback-verify="<two Hangul font folder>"`
 with `-quicktest` to exercise Arial with private fonts in both priority orders, removal,
-Default, bundled HangeulNuri and system Malgun Gothic fallbacks. The test compares actual
+Default, bundled Sarasa UI K and system Malgun Gothic fallbacks. The test compares actual
 glyphs in all three UI sizes, checks mixed-script meshes and actual visible world labels,
 and verifies Default and restored text again after 1,200 frames of resource cleanup.
 It migrates old face and moved-file selections to family identities and leaves the
@@ -347,11 +361,11 @@ glyphs. The upload adapter is skipped if the capture entry point is absent.
 `-customfonts-visual-verify="<Hangul font folder>" -quicktest` opens an isolated visual
 comparison window with file/bundled/Default fonts, automatic switching, matching size
 and offset controls, measured label boxes, fixed-height buttons and input fields.
-`-customfonts-visual-fallback=1` starts with an explicit HangeulNuri fallback. Compare
+`-customfonts-visual-fallback=1` starts with an explicit Sarasa UI K fallback. Compare
 the same controls in 1.6 and 1.7; native Default fallback rendering can differ even
 with Custom Fonts disabled. This diagnostic window never opens without the flag.
 
-`-customfonts-size-verify="<folder containing HangeulNuri and MaruBuri>"` checks 21
+`-customfonts-size-verify="<folder containing Sarasa UI J and Sarasa UI K>"` checks 21
 independent file/bundle/Default scale combinations, including Medium-only 2x/3x changes,
 same-event line metrics, unchanged-size glyph dimensions and per-size fallback rendering.
 Run in an isolated profile without `-quicktest` to include the normal mod-loading path.
@@ -368,7 +382,7 @@ It also verifies Unity imports preserve exact primary/fallback bytes, deduplicat
 keep the template small, use distinct bundle identities and pick up file replacements.
 
 The stream tests check that catalog reads stay within an embedded font's bounds and read
-less than 1 KiB from a padded 4 MiB fixture. To also verify all 15 actual bundled font
+less than 1 KiB from a padded 4 MiB fixture. To also verify both actual bundled font
 payloads, supply the loose-font directory (also included by `task test`):
 
 ```bash
@@ -412,7 +426,7 @@ counts settle to one (shared UI/world source) and zero after Default restoration
 the first file selected for visual review. TMP can distribute glyphs across atlas
 submeshes, so the world check counts geometry from all submeshes.
 
-`task font_catalog` verifies all 15 original payload hashes, selection names and matching
+`task font_catalog` verifies both original payload hashes, selection names and matching
 license notices before `task build`. `task benchmark` measures metadata-only loose listing,
 selected file reads and OS name caching on this machine. Add `-customfonts-profile=1` to
 separate index reads, file reads, native creation and initial font-application timings.
@@ -425,7 +439,7 @@ It excludes development sources, tests and local settings. `task package` also w
 `custom-fonts.zip.sha256` and is called by `task release`. Follow the build → export →
 release sequence above, then upload the deployed local mod from inside RimWorld.
 
-The file-distribution migration passes all four builds and 188 standalone assertions,
+Before the OFL-only change, the file-distribution migration passed all four builds and 188 standalone assertions,
 including independent UnityFS/SerializedFile inspection, all 15 original hashes and
 matching per-file license notices. Windows RimWorld 1.6.4871 and 1.7.4977 each pass
 21 independent primary/fallback size combinations and 96 UI/world changes with four
@@ -433,7 +447,7 @@ fallback policies; settled resource counts stay stable and Default releases all 
 imports/registrations. Computer Use confirms Korean UI and world labels with loose
 bundled primaries/fallbacks, including zoom changes and world-view re-entry.
 
-On this Windows machine, standalone first reads measured 2.3 ms for the metadata-only
+Before the OFL-only change, standalone Windows first reads measured 2.3 ms for the metadata-only
 15-font index and 1.1 ms for HangeulNuri Bold (1.64 MB). Fresh isolated game profiles
 with bundled HangeulNuri Bold and bundled MaruBuri fallbacks measured index/file reads
 of 3.5/0.7 ms in 1.6 and 2.5/0.6 ms in 1.7; startup font application was about 224 ms
@@ -448,38 +462,24 @@ when Windows denies link creation.
 
 ## Bundled Fonts
 
-Each of the 15 shipped font payloads has its own notice in
+Each of the two shipped font payloads has its own notice in
 [`About/FontLicenses`](About/FontLicenses/README.txt), including the copyright embedded
 in that file, publisher/source links, applicable terms and an exact payload SHA-256.
 [`fonts.csv`](About/FontLicenses/fonts.csv) maps every payload to its notice.
 The mod's MIT license does not replace the fonts' licenses.
-The additional review in [`REVIEW.txt`](About/FontLicenses/REVIEW.txt) records the
-Goyang redistribution restriction, HangeulNuri usage restrictions, and official
-archive hash comparisons for five files in [`provenance.csv`](About/FontLicenses/provenance.csv).
+All bundled fonts use SIL Open Font License 1.1.
+[`REVIEW.txt`](About/FontLicenses/REVIEW.txt) records the Sarasa-only distribution and CJK coverage limits.
+The official-archive comparisons for both fonts are retained in [`provenance.csv`](About/FontLicenses/provenance.csv).
 
-* Sarasa UI J
+* Sarasa UI J Regular / Sarasa UI K Regular, v1.0.42
     ```
-    Copyright (c) 2015-2024, Renzhi Li and other credited contributors (see the payload notice).
+    Copyright (c) 2015-2025, Renzhi Li and other credited contributors (see each payload notice).
     SIL Open Font License 1.1
-    https://github.com/be5invis/Sarasa-Gothic
+    https://github.com/be5invis/Sarasa-Gothic/releases/tag/v1.0.42
     ```
 
-* NAVER: Nanum Fonts / MaruBuri / CLOVA handwritten fonts
-    ```
-    NAVER / NAVER Cultural Foundation and the credited font creators.
-    Original per-file copyright statements are retained in About/FontLicenses/.
-    SIL Open Font License 1.1
-    https://help.naver.com/service/30016/contents/18088?osType=PC&lang=ko
-    ```
-
-* GoYangDeogYang B, EB
-    ```
-    공공누리 제1유형(출처표시). 배포처는 상업적 재배포 및 유료 양도·판매를 별도로 금지합니다.
-    https://www.goyang.go.kr/www/www05/www05_3/www05_3_6/www05_3_6_tab2.jsp
-    ```
-
-* hangeulnuri
-    ```
-    공공누리 제3유형(출처표시-변경금지). 배포처는 상업적 사용을 허용하며 글꼴 자체의 유료 판매·대여 및 유해매체 사용은 금지합니다.
-    https://hanfont.hangeul.go.kr/relaxfont/font/hangeulnuri.do
-    ```
+J uses Japanese regional glyph forms; K uses Korean regional glyph forms.
+Both support modern Hangul, kana and basic CJK ideographs. Rare ideograph coverage
+is partial; keep fallback fonts for characters absent from the selected font.
+Removed bundled selections render with Default while retaining their saved names;
+select Sarasa UI J or Sarasa UI K in mod settings to use the new bundled set.

@@ -261,7 +261,7 @@ namespace CustomFonts
             int uiPixels = Text.fontStyles[(int)GameFont.Small].fontSize;
             Require(NativeFontAccess.TryGlyph(font.GameFontIndex, 'A', uiPixels, out var glyph) && glyph.visible,
                 "native font rasterizes glyphs");
-            if (selection.Contains("Malgun Gothic") || selection.Contains("HangeulNuri"))
+            if (selection.Contains("Malgun Gothic") || selection.Contains("Sarasa UI"))
                 Require(NativeFontAccess.TryGlyph(font.GameFontIndex, '한', uiPixels, out var korean) && korean.visible,
                     "Korean font rasterizes Hangul glyphs");
             var labels = (IEnumerable<WorldFeatureTextMesh>)AccessTools.Field(typeof(WorldFeatures), "texts").GetValue(Find.WorldFeatures);
@@ -273,7 +273,7 @@ namespace CustomFonts
                 var expected = selection == FontSettings.DefaultFontName ? DefaultTMPFontAsset : _worldFontAsset;
                 if (mesh == null || mesh.font != expected) throw new InvalidOperationException("world label uses wrong font");
                 if (mesh.mesh != null && mesh.mesh.vertexCount > 0) withGeometry++;
-                if (!checkedKoreanMesh && (selection.Contains("Malgun Gothic") || selection.Contains("HangeulNuri")))
+                if (!checkedKoreanMesh && (selection.Contains("Malgun Gothic") || selection.Contains("Sarasa UI")))
                 {
                     string original = mesh.text;
                     mesh.text = "한글폰트";

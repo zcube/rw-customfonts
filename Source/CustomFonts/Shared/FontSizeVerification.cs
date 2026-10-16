@@ -44,9 +44,9 @@ namespace CustomFonts
                     _settings.FontSourcePaths.Clear(); _settings.FontSourcePaths.Add(Path.GetFullPath(path));
                     foreach (var size in PreviewFonts) { _settings.SetScaleFactor(size, 1); _settings.SetVerticalOffset(size, 0); }
                     RefreshFontSources(); SetupBundledFonts();
-                    _settings.SetFallbackFonts(FontTarget.Tiny, new[] { "HangeulNuri" });
-                    _settings.SetFallbackFonts(FontTarget.Small, new[] { "MaruBuri" });
-                    _settings.SetFallbackFonts(FontTarget.Medium, new[] { "HangeulNuri", "MaruBuri" });
+                    _settings.SetFallbackFonts(FontTarget.Tiny, new[] { "Sarasa UI K" });
+                    _settings.SetFallbackFonts(FontTarget.Small, new[] { "Sarasa UI J" });
+                    _settings.SetFallbackFonts(FontTarget.Medium, new[] { "Sarasa UI K", "Sarasa UI J" });
                     ApplyFallbackChanges(FontTarget.Medium);
                     _sizeFamilies = new[] { "Arial", BundledFonts.Keys.First(), FontSettings.DefaultFontName };
                     ConfigureSizeReview(); return;

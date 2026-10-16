@@ -1,27 +1,36 @@
-Font payload: MaruBuri-SemiBold.ttf
-Family/style: MaruBuri / SemiBold
-Version embedded in this payload: Version 2.000;hotconv 1.1.0;makeotfexe 2.6.0
-Payload size: 8111880 bytes
-SHA-256 of the exact file shipped in Fonts/: d8f98594ef5b2f37936dc7ddcd3ba67b6249f27a641d203beef41e589f917e7c
-Verified: 2026-10-15
+Font payload: SarasaUiK-Regular.ttf
+Family/style: Sarasa UI K / Regular
+Version embedded in this payload: Version 1.0.42; ttfautohint (v1.8.4)
+Payload size: 23960616 bytes
+SHA-256 of the exact file shipped in Fonts/: 840fbc60ec22380b3036bdf941bfedcf62326c6fff562ead1168dafcdc003cad
+Verified: 2026-10-16
+Official archive: https://github.com/be5invis/Sarasa-Gothic/releases/download/v1.0.42/SarasaUiK-TTF-1.0.42.7z
+Archive entry: SarasaUiK-Regular.ttf
+Upstream comparison: byte-identical to the official v1.0.42 archive (see provenance.csv).
+Archive SHA-256 verified against the release's SHA-256.txt.
 
 Copyright notice embedded in the shipped font:
-© NAVER Corp. © NAVER Cultural Foundation Corp.
+Copyright (c) 2015-2025, Renzhi Li (aka. Belleve Invis, belleve@typeof.net). Portions Copyright (c) 2016 The Inter Project Authors. Portions Copyright (c) 2014-2021 Adobe Systems Incorporated (http://www.adobe.com/). Portions Copyright (c) 2012 Google Inc.
 
-Publisher: NAVER / NAVER Cultural Foundation and the credited font creators
+Publisher/project: Sarasa Gothic / Renzhi Li and contributors
 License: SIL Open Font License 1.1
-Official font collection: https://hangeul.naver.com/font
-Official license notice: https://help.naver.com/service/30016/contents/18088?osType=PC&lang=ko
+Project: https://github.com/be5invis/Sarasa-Gothic
+License source: https://raw.githubusercontent.com/be5invis/Sarasa-Gothic/v1.0.42/LICENSE
 
-NAVER states that MaruBuri and CLOVA handwritten fonts use the same open license
-as Nanum fonts. Retain both the payload's embedded copyright notice above and
-the publisher's copyright/reserved-name notice and license below.
+--- Upstream copyright notice and complete license ---
+Copyright (c) 2015-2025, Renzhi Li (aka. Belleve Invis, belleve@typeof.net).
+Portions Copyright (c) 2016 The Inter Project Authors.
+Portions Copyright (c) 2014-2021 Adobe Systems Incorporated (http://www.adobe.com/), with Reserved Font Name 'Source'.
+Portions Copyright (c) 2012 Google Inc.
 
---- Publisher copyright and reserved font names ---
-Copyright (c) 2010, NAVER Corporation ( https://www.navercorp.com/ ) with Reserved Font Name Nanum, Naver Nanum, NanumGothic, Naver NanumGothic, NanumMyeongjo, Naver NanumMyeongjo, NanumBrush, Naver NanumBrush, NanumPen, Naver NanumPen, Naver NanumGothicEco, NanumGothicEco, Naver NanumMyeongjoEco, NanumMyeongjoEco, Naver NanumGothicLight, NanumGothicLight, NanumBarunGothic, Naver NanumBarunGothic, NanumSquareRound, NanumBarunPen, MaruBuri, NanumSquareNeo
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 
---- Complete SIL Open Font License 1.1 ---
+This license is copied below, and is also available with a FAQ at:
+http://scripts.sil.org/OFL
+
+--------------------------
+
+
 SIL Open Font License v1.1
 ====================================================
 

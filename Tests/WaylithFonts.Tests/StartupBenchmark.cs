@@ -23,7 +23,7 @@ internal static class StartupBenchmark
             var catalog = BundledFontCatalog.Read(directory).ToArray();
             Console.WriteLine($"Loose catalog {run + 1}: {catalog.Length} fonts, {timer.Elapsed.TotalMilliseconds:F1} ms");
             timer.Restart();
-            var selected = catalog.First(p => p.Name.Contains("HangeulNuri", StringComparison.OrdinalIgnoreCase));
+            var selected = catalog.First(p => p.Name.Contains("SarasaUiJ", StringComparison.OrdinalIgnoreCase));
             byte[] bytes = FontFiles.Read(selected.Path);
             Console.WriteLine($"Selected loose file {run + 1}: {bytes.Length} bytes, {timer.Elapsed.TotalMilliseconds:F1} ms");
         }

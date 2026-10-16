@@ -8,7 +8,7 @@ namespace CustomFonts
     internal static class FontCoverage
     {
         // Some fonts advertise CJK characters but map them to empty outlines (including
-        // bundled HangeulNuri's 山). Exclude those from the primary source so fallback
+        // HangeulNuri's 山). Exclude those from the primary source so fallback
         // fonts can supply them. Spaces/combining marks are intentionally not excluded.
         internal static uint[] EmptyCjk(byte[] data)
         {

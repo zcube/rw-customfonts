@@ -25,7 +25,7 @@ namespace CustomFonts
             _settings.IncludeSystemFonts = true; _settings.UniformUIfonts = true;
             foreach (FontTarget target in Enum.GetValues(typeof(FontTarget))) _settings.GetFallbackFonts(target).Clear();
             if (FontVerificationOptions.TryGet("customfonts-visual-fallback", out _))
-                foreach (FontTarget target in Enum.GetValues(typeof(FontTarget))) _settings.SetFallbackFonts(target, new[] { "HangeulNuri" });
+                foreach (FontTarget target in Enum.GetValues(typeof(FontTarget))) _settings.SetFallbackFonts(target, new[] { "Sarasa UI K" });
             foreach (var size in PreviewFonts) { _settings.SetScaleFactor(size, 1f); _settings.SetVerticalOffset(size, 0); }
             RefreshFontSources(); SetupBundledFonts();
             _visualWindow = new FontVisualVerificationWindow(this);
@@ -48,7 +48,7 @@ namespace CustomFonts
             internal FontVisualVerificationWindow(CustomFonts mod)
             {
                 _mod = mod; doCloseX = true; draggable = true; forcePause = true;
-                _families = new[] { "Arial", "Malgun Gothic", "HangeulNuri", "MaruBuri", mod.BundledFonts.Keys.First(), FontSettings.DefaultFontName };
+                _families = new[] { "Arial", "Malgun Gothic", "Sarasa UI K", "Sarasa UI J", mod.BundledFonts.Keys.First(), FontSettings.DefaultFontName };
                 _fallback = mod._settings.GetFallbackFonts(FontTarget.Medium).Count != 0;
                 Select(0);
             }
@@ -86,11 +86,11 @@ namespace CustomFonts
                         if (Widgets.ButtonText(new Rect(740 + (offset + 4) / 4 * 100, 80, 95, 28), "Offset " + offset))
                         { _mod.ApplyVerticalOffset(GameFont.Medium, offset); _mod.RecalcCustomLineHeights(); }
                     bool previousFallback = _fallback;
-                    Widgets.CheckboxLabeled(new Rect(0, 112, 350, 24), "HangeulNuri fallback", ref _fallback);
+                    Widgets.CheckboxLabeled(new Rect(0, 112, 350, 24), "Sarasa UI K fallback", ref _fallback);
                     if (previousFallback != _fallback)
                     {
                         foreach (FontTarget target in Enum.GetValues(typeof(FontTarget)))
-                            _mod._settings.SetFallbackFonts(target, _fallback ? new[] { "HangeulNuri" } : new string[0]);
+                            _mod._settings.SetFallbackFonts(target, _fallback ? new[] { "Sarasa UI K" } : new string[0]);
                         _mod.ApplyFallbackChanges(FontTarget.Medium); Select(_selection);
                     }
                     float y = 155;

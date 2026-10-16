@@ -88,7 +88,7 @@ namespace CustomFonts
                     case 6:
                         VerifyFallbackRendering();
                         Require(BundledFonts.Values.All(f => f == null), "private fallback setup does not load unrelated bundle fonts");
-                        VerificationFallbackNames.Clear(); VerificationFallbackNames.Add("(Bundled) HangeulNuri (Bold)"); ApplyFallbackChanges();
+                        VerificationFallbackNames.Clear(); VerificationFallbackNames.Add("(Bundled) Sarasa UI K (Regular)"); ApplyFallbackChanges();
                         break;
                     case 7:
                         VerifyFallbackRendering();

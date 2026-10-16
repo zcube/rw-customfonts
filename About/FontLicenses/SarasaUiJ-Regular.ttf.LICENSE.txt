@@ -1,29 +1,26 @@
 Font payload: SarasaUiJ-Regular.ttf
 Family/style: Sarasa UI J / Regular
-Version embedded in this payload: Version 1.0.10; ttfautohint (v1.8.4)
-Payload size: 23775396 bytes
-SHA-256 of the exact file shipped in Fonts/: 70c2f18ae4c2d6cf35c8c341daa9e5bbd8a6295265886339affff1186dba45d2
-Verified: 2026-10-15
-Official archive: https://github.com/be5invis/Sarasa-Gothic/releases/download/v1.0.10/SarasaUiJ-TTF-1.0.10.7z
+Version embedded in this payload: Version 1.0.42; ttfautohint (v1.8.4)
+Payload size: 24780596 bytes
+SHA-256 of the exact file shipped in Fonts/: 3e46ca05bf1f390bdd8b0ebb491fa95882e7ae1b5a31b367934e7a55cd347da3
+Verified: 2026-10-16
+Official archive: https://github.com/be5invis/Sarasa-Gothic/releases/download/v1.0.42/SarasaUiJ-TTF-1.0.42.7z
 Archive entry: SarasaUiJ-Regular.ttf
-Upstream comparison: byte-identical SHA-256 on 2026-10-15 (see provenance.csv).
+Upstream comparison: byte-identical to the official v1.0.42 archive (see provenance.csv).
+Archive SHA-256 verified against the release's SHA-256.txt.
 
 Copyright notice embedded in the shipped font:
-Copyright (c) 2015-2024, Renzhi Li (aka. Belleve Invis, belleve@typeof.net). Portions Copyright (c) 2016-2020 The Inter Project Authors. Portions Copyright (c) 2014, 2015 Adobe Systems Incorporated (http://www.adobe.com/). Portions Copyright (c) 2012 Google Inc.
+Copyright (c) 2015-2025, Renzhi Li (aka. Belleve Invis, belleve@typeof.net). Portions Copyright (c) 2016 The Inter Project Authors. Portions Copyright (c) 2014-2021 Adobe Systems Incorporated (http://www.adobe.com/). Portions Copyright (c) 2012 Google Inc.
 
 Publisher/project: Sarasa Gothic / Renzhi Li and contributors
 License: SIL Open Font License 1.1
 Project: https://github.com/be5invis/Sarasa-Gothic
-License source: https://raw.githubusercontent.com/be5invis/Sarasa-Gothic/v1.0.10/LICENSE
-
-The shipped bytes match the official v1.0.10 release archive. The embedded 2015-2024
-copyright and the tagged LICENSE's 2015-2022 copyright are both retained as published;
-their different years are not silently normalized.
+License source: https://raw.githubusercontent.com/be5invis/Sarasa-Gothic/v1.0.42/LICENSE
 
 --- Upstream copyright notice and complete license ---
-Copyright (c) 2015-2022, Renzhi Li (aka. Belleve Invis, belleve@typeof.net).
-Portions Copyright (c) 2016-2020 The Inter Project Authors.
-Portions Copyright (c) 2014, 2015 Adobe Systems Incorporated (http://www.adobe.com/), with Reserved Font Name 'Source'.
+Copyright (c) 2015-2025, Renzhi Li (aka. Belleve Invis, belleve@typeof.net).
+Portions Copyright (c) 2016 The Inter Project Authors.
+Portions Copyright (c) 2014-2021 Adobe Systems Incorporated (http://www.adobe.com/), with Reserved Font Name 'Source'.
 Portions Copyright (c) 2012 Google Inc.
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.

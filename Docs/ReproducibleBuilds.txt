@@ -1,0 +1,24 @@
+Reproducible DLL verification (2026-10-16)
+========================================
+
+SDK: .NET 10.0.401; macOS arm64.
+Two fresh source copies were committed with different Git IDs in different paths.
+Both were built from empty obj/output directories against identical game/Harmony
+references. All four output DLL hashes matched each other and the main checkout.
+
+RimWorld version / SHA-256
+1.4  2c2cad04ba173c607593f200bea53c77c19def9c87ab1df5b7e6279addb16762
+1.5  b659115c84dd1e5bba8f660d4d9a6f7df177ed73b8b8ad94a6d69a2b5f0b9c83
+1.6  4623dc430c8af96370ca9a792299a4cd980ad0341b47d9cc2f0bd47918604db0
+1.7  7120a7bb17f9572ca3a19138326f7b9b8f23e84c9ddd9e088f362a34f976abc8
+
+Settings: Deterministic=true, IncludeSourceRevisionInInformationalVersion=false,
+PathMap=$(MSBuildProjectDirectory)=/_/Source/CustomFonts; SDK pinned in global.json.
+
+Identical C# text alone is insufficient: embedded resources, configuration, SDK,
+compiler, line endings and all reference assembly bytes must also match.
+This check does not establish cross-OS or different SDK/compiler reproducibility.
+
+References:
+https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/code-generation#deterministic
+https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#includesourcerevisionininformationalversion
