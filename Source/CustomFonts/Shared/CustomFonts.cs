@@ -333,7 +333,12 @@ namespace CustomFonts
                 inRect.width - 10f, inRect.height);
             var fontListScrollInner = new Rect(fontListScrollOuter.x, fontListScrollOuter.y,
                 fontListScrollOuter.width - 24f,
-                (Text.LineHeight + 4f) * (3 + bundledFontsCount + fontNameCount));
+                Text.LineHeight * (1 + bundledFontsCount + fontNameCount) + 24f);
+            // DrawFontChoice consumes exactly one line; the two GapLine calls add 24px.
+            // Clamp after filtering or switching tabs so old scroll offsets cannot show empty space.
+            scrollPosition.x = 0f;
+            scrollPosition.y = Mathf.Clamp(scrollPosition.y, 0f,
+                Math.Max(0f, fontListScrollInner.height - fontListScrollOuter.height));
             Widgets.BeginScrollView(fontListScrollOuter, ref scrollPosition, fontListScrollInner);
             var listingStandard = fontListScrollInner.BeginListingStandard();
 
@@ -400,7 +405,12 @@ namespace CustomFonts
                 inRect.width - 10f, inRect.height);
             var fontListScrollInner = new Rect(fontListScrollOuter.x, fontListScrollOuter.y,
                 fontListScrollOuter.width - 24f,
-                (Text.LineHeight + 4f) * (3 + bundledFontsCount + osFontPathsCount));
+                Text.LineHeight * (1 + bundledFontsCount + osFontPathsCount) + 24f);
+            // DrawFontChoice consumes exactly one line; the two GapLine calls add 24px.
+            // Clamp after filtering or switching tabs so old scroll offsets cannot show empty space.
+            scrollPosition.x = 0f;
+            scrollPosition.y = Mathf.Clamp(scrollPosition.y, 0f,
+                Math.Max(0f, fontListScrollInner.height - fontListScrollOuter.height));
             Widgets.BeginScrollView(fontListScrollOuter, ref scrollPosition, fontListScrollInner);
             var listingStandard = fontListScrollInner.BeginListingStandard();
 
