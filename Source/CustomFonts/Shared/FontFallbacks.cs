@@ -21,6 +21,7 @@ namespace CustomFonts
         private string FallbackPolicy(FontTarget target) => _fallbackPolicyKeys[(int)target];
         private readonly List<Font> _fallbackFonts = new List<Font>();
         private readonly List<TMP_FontAsset> _fallbackAssets = new List<TMP_FontAsset>();
+        private readonly Vector2[] _fallbackScroll = new Vector2[4];
         private readonly Vector2[] _propertyScroll = new Vector2[4];
         private readonly float[] _propertyContentHeight = { 400f, 400f, 400f, 400f };
         private string FallbackSignature => string.Join("|", Enumerable.Range(0, 4)
@@ -126,22 +127,45 @@ namespace CustomFonts
             if (name == FontSettings.DefaultFontName || names.Contains(name)) return;
             names.Add(name); ApplyFallbackChanges(target);
         }
-        private void DrawFallbackSettings(Listing_Standard list, float width, FontTarget target)
+        private void DrawFallbackSettings(Listing_Standard list, float width, FontTarget target, float availableHeight)
         {
             var names = _settings.GetFallbackFonts(target);
             list.GapLine();
             list.Label("CustomFonts.FallbackFonts".Translate());
             list.Label("CustomFonts.FallbackTabHelp".Translate());
             int remove = -1, move = -1, direction = 0;
-            for (int i = 0; i < names.Count; i++)
+            if (names.Count > 0)
             {
-                string name = names[i], label = (i + 1) + ". " + DisplayFontName(name);
-                Rect row = list.GetRect(Math.Max(30, Text.CalcHeight(label, width - 105) + 6));
-                Widgets.Label(new Rect(row.x, row.y, row.width - 105, row.height), label);
-                TooltipHandler.TipRegion(row, name);
-                if (i > 0 && Widgets.ButtonText(new Rect(row.xMax - 100, row.y, 28, 26), "↑")) { move = i; direction = -1; }
-                if (i + 1 < names.Count && Widgets.ButtonText(new Rect(row.xMax - 70, row.y, 28, 26), "↓")) { move = i; direction = 1; }
-                if (Widgets.ButtonText(new Rect(row.xMax - 40, row.y, 40, 26), "×")) remove = i;
+                // Keep long fallback policies inside their own viewport. Reserve space
+                // for the union button, and measure wrapped names with scrollbar space.
+                float contentWidth = Math.Max(1f, width - 20f);
+                var heights = names.Select((name, i) => Math.Max(30f,
+                    Text.CalcHeight((i + 1) + ". " + DisplayFontName(name), Math.Max(1f, contentWidth - 105f)) + 6f)).ToArray();
+                float contentHeight = heights.Sum();
+                float viewportHeight = Math.Min(contentHeight,
+                    Math.Max(90f, Math.Min(240f, availableHeight - list.CurHeight - 54f)));
+                Rect viewport = list.GetRect(viewportHeight);
+                var content = new Rect(0f, 0f, contentWidth, contentHeight);
+                int tab = (int)target;
+                _fallbackScroll[tab].x = 0f;
+                _fallbackScroll[tab].y = Mathf.Clamp(_fallbackScroll[tab].y, 0f, Math.Max(0f, contentHeight - viewportHeight));
+                Widgets.BeginScrollView(viewport, ref _fallbackScroll[tab], content);
+                try
+                {
+                    float y = 0f;
+                    for (int i = 0; i < names.Count; i++)
+                    {
+                        string name = names[i], label = (i + 1) + ". " + DisplayFontName(name);
+                        var row = new Rect(0f, y, contentWidth, heights[i]);
+                        Widgets.Label(new Rect(row.x, row.y, row.width - 105f, row.height), label);
+                        TooltipHandler.TipRegion(row, name);
+                        if (i > 0 && Widgets.ButtonText(new Rect(row.xMax - 100, row.y, 28, 26), "↑")) { move = i; direction = -1; }
+                        if (i + 1 < names.Count && Widgets.ButtonText(new Rect(row.xMax - 70, row.y, 28, 26), "↓")) { move = i; direction = 1; }
+                        if (Widgets.ButtonText(new Rect(row.xMax - 40, row.y, 40, 26), "×")) remove = i;
+                        y += heights[i];
+                    }
+                }
+                finally { Widgets.EndScrollView(); }
             }
             if (names.Count == 0) list.Label("CustomFonts.FallbackEmpty".Translate());
             if (remove >= 0) { names.RemoveAt(remove); ApplyFallbackChanges(target); }

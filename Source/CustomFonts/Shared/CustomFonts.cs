@@ -509,7 +509,7 @@ namespace CustomFonts
                 }
             }
 
-            DrawFallbackSettings(listingStandard, view.width, target);
+            DrawFallbackSettings(listingStandard, view.width, target, inRect.height);
             _propertyContentHeight[toolbarInt] = listingStandard.CurHeight + 16;
             listingStandard.End();
             Widgets.EndScrollView();
