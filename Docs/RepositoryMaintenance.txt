@@ -1,0 +1,38 @@
+Repository history cleanup (2026-10-16)
+=======================================
+
+All locally available branch and remote-tracking histories were rewritten.
+Removed 17 obsolete binary paths: rimfonts, the old FontTemplate.bundle,
+AssetsTools.NET.dll, and the 14 removed font files. The old Sarasa UI J 1.0.10
+LFS pointer blob was also removed; only the official Sarasa UI J/K Regular
+v1.0.42 font payloads remain reachable.
+
+All historical DLL and PDB blobs were migrated to Git LFS. Current .gitattributes
+tracks those extensions in any letter case. The retained 9,938-byte FontTemplate.bin
+contains no font payload and is required by the Unity runtime importer.
+
+Before rewriting, 130 historic DLL blobs were inspected for embedded resources.
+The old embedded FontTemplate.bundle contains 15 Font objects, each with zero
+m_FontData bytes. Historical DLLs therefore remain available via LFS; the obsolete
+standalone bundle and dependency library were removed from history.
+
+After rewriting: 83 commits retained, 126 historic DLL pointer blobs and 130
+reachable LFS payloads, including exactly two font payloads. Every reachable LFS
+payload was checked against its SHA-256. Git/LFS integrity checks passed.
+21 unreachable local LFS objects (162,576,821 bytes) were removed after an external
+backup. Reflogs were expired and unreachable Git objects garbage-collected.
+
+The backup outside the repository contains the original .git directory, working-tree
+snapshot, pre-rewrite Git bundle, LFS objects, original refs and both commit maps.
+Obsolete local release archives were moved there to avoid publishing a stale package.
+
+No remote repository or Workshop publication was modified. Existing remote branches
+still have their original history. Publishing this rewrite requires uploading the
+reachable LFS payloads first, then deliberately replacing the affected remote branch
+histories using the recorded original refs as force-with-lease expectations.
+Do not fetch or merge the old remote histories into the cleaned branch before that
+operation; it would make removed objects reachable again. Existing clones should be
+recloned or carefully reset after remote publication. Removing references does not
+itself purge cached GitHub objects, old release assets, forks or server-side LFS storage.
+
+Reproducible DLL settings and measured hashes are recorded in ReproducibleBuilds.txt.
