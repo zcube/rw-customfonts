@@ -1,40 +1,69 @@
-[h1]Custom-Fonts[/h1]
+[h1]Custom Fonts - Forked[/h1]
 
-A fork of Custom Fonts by nmkj_yuri.
+Choose the fonts you want for RimWorld's UI and world map. This mod focuses on flexible font replacement using installed fonts, bundled fonts, or your own font files.
 
-This mod enables changing the game font to system fonts or bundled ones.
-ゲームのフォントをOSのフォントか同梱フォントに変更できるようにします。
-게임 폰트를 시스템 폰트나 번들된 폰트로 변경할 수 있습니다.
+ゲームのUIやワールドマップのフォントを自由に変更するためのMODです。システムフォント・同梱フォント・任意のフォントファイルを利用できます。
+게임 UI와 월드맵 폰트를 자유롭게 변경하는 데 집중하는 모드입니다. 시스템 폰트, 번들 폰트 또는 직접 지정한 폰트 파일을 사용할 수 있습니다.
 
-[h2]Original[/h2]
+A fork of Custom Fonts by nmkj (nmkj_yuri), maintained by zcubekr.
 
-author : nmkj
-url: https://github.com/nmkj-io/rw-customfonts
+[b]RimWorld 1.4–1.7. Requires [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2009463077]Harmony[/url].[/b]
 
-[h2]Added Features[/h2]
+[h2]RimWorld 1.7 Support[/h2]
 
+RimWorld 1.7 introduces substantial engine and font rendering changes. Support for 1.7 remains [b]experimental[/b].
+
+[b]Issues and verification status[/b]
 [list]
-  [*]better save file dialog
-  [*]Steam Deck Patch (etc)
-  [*]custom font per size
-  [*]font search
-  [*]1.5 Support
+  [*][b]Platform testing:[/b] Tested on macOS and Windows. Linux and Steam Deck testing is still limited; full Linux verification remains pending.
+  [*][b]Text fields in other UI mods:[/b] Styles that independently override an existing font's size can still display text at a different size because of the 1.7 engine's input rendering behavior.
 [/list]
 
-[h2]Steam Deck (Steam Linux Runtime) host font patch[/h2]
+[url=https://github.com/ZCube/rw-customfonts/issues]Track or report 1.7 issues on GitHub[/url].
 
-Allows the use of host fonts in certain environments. This is an experimental feature.
+[h2]Features[/h2]
 
-  /usr/share/fonts <-> /run/host/fonts/
+[list]
+  [*]Separate fonts for UI text sizes and world map labels, with a uniform UI option.
+  [*]Font scaling, vertical position, search and preview.
+  [*]Load TTF, OTF and TTC files or folders without OS installation.
+  [*]Ordered fallback fonts for missing characters.
+  [*]System and user font discovery, including Linux and Steam Deck host font folders.
+[/list]
+
+[h2]Usage[/h2]
+
+Open [b]Options → Mod settings → Custom Fonts[/b] to choose fonts. Add your own files or folders under [b]etc → Font files and folders[/b], then click [b]Refresh font list / apply search options[/b].
+
+[h2]Fallback Fonts[/h2]
+
+Keep your preferred font while using other fonts for characters it does not contain. The primary font takes priority; missing characters use your fallback list from top to bottom, followed by the game's automatic fallbacks.
+
+[list]
+  [*]In a Tiny, Small, Medium or World tab, click [b]+[/b] beside a font to add it as a fallback. Use the arrows to reorder entries and [b]×[/b] to remove them.
+  [*]Each tab has its own list. With [b]Uniform UI Fonts[/b] enabled, the Medium list also applies to Tiny and Small; World remains separate.
+  [*][b]Merge another tab (union)[/b] copies another tab's list, or all tab lists, into the current list without duplicate entries.
+[/list]
 
 [h2]Bundled Fonts[/h2]
 
 [list]
-  [*]Sarasa UI J Regular v1.0.42 — Japanese regional glyph forms
-  [*]Sarasa UI K Regular v1.0.42 — Korean regional glyph forms
+  [*]Sarasa UI J Regular v1.0.42
+  [*]Sarasa UI K Regular v1.0.42
 [/list]
 
-Both fonts use SIL Open Font License 1.1 and support Chinese, Japanese and Korean.
-Rare ideograph coverage is partial. Copyright notices and the complete license are
-included in About/FontLicenses/; the mod's MIT license does not replace the font license.
-[url=https://github.com/be5invis/Sarasa-Gothic/releases/tag/v1.0.42]Official release[/url]
+Only the fonts listed above are bundled. Additional fonts are not included; use fonts available on your system or supply your own font files.
+
+[h2]Credits and License[/h2]
+
+[list]
+  [*][url=https://github.com/ZCube/rw-customfonts]This fork: ZCube/rw-customfonts[/url]
+  [*][url=https://github.com/nmkj-io/rw-customfonts]Original Custom Fonts by nmkj[/url]
+  [*][url=https://github.com/be5invis/Sarasa-Gothic]Sarasa Gothic by Renzhi Li and contributors[/url]
+[/list]
+
+Mod code: MIT. Bundled fonts: [url=https://github.com/be5invis/Sarasa-Gothic/blob/v1.0.42/LICENSE]SIL Open Font License 1.1[/url]. Font copyright notices and the full license are included in About/FontLicenses/.
+
+[h2]Development Note[/h2]
+
+Recent development is being carried out through vibe coding with AI assistance.
