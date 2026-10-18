@@ -1,136 +1,149 @@
 Custom Fonts - ABeeZee Example
 ==============================
 
-바로 설치할 수 있는 폰트 전용 RimWorld 1.4–1.7 모드입니다.
-DLL, C# 프로젝트, Defs 없이 About.xml과 폰트 파일만으로 동작합니다.
-메타데이터와 안내 파일은 저장소의 MIT 라이선스, 폰트는 Fonts/OFL.txt의
-SIL Open Font License 1.1을 따릅니다.
+A ready-to-install, font-only mod for RimWorld 1.4–1.7.
+It uses About.xml and font files, with no DLL, C# project or Defs required.
+The metadata and guide use the repository's MIT license. The fonts use the
+SIL Open Font License 1.1 provided in Fonts/OFL.txt.
 
-설치
-----
-1. 이 저장소를 받습니다. Git으로 받았다면 저장소 루트에서 실행합니다.
+Installation
+------------
+1. Download this repository. If you cloned it with Git, run from its root:
 
    git lfs pull --include="Examples/ABeeZeeFontPack/Fonts/*.ttf"
 
-   TTF 파일이 약 46–47 KB인지 확인합니다. 약 130바이트의 LFS 포인터를
-   폰트 대신 복사하면 동작하지 않습니다.
+   Check that the TTF files are approximately 46–47 KB each. A roughly 130-byte
+   Git LFS pointer is not a usable font file.
 
-2. Examples/ABeeZeeFontPack 폴더 전체를 게임의 Mods 폴더에 복사합니다.
-   예: Mods/rw-customfonts-abeezee-example/About/About.xml
-   macOS 1.4–1.6은 RimWorldMac.app/Mods, 1.7은 게임 루트의 Mods입니다.
-   이 저장소 루트 전체를 예제 모드로 복사하지 않습니다.
+2. Copy the entire Examples/ABeeZeeFontPack directory into the game's Mods folder.
+   Example: Mods/rw-customfonts-abeezee-example/About/About.xml
+   On macOS 1.4–1.6, use RimWorldMac.app/Mods; on 1.7, use Mods in the game root.
+   Copy the example directory itself, rather than this repository's root.
 
-3. 이 저장소의 확장 모드 지원이 포함된 Custom Fonts를 설치합니다.
-   Harmony → Core 및 사용하는 DLC → Custom Fonts - Forked →
-   Custom Fonts - ABeeZee Example 순서로 활성화한 뒤 게임을 재시작합니다.
+3. Install a Custom Fonts build from this repository that supports expansion mods.
+   Enable mods in this order, then restart the game:
 
-4. Mod settings → Custom Fonts에서 다음 항목을 선택합니다.
+   Harmony → Core and any DLC you use → Custom Fonts - Forked →
+   Custom Fonts - ABeeZee Example
+
+4. Open Mod settings → Custom Fonts and select either entry:
 
    (Bundled) ABeeZee (Regular) [Custom Fonts - ABeeZee Example]
    (Bundled) ABeeZee (Italic) [Custom Fonts - ABeeZee Example]
 
-   UI, 월드 폰트, 각 대상의 폴백 목록에서 선택할 수 있습니다.
-   검색에는 폰트명과 제공 모드명이 모두 사용됩니다.
-   OS 설치나 검색 경로 추가는 필요 없습니다.
-   ABeeZee는 라틴 문자 예제입니다. 한글 폰트로 사용하려면 한글을 지원하는
-   기본 폰트/폴백을 별도로 선택하십시오.
+   Both entries are available for UI fonts, world fonts and each target's fallback
+   list. Search matches both the font name and the providing mod's name.
+   No OS font installation or manual search path is required.
+   ABeeZee is a Latin-script example. For Korean text, select a primary or fallback
+   font that supports Hangul.
 
-구조와 재배포
--------------
-About/About.xml          모드 식별자, 의존성, 로드 순서
-Fonts/ABeeZee-Regular.ttf 원본 Regular 폰트
-Fonts/ABeeZee-Italic.ttf  원본 Italic 폰트
-Fonts/OFL.txt            원본 저작권 고지와 라이선스 전문
-provenance.json          공식 출처의 고정 커밋, 크기, SHA-256
-LICENSE                  예제 메타데이터/안내의 MIT 라이선스
-GUIDE.txt                이 안내
+Contents and redistribution
+---------------------------
+About/About.xml          Mod identity, dependency and load order
+Fonts/ABeeZee-Regular.ttf Original Regular font
+Fonts/ABeeZee-Italic.ttf  Original Italic font
+Fonts/OFL.txt            Original copyright notice and complete font license
+provenance.json          Official source, pinned commit, file sizes and SHA-256
+LICENSE                  MIT license for the example metadata and guide
+GUIDE.txt                This guide
 
-폰트는 google/fonts의 다음 커밋에서 받은 수정하지 않은 원본입니다.
+The fonts are unmodified originals from this google/fonts commit:
 47d54ca1ebb14fd864695f1d39dc734f39017c33
 https://github.com/google/fonts/tree/47d54ca1ebb14fd864695f1d39dc734f39017c33/ofl/abeezee
 
-OFL이 허용하는 재배포 조건에 따라 원본과 라이선스를 함께 제공합니다.
-폰트 이름을 바꾸거나 서브셋/변환하지 않았습니다. 원본에 Reserved Font Name
-'ABeeZee'가 지정되어 있으므로 폰트를 수정하여 배포한다면 OFL의 이름 관련
-조건도 확인해야 합니다. 폰트 자체에 MIT를 적용하지 않습니다.
+The original files and license are provided together under the OFL's redistribution
+terms. The fonts have not been renamed, subsetted or converted. The upstream
+license reserves the font name 'ABeeZee'; consult its naming conditions before
+distributing modified fonts. The font files remain under OFL, not MIT.
 
-새 폰트 팩 만들기
------------------
-1. 이 폴더를 복사합니다.
-2. About/About.xml의 name, author, description과 packageId를 고유한 값으로
-   바꿉니다. zcubekr.customfonts 의존성과 loadAfter는 유지합니다.
-3. Fonts의 예제 폰트를 재배포가 허용된 폰트로 교체하고, 그 폰트의 원본
-   저작권 고지와 라이선스를 넣습니다. provenance.json도 실제 파일의 공식
-   출처와 해시로 갱신합니다. 기존 예제의 라이선스를 다른 폰트에 사용하지 않습니다.
-4. 폰트는 .ttf/.otf/.ttc를 지원하며 하위 폴더도 검색합니다. TTC는 첫 face를
-   사용합니다. 이름/스타일은 OpenType 메타데이터에서 읽습니다.
-5. 버전별 Fonts 폴더와 LoadFolders.xml을 사용할 수 있습니다. 우선순위가
-   높은 콘텐츠 폴더가 같은 상대 경로를 덮어씁니다. 한 팩의 동일 face는
-   우선순위 및 파일명 순으로 첫 항목을 사용하고, 다른 팩은 별도로 표시합니다.
-6. 저장된 선택은 packageId와 face 이름으로 구분하므로 배포 후에는 둘을
-   안정적으로 유지합니다. 표시용 모드명을 바꾸어도 선택은 유지됩니다.
-7. 모드 구성 변경 후 재시작합니다. 개발 중 폰트 파일만 바꿨다면 etc 탭의
-   Refresh font list / apply search options로 번들 목록과 로딩을 갱신합니다.
+Creating your own font pack
+---------------------------
+1. Copy this directory.
+2. Update name, author, description and packageId in About/About.xml with your own
+   values and a unique packageId. Keep the zcubekr.customfonts dependency and
+   loadAfter entry.
+3. Replace the example fonts in Fonts with fonts that permit redistribution,
+   including their original copyright notices and licenses. Update provenance.json
+   with the actual files' official sources and hashes. Do not reuse the example's
+   font license for unrelated fonts.
+4. Supported formats are .ttf, .otf and .ttc. Subdirectories are scanned recursively.
+   TTC collections use the first face. Names and styles come from OpenType metadata.
+5. Version-specific Fonts directories and LoadFolders.xml are supported. A higher-
+   priority content root overrides the same relative font path. Duplicate faces
+   within one pack use the first entry by content-root priority, then sorted file
+   path. Faces from different packs remain separate entries.
+6. Saved selections use packageId and face name. Keep both stable after publishing.
+   Changing the displayed mod name does not invalidate saved selections.
+7. Restart after changing active mods. During development, if only font files have
+   changed, use Refresh font list / apply search options in the etc tab to refresh
+   the bundle catalog and reload fonts.
 
-자동 테스트
------------
-저장소 루트에서:
+Automated tests
+---------------
+From the repository root, run:
 
   task test
 
-실제 예제의 의존성/로드 순서 XML, 폰트 전용 구성, 고정 해시/라이선스,
-두 스타일의 등록, Unity 기본/폴백 임포트 바이트와 파일 캐시 재사용을 검사합니다.
-게임을 실행하지 않는 이 검사만으로 실제 렌더링 성공을 주장하지 않습니다.
+This checks the actual example's dependency/load-order XML, font-only contents,
+fixed hashes and license notices, registration of both styles, Unity primary and
+fallback import bytes, and file-cache reuse. These checks do not launch the game
+and therefore do not establish that native rendering works.
 
-실제 게임 통합 테스트에는 Python 3, 그래픽 데스크톱, Harmony와 게임이 필요합니다.
-다른 RimWorld를 종료하고 버전에 맞는 Custom Fonts를 빌드/설치한 뒤 실행합니다.
+Live-game integration tests require Python 3, a graphical desktop, Harmony and an
+installed game. Close other RimWorld instances, then build and install the matching
+Custom Fonts version before running:
 
   task build
   task export
   task test_font_pack_game
 
-다른 설치의 예:
+For another installation, for example:
 
   task export STEAM_APPS="/path/to/1.6/steamapps"
   task test_font_pack_game VERSION=1.6 STEAM_APPS="/path/to/1.6/steamapps"
 
-Harmony도 해당 설치에서 검색 가능한 Mods/Workshop 위치에 있어야 합니다.
-Harmony 2.4부터 Apple Silicon ARM64 네이티브 패치를 지원합니다.
-공식 변경 사항: https://github.com/pardeike/Harmony/releases/tag/v2.4.0.0
-Apple Silicon에서는 먼저 Harmony를 2.4 이상으로 업데이트하고 기본 native
-실행을 사용하십시오. 이 예제는 Harmony 2.4.3으로도 네이티브 검증합니다.
-구형 Harmony 2.3.x 환경을 의도적으로 검사할 때만 설치된 Rosetta로 다음처럼
-x86_64 실행을 지정할 수 있습니다.
+Harmony must also be discoverable in that installation's Mods or Workshop paths.
+Harmony 2.4 introduced native Apple Silicon ARM64 patching support:
+https://github.com/pardeike/Harmony/releases/tag/v2.4.0.0
+On Apple Silicon, update Harmony to 2.4 or newer and use the default native mode.
+This example also passed native integration tests with Harmony 2.4.3.
+When deliberately testing a legacy Harmony 2.3.x setup, you can select x86_64
+execution through an existing Rosetta installation:
 
   task test_font_pack_game VERSION=1.6 MAC_ARCH=x86_64 STEAM_APPS="/path/to/1.6/steamapps"
 
-직접 실행기에서는 --mac-arch x86_64를 지정합니다. Rosetta를 자동 설치하지는 않습니다.
-Task 대신 직접 실행하려면:
+For the direct runner, use --mac-arch x86_64. It does not install Rosetta.
+To run without Task:
 
   python3 Tests/run_font_pack_integration.py --game-root "/path/to/RimWorld" --version 1.7
 
-테스트 실행기는 게임의 Mods에 예제를 임시 설치하고 실제 ModsConfig.xml로
-등록합니다. 기존 예제 설치를 덮어쓰지 않으며 테스트 종료 시 임시 설치를 제거합니다.
-일반 프로필을 건드리지 않고 임시 savedatafolder를 사용합니다. 활성화와 재시작은
-동일한 테스트 프로필을 사용합니다. 잘못된 순서와 비활성화는 별도 프로필입니다.
-검증 뒤 테스트용 게임 프로세스만 종료합니다.
+The runner temporarily installs the example into the game's Mods directory and
+registers it through actual ModsConfig.xml files. It refuses to overwrite an
+existing example installation and removes its temporary installation when finished.
+It uses temporary savedatafolder profiles and leaves your ordinary profile intact.
+The active and restart scenarios share a test profile; wrong-order and disabled
+scenarios use separate profiles. Only the test game process is terminated afterward.
 
-검사 항목:
-- 실제 활성 모드 순서와 두 번들 스타일 등록, 폰트 전용 모드의 콘텐츠 인식
-- 모드명 표시, OS/수동 경로/재귀 옵션과 독립적인 검색, 선택 전 지연 로딩
-- Regular/Italic의 Tiny/Small/Medium 실제 글리프 래스터화
-- TMP 글리프 지오메트리와 화면에 표시되는 월드 라벨의 폰트 바인딩
-- 네 대상의 팩 폴백 원본 바이트, 새로고침, 재시작 후 기본/폴백 선택 유지
-- Custom Fonts보다 앞에 있는 팩과 비활성화된 팩의 제외
+Checks include:
+- Actual active-mod order, registration of both bundled styles, and recognition
+  of a font-only mod as loaded content.
+- Mod-name labels, discovery independent of OS/manual-path/recursion options,
+  and lazy loading before selection.
+- Native Regular/Italic glyph rasterization in Tiny, Small and Medium UI fonts.
+- TMP glyph geometry and selected-font bindings on visible live world labels.
+- Original pack fallback bytes for all four targets, refresh, and persistence
+  of primary/fallback selections across restart.
+- Exclusion of packs before Custom Fonts and packs that are disabled.
 
-출력되는 Evidence 경로에 시나리오별 결과, stdout, 테스트 프로필과 results.json이
-남습니다. --output으로 빈 디렉터리를 지정할 수 있습니다. GUI가 없는 CI에서는
-실제 게임 검사를 실행하지 않습니다. 실제 실행 검증 결과는 저장소의
-Docs/FontPackVerification.txt를 참고하십시오.
+The printed Evidence directory contains per-scenario results, stdout, test profiles
+and results.json. Use --output to select an empty evidence directory. Do not run the
+live-game checks in CI without a graphical desktop. Recorded results and limits are
+in Docs/FontPackVerification.txt in the repository.
 
 GitHub
 ------
-예제: https://github.com/ZCube/rw-customfonts/tree/main/Examples/ABeeZeeFontPack
-모드: https://github.com/ZCube/rw-customfonts
-이 폴더만 별도 저장소로 옮겨도 모드로 사용할 수 있습니다. 폰트와 고지 파일을
-함께 커밋하고, 새 저장소에서도 Git LFS를 쓰면 실제 폰트 오브젝트를 푸시합니다.
+Example: https://github.com/zcube/rw-customfonts/tree/main/Examples/ABeeZeeFontPack
+Main mod: https://github.com/zcube/rw-customfonts
+This directory can also be moved into a separate repository and used as a mod.
+Commit the fonts together with their notices. If the new repository uses Git LFS,
+push the actual font objects as well.
