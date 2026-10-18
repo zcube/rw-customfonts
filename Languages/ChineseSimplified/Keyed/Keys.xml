@@ -34,6 +34,10 @@
     <CustomFonts.DebugWorldFontTest>世界地图字体测试</CustomFonts.DebugWorldFontTest>
     <CustomFonts.DebugWorldFontTestRun>执行世界地图测试</CustomFonts.DebugWorldFontTestRun>
     <CustomFonts.FontSources>字体文件和文件夹</CustomFonts.FontSources>
+    <CustomFonts.FontPackSearch>已搜索的外部模组（{0} 个）</CustomFonts.FontPackSearch>
+    <CustomFonts.FontPackSearchHelp>搜索加载顺序在 Custom Fonts 之后的已启用模组的 Fonts 文件夹。数量为可选字体及样式的数量。将鼠标悬停在模组上可查看其包 ID。</CustomFonts.FontPackSearchHelp>
+    <CustomFonts.FontPackSearchEntry>{0} — {1} 个字体</CustomFonts.FontPackSearchEntry>
+    <CustomFonts.FontPackSearchEmpty>Custom Fonts 之后没有已启用的外部模组。</CustomFonts.FontPackSearchEmpty>
     <CustomFonts.FontSourcesHelp>添加 TTF、OTF、TTC 文件或文件夹。相对路径以模组目录为起点，支持环境变量和 ~。TTC 使用第一个字体。点击刷新以应用搜索设置。 选择按字体族名称保存，不保存文件路径，并优先使用常规字形。</CustomFonts.FontSourcesHelp>
     <CustomFonts.IncludeSystemFonts>包含系统字体</CustomFonts.IncludeSystemFonts>
     <CustomFonts.SystemFontDirectories>系统默认字体目录 ({0})</CustomFonts.SystemFontDirectories>

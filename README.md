@@ -31,9 +31,9 @@ folder, with a fallback to `Current` for older Harmony downloads.
 
 Edit `About/preview.svg` for the white Workshop preview, then run `task preview` to
 render `About/preview.png` at 1280×720. This requires librsvg's `rsvg-convert`;
-set `RSVG_CONVERT` to use an executable outside `PATH`. Export and package also run
-this task. Commit the SVG and generated PNG before release. Text uses Arial with
-Helvetica and sans-serif fallbacks.
+set `RSVG_CONVERT` to use an executable outside `PATH`. Export also runs this task.
+Package and release use the committed PNG and do not require librsvg. Commit the SVG
+and generated PNG before release. Text uses Arial with Helvetica and sans-serif fallbacks.
 
 ## Reproducible DLL builds
 
@@ -81,6 +81,14 @@ After deploying a new local mod, restart RimWorld to refresh its mod list.
 To target another installation, pass the same `STEAM_APPS=...` to both `task export`
 and `task release`. The deployed folder contains all four game-version assemblies.
 
+On Windows, run release directly from PowerShell or Command Prompt (no Git Bash/WSL
+required), with `7z` and Windows PowerShell on `PATH` and the .NET SDK pinned in
+`global.json` installed:
+
+```powershell
+task release STEAM_APPS="D:/SteamLibrary/steamapps"
+```
+
 After release completes, open RimWorld and use its Workshop upload/update function
 for the **local mod in that Mods folder**. The existing Workshop ID is retained in
 `About/PublishedFileId.txt`. Upload from the deployed local mod, not from the source
@@ -123,6 +131,8 @@ Its `Fonts/` directory is discovered automatically, without a DLL or a manually
 configured search path. Fonts appear as `(Bundled) Face (Style) [Mod name]` in the
 UI, world and fallback lists. Search also matches the providing mod's name.
 They use the same lazy loading and resource lifecycle as the built-in bundles.
+The etc tab lists scanned external mods and each mod's selectable font count,
+including mods with zero fonts. Long lists scroll vertically within the tab.
 
 A minimal pack looks like this (replace the example identifiers and names):
 

@@ -232,8 +232,11 @@ tasks:
 
   package:
     desc: package committed runtime files and font notices (requires a clean tree)
+    preconditions:
+      - sh: test -f About/preview.png
+        msg: Run task preview and commit About/preview.png before packaging.
     cmds:
-      - task: preview
+      # Use the committed preview so packaging needs no SVG renderer.
       - task: font_catalog
       - cmd: |
           if ! git diff --quiet HEAD --; then
@@ -248,7 +251,12 @@ tasks:
         platforms: [windows, linux]
       - cmd: 7zz a -y custom-fonts.zip @custom-fonts-files.txt
         platforms: [darwin]
-      - rm -f custom-fonts-files.txt
+      - cmd: >-
+          powershell -NoProfile -Command '$ErrorActionPreference = "Stop";
+          Remove-Item -LiteralPath "custom-fonts-files.txt" -Force'
+        platforms: [windows]
+      - cmd: rm -f custom-fonts-files.txt
+        platforms: [linux, darwin]
       - cmd: >-
           powershell -NoProfile -Command '$ErrorActionPreference = "Stop"; $path = [IO.Path]::GetFullPath("custom-fonts.zip");
           $sha = [Security.Cryptography.SHA256]::Create(); $stream = [IO.File]::OpenRead($path);
@@ -263,16 +271,26 @@ tasks:
 
   release:
     desc: install the committed tree into the local Mods folder as players would get it
+    requires:
+      vars: [STEAM_APPS]
     vars:
       DEPLOY_MOD_ROOT: *deploy_mod_root
     cmds:
       - task: package
+      - cmd: >-
+          powershell -NoProfile -Command '$ErrorActionPreference = "Stop";
+          $destination = "{{.DEPLOY_MOD_ROOT}}";
+          [IO.Directory]::CreateDirectory($destination) | Out-Null;
+          7z x -y custom-fonts.zip ("-o" + $destination);
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE };
+          Write-Host "Released to $destination"'
+        platforms: [windows]
       - cmd: |
           DEST="{{.DEPLOY_MOD_ROOT}}"
           mkdir -p "${DEST}"
           7z x -y custom-fonts.zip -o"${DEST}"
           echo "Released to ${DEST}"
-        platforms: [windows, linux]
+        platforms: [linux]
       - cmd: |
           DEST="{{.DEPLOY_MOD_ROOT}}"
           mkdir -p "${DEST}"

@@ -154,18 +154,20 @@ try
     File.WriteAllText(Path.Combine(packRoot, "Fonts", "LICENSE.txt"), "license");
     var packErrors = new List<string>();
     var packReads = new List<string>();
+    var packScans = new List<(string Id, string Name, int Count)>();
     var pack = new FontPackSource { PackageId = "Author.Pack", Name = "한글 폰트 팩", ContentRoots = new[] { versionRoot, packRoot } };
     var packFonts = FontPackCatalog.Read(new[] { pack }, file =>
     {
         packReads.Add(file);
         return FontFiles.ReadName(file);
-    }, (file, _) => packErrors.Add(file)).ToArray();
+    }, (file, _) => packErrors.Add(file), (source, count) => packScans.Add((source.PackageId, source.Name, count))).ToArray();
     Check(packFonts.Length == 1 && packFonts[0].Path == versionFace, "pack uses highest-priority content root and deduplicates same face");
     Check(!packReads.Contains(baseFace) && packReads.Any(f => f.EndsWith("extra.TTC")), "pack shadows relative files and recursively scans collection files");
     Check(packErrors.Count == 1 && packErrors[0].EndsWith("broken.otf"), "invalid pack font does not hide valid siblings or parse license files");
     Check(packFonts[0].SelectionKey == "(Bundled) [author.pack] 테스트 Font (Regular)"
         && packFonts[0].SourceModName == "한글 폰트 팩", "stable package identity is separate from displayed mod name");
     Check(packFonts[0].Size == 16 && packFonts[0].RenderingMode == 0, "pack uses bundled import defaults");
+    Check(packScans.Single() == (pack.PackageId, pack.Name, 1), "scan summary counts selectable faces after overrides, duplicates and invalid files");
     var otherPack = new FontPackSource { PackageId = "Author.Other", Name = pack.Name, ContentRoots = new[] { versionRoot } };
     var isolated = FontPackCatalog.Read(new[] { pack, otherPack }, FontFiles.ReadName, (_, _) => { }).ToArray();
     Check(isolated.Length == 2 && isolated[0].SelectionKey != isolated[1].SelectionKey, "same face and display name from different mods remain separately selectable");
@@ -173,7 +175,9 @@ try
     Check(FontPackCatalog.Read(new[] { pack }, FontFiles.ReadName, (_, _) => { }).Single().SelectionKey == packFonts[0].SelectionKey,
         "renaming mod does not change saved font selection");
     Check(!FontPackCatalog.Read(new[] { new FontPackSource { PackageId = "empty", ContentRoots = new[] { root } } },
-        FontFiles.ReadName, (_, _) => throw new Exception("missing optional Fonts folder")).Any(), "mods without Fonts are ignored");
+        FontFiles.ReadName, (_, _) => throw new Exception("missing optional Fonts folder"),
+        (source, count) => packScans.Add((source.PackageId, source.Name, count))).Any(), "mods without Fonts are ignored");
+    Check(packScans.Last().Id == "empty" && packScans.Last().Count == 0, "scanned mods without Fonts remain visible with zero fonts");
     string folder = Path.Combine(root, "한글 Fonts");
     string path = Path.Combine(folder, "custom font.TTF");
     File.WriteAllBytes(path, Font());

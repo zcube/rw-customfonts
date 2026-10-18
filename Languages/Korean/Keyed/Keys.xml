@@ -34,6 +34,10 @@
     <CustomFonts.DebugWorldFontTest>월드맵 폰트 반영 테스트</CustomFonts.DebugWorldFontTest>
     <CustomFonts.DebugWorldFontTestRun>월드 테스트 실행</CustomFonts.DebugWorldFontTestRun>
     <CustomFonts.FontSources>폰트 파일 및 폴더</CustomFonts.FontSources>
+    <CustomFonts.FontPackSearch>검색한 외부 모드 ({0}개)</CustomFonts.FontPackSearch>
+    <CustomFonts.FontPackSearchHelp>Custom Fonts 뒤에 활성화된 모드의 Fonts 폴더를 검색합니다. 폰트 수는 선택 가능한 글꼴과 스타일의 수입니다. 모드 위에 마우스를 올리면 모드 ID를 확인할 수 있습니다.</CustomFonts.FontPackSearchHelp>
+    <CustomFonts.FontPackSearchEntry>{0} — 폰트 {1}개</CustomFonts.FontPackSearchEntry>
+    <CustomFonts.FontPackSearchEmpty>Custom Fonts 뒤에 활성화된 외부 모드가 없습니다.</CustomFonts.FontPackSearchEmpty>
     <CustomFonts.FontSourcesHelp>TTF·OTF·TTC 파일 또는 폴더를 추가하세요. 상대 경로는 이 모드 폴더 기준이며 환경 변수와 ~를 지원합니다. TTC는 첫 번째 글꼴을 사용합니다. 검색 옵션 변경 후 새로고침을 누르세요. 선택은 파일 경로 대신 family 이름으로 저장하며 Regular 계열을 우선 사용합니다.</CustomFonts.FontSourcesHelp>
     <CustomFonts.IncludeSystemFonts>시스템 폰트 포함</CustomFonts.IncludeSystemFonts>
     <CustomFonts.SystemFontDirectories>시스템 기본 폰트 경로 ({0})</CustomFonts.SystemFontDirectories>

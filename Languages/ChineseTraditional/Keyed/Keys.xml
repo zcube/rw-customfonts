@@ -34,6 +34,10 @@
     <CustomFonts.DebugWorldFontTest>世界地圖字型測試</CustomFonts.DebugWorldFontTest>
     <CustomFonts.DebugWorldFontTestRun>執行世界地圖測試</CustomFonts.DebugWorldFontTestRun>
     <CustomFonts.FontSources>字型檔案和資料夾</CustomFonts.FontSources>
+    <CustomFonts.FontPackSearch>已搜尋的外部模組（{0} 個）</CustomFonts.FontPackSearch>
+    <CustomFonts.FontPackSearchHelp>搜尋載入順序在 Custom Fonts 之後的已啟用模組的 Fonts 資料夾。數量為可選字型及樣式的數量。將滑鼠停在模組上可查看其套件 ID。</CustomFonts.FontPackSearchHelp>
+    <CustomFonts.FontPackSearchEntry>{0} — {1} 個字型</CustomFonts.FontPackSearchEntry>
+    <CustomFonts.FontPackSearchEmpty>Custom Fonts 之後沒有已啟用的外部模組。</CustomFonts.FontPackSearchEmpty>
     <CustomFonts.FontSourcesHelp>新增 TTF、OTF、TTC 檔案或資料夾。相對路徑以模組目錄為起點，支援環境變數和 ~。TTC 使用第一個字型。按下重新整理以套用搜尋設定。 選擇按字型家族名稱儲存，不儲存檔案路徑，並優先使用標準字形。</CustomFonts.FontSourcesHelp>
     <CustomFonts.IncludeSystemFonts>包含系統字型</CustomFonts.IncludeSystemFonts>
     <CustomFonts.SystemFontDirectories>系統預設字型目錄 ({0})</CustomFonts.SystemFontDirectories>

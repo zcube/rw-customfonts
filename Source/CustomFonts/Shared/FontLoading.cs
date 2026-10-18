@@ -15,6 +15,12 @@ namespace CustomFonts
         private readonly Dictionary<string, BundledFontData> _bundledFontSources = new Dictionary<string, BundledFontData>();
         private readonly Dictionary<string, Font> _bundledFontVariants = new Dictionary<string, Font>();
         private readonly Dictionary<string, Font> _scopedDefaultFonts = new Dictionary<string, Font>();
+        private sealed class FontPackScan
+        {
+            internal string PackageId, Name;
+            internal int FontCount;
+        }
+        private readonly List<FontPackScan> _fontPackScans = new List<FontPackScan>();
 
         private Font LoadFontFile(string path, FallbackFontSource[] fallbacks = null, int pixels = 0)
         {
@@ -53,7 +59,9 @@ namespace CustomFonts
                         ContentRoots = mod.foldersToLoadDescendingOrder
                     });
                 var catalog = BundledFontCatalog.Read(Path.Combine(_content.RootDir, "Fonts"))
-                    .Concat(FontPackCatalog.Read(packs, MetadataCache.ReadName, SourceError));
+                    .Concat(FontPackCatalog.Read(packs, MetadataCache.ReadName, SourceError,
+                        (pack, count) => _fontPackScans.Add(new FontPackScan
+                        { PackageId = pack.PackageId, Name = pack.Name, FontCount = count })));
                 foreach (var data in catalog)
                 {
                     string name = data.SelectionKey ?? "(Bundled) " + data.FaceName;

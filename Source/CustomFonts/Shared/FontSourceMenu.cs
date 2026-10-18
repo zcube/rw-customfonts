@@ -15,9 +15,13 @@ namespace CustomFonts
         {
             var outer = new Rect(rect.x, rect.y, rect.width, rect.height);
             var view = new Rect(0, 0, Math.Max(100, rect.width - 20), Math.Max(rect.height, _sourceContentHeight));
+            _sourceScroll.x = 0;
+            _sourceScroll.y = Mathf.Clamp(_sourceScroll.y, 0, Math.Max(0, view.height - outer.height));
             Widgets.BeginScrollView(outer, ref _sourceScroll, view);
             var list = new Listing_Standard();
-            list.Begin(view);
+            // Listing starts a new column when it reaches its bounds. Measure all rows
+            // in one tall column; the scroll view supplies the visible clipping bounds.
+            list.Begin(new Rect(0, 0, view.width, 1000000f));
             list.Label("CustomFonts.FontSources".Translate());
             list.Label("CustomFonts.FontSourcesHelp".Translate());
             list.CheckboxLabeled("CustomFonts.IncludeSystemFonts".Translate(), ref _settings.IncludeSystemFonts);
@@ -56,6 +60,18 @@ namespace CustomFonts
                 if (Widgets.ButtonText(new Rect(row.xMax - 80, row.y, 80, 28), "CustomFonts.RemoveFontPath".Translate())) remove = i;
             }
             if (remove >= 0) { _settings.FontSourcePaths.RemoveAt(remove); RefreshFontSources(); }
+            list.GapLine();
+            list.Label("CustomFonts.FontPackSearch".Translate(_fontPackScans.Count));
+            list.Label("CustomFonts.FontPackSearchHelp".Translate());
+            if (_fontPackScans.Count == 0) list.Label("CustomFonts.FontPackSearchEmpty".Translate());
+            foreach (var pack in _fontPackScans)
+            {
+                string label = "CustomFonts.FontPackSearchEntry".Translate(pack.Name, pack.FontCount);
+                Rect row = list.GetRect(Math.Max(Text.LineHeight, Text.CalcHeight(label, view.width)));
+                Widgets.Label(row, label);
+                TooltipHandler.TipRegion(row, pack.PackageId);
+            }
+            list.GapLine();
             if (list.ButtonText("CustomFonts.RefreshFontSources".Translate())) RefreshFontSources();
             list.Label("CustomFonts.FontSourceCount".Translate(OSFontPaths.Count, _fontSourceErrors.Count));
             if (_fontSourceErrors.Count > 0) list.Label(_fontSourceErrors[0]);

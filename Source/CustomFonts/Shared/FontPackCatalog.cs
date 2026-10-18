@@ -15,11 +15,13 @@ namespace CustomFonts
     internal static class FontPackCatalog
     {
         internal static IEnumerable<BundledFontData> Read(IEnumerable<FontPackSource> packs,
-            Func<string, string> readName, Action<string, Exception> error)
+            Func<string, string> readName, Action<string, Exception> error,
+            Action<FontPackSource, int> scanned = null)
         {
             var selections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var pack in packs)
             {
+                int fontCount = 0;
                 var relativeFiles = new HashSet<string>(FontSourceCatalog.PathComparer);
                 foreach (string root in pack.ContentRoots)
                 {
@@ -46,9 +48,11 @@ namespace CustomFonts
                             };
                         }
                         catch (Exception ex) { error(file, ex); continue; }
+                        fontCount++;
                         yield return data;
                     }
                 }
+                scanned?.Invoke(pack, fontCount);
             }
         }
     }

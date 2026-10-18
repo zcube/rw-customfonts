@@ -34,6 +34,10 @@
     <CustomFonts.DebugWorldFontTest>World map font test</CustomFonts.DebugWorldFontTest>
     <CustomFonts.DebugWorldFontTestRun>Run world test</CustomFonts.DebugWorldFontTestRun>
     <CustomFonts.FontSources>Font files and folders</CustomFonts.FontSources>
+    <CustomFonts.FontPackSearch>Scanned external mods ({0})</CustomFonts.FontPackSearch>
+    <CustomFonts.FontPackSearchHelp>Searches the Fonts folders of active mods after Custom Fonts. Counts include selectable font faces and styles. Hover over a mod to see its package ID.</CustomFonts.FontPackSearchHelp>
+    <CustomFonts.FontPackSearchEntry>{0} — {1} fonts</CustomFonts.FontPackSearchEntry>
+    <CustomFonts.FontPackSearchEmpty>No active external mods follow Custom Fonts.</CustomFonts.FontPackSearchEmpty>
     <CustomFonts.FontSourcesHelp>Add a TTF, OTF or TTC file, or a folder. Relative paths start in this mod folder; environment variables and ~ are supported. TTC uses its first face. Apply search options with Refresh. Selections save family names instead of file paths and prefer regular faces.</CustomFonts.FontSourcesHelp>
     <CustomFonts.IncludeSystemFonts>Include system fonts</CustomFonts.IncludeSystemFonts>
     <CustomFonts.SystemFontDirectories>Default system font directories ({0})</CustomFonts.SystemFontDirectories>

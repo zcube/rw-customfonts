@@ -192,15 +192,22 @@ namespace CustomFonts
         }
         private static string TargetLabel(FontTarget target)
             => (target == FontTarget.World ? "CustomFonts.FontWorld" : "CustomFonts.Font" + target).Translate("");
+        private float FontChoiceHeight(string name, float width)
+        {
+            // Leave room for the fallback button (36px) and the radio control (24px).
+            float labelWidth = Math.Max(1f, width - 60f);
+            return Math.Max(Text.LineHeight, Text.CalcHeight(DisplayFontName(name), labelWidth)) + 4f;
+        }
         private bool DrawFontChoice(Listing_Standard list, FontTarget target, string name, bool selected)
         {
-            Rect row = list.GetRect(Text.LineHeight);
+            Rect row = list.GetRect(FontChoiceHeight(name, list.ColumnWidth));
             Rect choose = new Rect(row.x, row.y, row.width - 36, row.height);
             TooltipHandler.TipRegion(choose, name);
             bool result = Widgets.RadioButtonLabeled(choose, DisplayFontName(name), selected);
             bool available = name != FontSettings.DefaultFontName && !selected && !_settings.GetFallbackFonts(target).Contains(name);
             bool previous = GUI.enabled; GUI.enabled = previous && available;
-            Rect add = new Rect(row.xMax - 31, row.y, 28, row.height);
+            float buttonHeight = Math.Min(28f, row.height);
+            Rect add = new Rect(row.xMax - 31, row.y + (row.height - buttonHeight) / 2f, 28, buttonHeight);
             if (Widgets.ButtonText(add, "+")) AddFallbackFont(target, name);
             TooltipHandler.TipRegion(add, "CustomFonts.AddFallbackFont".Translate());
             GUI.enabled = previous;

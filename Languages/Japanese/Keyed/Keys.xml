@@ -38,6 +38,10 @@
     <CustomFonts.FontPath>ファイルまたはフォルダーのパス</CustomFonts.FontPath>
     <CustomFonts.RecursiveFolders>サブフォルダーを検索</CustomFonts.RecursiveFolders>
     <CustomFonts.FontSources>フォントファイルとフォルダー</CustomFonts.FontSources>
+    <CustomFonts.FontPackSearch>検索した外部 MOD（{0} 件）</CustomFonts.FontPackSearch>
+    <CustomFonts.FontPackSearchHelp>Custom Fonts より後に有効な MOD の Fonts フォルダーを検索します。件数は選択可能な書体とスタイルの数です。MOD にマウスを重ねるとパッケージ ID を確認できます。</CustomFonts.FontPackSearchHelp>
+    <CustomFonts.FontPackSearchEntry>{0} — フォント {1} 件</CustomFonts.FontPackSearchEntry>
+    <CustomFonts.FontPackSearchEmpty>Custom Fonts より後に有効な外部 MOD はありません。</CustomFonts.FontPackSearchEmpty>
     <CustomFonts.FontSourceCount>フォントファミリー {0} 件、スキップした読み込み元 {1} 件（詳細はログ）</CustomFonts.FontSourceCount>
     <CustomFonts.RefreshFontSources>フォント一覧を更新 / 検索設定を適用</CustomFonts.RefreshFontSources>
     <CustomFonts.RemoveFontPath>削除</CustomFonts.RemoveFontPath>

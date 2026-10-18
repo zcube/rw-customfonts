@@ -76,6 +76,7 @@ namespace CustomFonts
             foreach (Font font in _bundledFontVariants.Values.Distinct()) QueueDestroy(font);
             _bundledFontVariants.Clear();
             _bundledFontSources.Clear();
+            _fontPackScans.Clear();
             BundledFonts.Clear();
             ReleaseWorldFontAsset();
             foreach (Font font in _osFontCache.Values.Distinct()) QueueDestroy(font);
