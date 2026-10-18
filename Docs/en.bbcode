@@ -27,6 +27,7 @@ RimWorld 1.7 introduces substantial engine and font rendering changes. Support f
   [*]Separate fonts for UI text sizes and world map labels, with a uniform UI option.
   [*]Font scaling, vertical position, search and preview.
   [*]Load TTF, OTF and TTC files or folders without OS installation.
+  [*]Use fonts supplied by other active mods as bundled choices, with the providing mod's name shown.
   [*]Ordered fallback fonts for missing characters.
   [*]System and user font discovery, including Linux and Steam Deck host font folders.
 [/list]
@@ -34,6 +35,20 @@ RimWorld 1.7 introduces substantial engine and font rendering changes. Support f
 [h2]Usage[/h2]
 
 Open [b]Options → Mod settings → Custom Fonts[/b] to choose fonts. Add your own files or folders under [b]etc → Font files and folders[/b], then click [b]Refresh font list / apply search options[/b].
+
+[h2]Font Expansion Mods[/h2]
+
+RimWorld 1.4–1.7 supports separate font packs. Enable a font pack [b]after Custom Fonts - Forked[/b] in your mod list, then restart the game. Supported font files in that mod's [b]Fonts/[/b] folder are discovered automatically, including subfolders and active version-specific content folders.
+
+[list]
+  [*]Pack fonts appear as [b](Bundled) Font name (Style)[/b], followed by the providing mod's name in brackets. You can search by font name or the providing mod's name.
+  [*]Use them for Tiny, Small, Medium and World fonts, or add them to any target's fallback list with [b]+[/b].
+  [*]No OS font installation or manual search path is needed. Font-only packs do not require their own DLL.
+  [*]Supported formats: TTF, OTF and TTC. TTC collections use their first face.
+  [*]After changing pack font files during development, click [b]Refresh font list / apply search options[/b]. Restart after changing active mods or their order.
+[/list]
+
+[url=https://github.com/zcube/rw-customfonts/tree/main/Examples/ABeeZeeFontPack]Get the ABeeZee font-only example[/url] or follow the [url=https://github.com/zcube/rw-customfonts/blob/main/Examples/ABeeZeeFontPack/GUIDE.txt]installation and font-pack creation guide[/url]. The example includes unmodified ABeeZee Regular and Italic under SIL OFL 1.1, with their copyright notice and full license. ABeeZee is a Latin-script example; choose a font with the required coverage for Hangul or other scripts.
 
 [h2]Fallback Fonts[/h2]
 
@@ -52,7 +67,7 @@ Keep your preferred font while using other fonts for characters it does not cont
   [*]Sarasa UI K Regular v1.0.42
 [/list]
 
-Only the fonts listed above are bundled. Additional fonts are not included; use fonts available on your system or supply your own font files.
+The base mod includes the two fonts listed above. Add more through separate font expansion mods, fonts installed on your system, or your own font files. Fonts supplied by expansion mods retain their own licenses and notices.
 
 [h2]Credits and License[/h2]
 
