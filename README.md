@@ -116,6 +116,73 @@ diagnostics: Unity keeps resource diagnostics; Waylith
 reports registration reuse. The source settings retain their existing `Waylith*` XML keys
 for compatibility, and both engines read/write them, preserving paths when switching versions.
 
+## Font expansion mods (1.4–1.7)
+
+Activate a separate font pack **after Custom Fonts - Forked** in the mod list.
+Its `Fonts/` directory is discovered automatically, without a DLL or a manually
+configured search path. Fonts appear as `(Bundled) Face (Style) [Mod name]` in the
+UI, world and fallback lists. Search also matches the providing mod's name.
+They use the same lazy loading and resource lifecycle as the built-in bundles.
+
+A minimal pack looks like this (replace the example identifiers and names):
+
+```text
+MyFontPack/
+  About/About.xml
+  Fonts/MyFont-Regular.ttf
+  Fonts/LICENSE.txt
+```
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>My Font Pack</name>
+  <author>Your name</author>
+  <packageId>yourname.myfontpack</packageId>
+  <supportedVersions>
+    <li>1.4</li><li>1.5</li><li>1.6</li><li>1.7</li>
+  </supportedVersions>
+  <modDependencies>
+    <li>
+      <packageId>zcubekr.customfonts</packageId>
+      <displayName>Custom Fonts - Forked</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/3231727915</steamWorkshopUrl>
+      <downloadUrl>https://github.com/ZCube/rw-customfonts</downloadUrl>
+    </li>
+  </modDependencies>
+  <loadAfter><li>zcubekr.customfonts</li></loadAfter>
+  <description>Additional fonts for Custom Fonts.</description>
+</ModMetaData>
+```
+
+See [`Examples/ABeeZeeFontPack`](Examples/ABeeZeeFontPack) for a working font-only pack
+and its [installation and authoring guide](Examples/ABeeZeeFontPack/GUIDE.txt). It includes
+unmodified ABeeZee Regular/Italic, their SIL OFL 1.1 license, and pinned upstream hashes. Supply font files that permit
+redistribution, together with their required license and copyright notices.
+
+* `.ttf`, `.otf` and `.ttc` files are scanned recursively, independently of the
+  user's OS-font and folder-recursion settings. TTC uses the first face.
+* RimWorld's active content roots, including version folders and `LoadFolders.xml`,
+  are respected. Higher-priority roots shadow the same relative font path.
+* Family **and style** come from OpenType metadata. Duplicate faces within one
+  pack use the first entry in content-root priority, then sorted path order.
+  Different packs remain separate even when they provide the same face.
+* Saved selections use the pack's packageId and font face, so renaming the pack
+  or moving its installation preserves selections. Keep packageId and face names stable.
+  Existing built-in bundle selections keep their current keys.
+* Disabled packs and packs before Custom Fonts are excluded. Restart after changing
+  active mods. Use **Refresh font list / apply search options** after changing pack
+  font files during development. Invalid files are logged and skipped individually.
+
+`task test` validates the real example's metadata, upstream hashes, notices, style
+catalog and Unity import bytes. With Harmony and the matching Custom Fonts build
+installed, `task test_font_pack_game` temporarily registers the example in isolated
+profiles and checks actual UI/world glyph rendering, pack fallbacks, refresh, restart,
+wrong order and disabled-pack behavior. It requires Python 3 and a graphical desktop.
+Set `VERSION` and `STEAM_APPS` for another installation; on macOS Unity, `MAC_ARCH=x86_64`
+can select installed Rosetta when native Harmony patching is unavailable.
+See [recorded results and limits](Docs/FontPackVerification.txt).
+
 ## Font sources (1.4–1.7)
 
 The etc tab contains shared source discovery and developer diagnostics controls across 1.4–1.7.

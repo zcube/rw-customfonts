@@ -16,3 +16,6 @@
 *.[wW][oO][fF][fF]2 filter=lfs diff=lfs merge=lfs -text
 *.[eE][oO][tT] filter=lfs diff=lfs merge=lfs -text
 *.bin binary
+
+# Preserve the vendored upstream license bytes (including its original whitespace).
+Examples/ABeeZeeFontPack/Fonts/OFL.txt -text -whitespace

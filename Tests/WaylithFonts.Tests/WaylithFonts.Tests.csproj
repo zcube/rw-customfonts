@@ -17,6 +17,7 @@
     <Compile Include="../../Source/CustomFonts/Shared/FontFallbackLists.cs" Link="FontFallbackLists.cs" />
     <Compile Include="../../Source/CustomFonts/Shared/FontMetadataCache.cs" Link="FontMetadataCache.cs" />
     <Compile Include="../../Source/CustomFonts/Shared/BundledFontCatalog.cs" />
+    <Compile Include="../../Source/CustomFonts/Shared/FontPackCatalog.cs" />
     <EmbeddedResource Include="../../Source/CustomFonts/Shared/BundledFonts.tsv" LogicalName="CustomFonts.BundledFonts.tsv" />
     <Compile Include="../../Source/CustomFonts/Engines/Unity/UnityFontBundle.cs" Link="UnityFontBundle.cs" />
     <EmbeddedResource Include="../../Source/CustomFonts/Engines/Unity/FontTemplate.bin" LogicalName="CustomFonts.FontTemplate.bin" />

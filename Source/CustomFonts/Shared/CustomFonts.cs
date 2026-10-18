@@ -317,14 +317,14 @@ namespace CustomFonts
             var fontNameCount = 0;
             foreach (var name in BundledFonts.Keys)
             {
-                if (name.ToLower().Contains(searchText.ToLower()))
+                if (DisplayFontName(name).ToLower().Contains(searchText.ToLower()))
                 {
                     bundledFontsCount++;
                 }
             }
             foreach (var name in _fontNames)
             {
-                if (name.ToLower().Contains(searchText.ToLower()))
+                if (DisplayFontName(name).ToLower().Contains(searchText.ToLower()))
                 {
                     fontNameCount++;
                 }
@@ -352,7 +352,7 @@ namespace CustomFonts
             listingStandard.GapLine();
             foreach (var name in BundledFonts.Keys.OrderBy(x => x))
             {
-                if (name.ToLower().Contains(searchText.ToLower()))
+                if (DisplayFontName(name).ToLower().Contains(searchText.ToLower()))
                 {
                     if (DrawFontChoice(listingStandard, (FontTarget)fontIndex, name, _settings.GetCurrentUIFontName(fontIndex) == name))
                     {
@@ -366,7 +366,7 @@ namespace CustomFonts
             listingStandard.GapLine();
             foreach (var name in _fontNames)
             {
-                if (name.ToLower().Contains(searchText.ToLower()))
+                if (DisplayFontName(name).ToLower().Contains(searchText.ToLower()))
                 {
                     if (DrawFontChoice(listingStandard, (FontTarget)fontIndex, name, _settings.GetCurrentUIFontName(fontIndex) == name))
                     {
@@ -389,14 +389,14 @@ namespace CustomFonts
             var osFontPathsCount = 0;
             foreach (var name in BundledFonts.Keys)
             {
-                if (name.ToLower().Contains(searchText.ToLower()))
+                if (DisplayFontName(name).ToLower().Contains(searchText.ToLower()))
                 {
                     bundledFontsCount++;
                 }
             }
             foreach (var name in OSFontPaths.Keys)
             {
-                if (name.ToLower().Contains(searchText.ToLower()))
+                if (DisplayFontName(name).ToLower().Contains(searchText.ToLower()))
                 {
                     osFontPathsCount++;
                 }
@@ -419,7 +419,7 @@ namespace CustomFonts
             listingStandard.GapLine();
             foreach (var name in BundledFonts.Keys.OrderBy(x => x))
             {
-                if (name.ToLower().Contains(searchText.ToLower()))
+                if (DisplayFontName(name).ToLower().Contains(searchText.ToLower()))
                 {
                     if (DrawFontChoice(listingStandard, FontTarget.World, name, _settings.CurrentWorldFontName == name))
                         SaveWorldFont(name);
@@ -428,7 +428,7 @@ namespace CustomFonts
             listingStandard.GapLine();
             foreach (var name in OSFontPaths.Keys.OrderBy(x => x))
             {
-                if (name.ToLower().Contains(searchText.ToLower()))
+                if (DisplayFontName(name).ToLower().Contains(searchText.ToLower()))
                 {
                     if (DrawFontChoice(listingStandard, FontTarget.World, name, _settings.CurrentWorldFontName == name))
                         SaveWorldFont(name);

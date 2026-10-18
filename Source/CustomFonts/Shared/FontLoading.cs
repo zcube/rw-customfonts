@@ -44,14 +44,24 @@ namespace CustomFonts
             _hasBundledFonts = true;
             try
             {
-                var catalog = BundledFontCatalog.Read(Path.Combine(_content.RootDir, "Fonts"));
+                // Only packs after this mod participate; content discovery happens after mod loading.
+                var packs = LoadedModManager.RunningModsListForReading
+                    .SkipWhile(mod => mod != _content).Skip(1)
+                    .Select(mod => new FontPackSource
+                    {
+                        PackageId = mod.PackageId, Name = mod.Name,
+                        ContentRoots = mod.foldersToLoadDescendingOrder
+                    });
+                var catalog = BundledFontCatalog.Read(Path.Combine(_content.RootDir, "Fonts"))
+                    .Concat(FontPackCatalog.Read(packs, MetadataCache.ReadName, SourceError));
                 foreach (var data in catalog)
                 {
-                    string name = "(Bundled) " + data.FaceName;
+                    string name = data.SelectionKey ?? "(Bundled) " + data.FaceName;
                     if (BundledFonts.ContainsKey(name)) continue;
                     _bundledFontSources.Add(name, data);
                     BundledFonts.Add(name, null);
                 }
+                MetadataCache.Save();
                 Log.Message($"[Custom Fonts] Cataloged {BundledFonts.Count} bundled fonts without retaining source data");
                 LogFontTiming("bundled file catalog", timer, $"{BundledFonts.Count} choices; metadata only");
             }
@@ -65,7 +75,7 @@ namespace CustomFonts
             string key = name + "|" + FontFallbackLists.PolicyKey(fallbacks) + FontSizeKey(pixels > 0 ? pixels : data.Size);
             if (_bundledFontVariants.TryGetValue(key, out Font existing) && existing != null) return existing;
             var timer = Stopwatch.StartNew();
-            byte[] bytes = FontFiles.Read(data.Path);
+            byte[] bytes = FontCollections.FirstFace(FontFiles.Read(data.Path));
             LogFontTiming("bundled file read", timer, name);
             timer.Restart();
             Font font = CreateBundledFont(bytes, data, fallbacks, pixels);

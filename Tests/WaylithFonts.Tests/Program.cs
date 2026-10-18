@@ -141,6 +141,39 @@ string root = Path.Combine(Path.GetTempPath(), "CustomFonts-tests-" + Guid.NewGu
 Directory.CreateDirectory(Path.Combine(root, "한글 Fonts", "nested"));
 try
 {
+    string packRoot = Path.Combine(root, "pack");
+    string versionRoot = Path.Combine(packRoot, "1.7");
+    Directory.CreateDirectory(Path.Combine(packRoot, "Fonts", "nested"));
+    Directory.CreateDirectory(Path.Combine(versionRoot, "Fonts"));
+    string baseFace = Path.Combine(packRoot, "Fonts", "face.ttf");
+    string versionFace = Path.Combine(versionRoot, "Fonts", "face.ttf");
+    File.WriteAllBytes(baseFace, Font());
+    File.WriteAllBytes(versionFace, Font());
+    File.WriteAllBytes(Path.Combine(packRoot, "Fonts", "nested", "extra.TTC"), Font(true));
+    File.WriteAllText(Path.Combine(packRoot, "Fonts", "broken.otf"), "invalid");
+    File.WriteAllText(Path.Combine(packRoot, "Fonts", "LICENSE.txt"), "license");
+    var packErrors = new List<string>();
+    var packReads = new List<string>();
+    var pack = new FontPackSource { PackageId = "Author.Pack", Name = "한글 폰트 팩", ContentRoots = new[] { versionRoot, packRoot } };
+    var packFonts = FontPackCatalog.Read(new[] { pack }, file =>
+    {
+        packReads.Add(file);
+        return FontFiles.ReadName(file);
+    }, (file, _) => packErrors.Add(file)).ToArray();
+    Check(packFonts.Length == 1 && packFonts[0].Path == versionFace, "pack uses highest-priority content root and deduplicates same face");
+    Check(!packReads.Contains(baseFace) && packReads.Any(f => f.EndsWith("extra.TTC")), "pack shadows relative files and recursively scans collection files");
+    Check(packErrors.Count == 1 && packErrors[0].EndsWith("broken.otf"), "invalid pack font does not hide valid siblings or parse license files");
+    Check(packFonts[0].SelectionKey == "(Bundled) [author.pack] 테스트 Font (Regular)"
+        && packFonts[0].SourceModName == "한글 폰트 팩", "stable package identity is separate from displayed mod name");
+    Check(packFonts[0].Size == 16 && packFonts[0].RenderingMode == 0, "pack uses bundled import defaults");
+    var otherPack = new FontPackSource { PackageId = "Author.Other", Name = pack.Name, ContentRoots = new[] { versionRoot } };
+    var isolated = FontPackCatalog.Read(new[] { pack, otherPack }, FontFiles.ReadName, (_, _) => { }).ToArray();
+    Check(isolated.Length == 2 && isolated[0].SelectionKey != isolated[1].SelectionKey, "same face and display name from different mods remain separately selectable");
+    pack.Name = "Renamed Pack";
+    Check(FontPackCatalog.Read(new[] { pack }, FontFiles.ReadName, (_, _) => { }).Single().SelectionKey == packFonts[0].SelectionKey,
+        "renaming mod does not change saved font selection");
+    Check(!FontPackCatalog.Read(new[] { new FontPackSource { PackageId = "empty", ContentRoots = new[] { root } } },
+        FontFiles.ReadName, (_, _) => throw new Exception("missing optional Fonts folder")).Any(), "mods without Fonts are ignored");
     string folder = Path.Combine(root, "한글 Fonts");
     string path = Path.Combine(folder, "custom font.TTF");
     File.WriteAllBytes(path, Font());
@@ -379,7 +412,11 @@ Check(Roots(FontPlatform.Windows).SequenceEqual(new[] { "C:/Windows/Fonts", "C:/
 Check(Roots(FontPlatform.MacOS).SequenceEqual(new[] { "/System/Library/Fonts", "/Library/Fonts", "/home/사용자/Library/Fonts" }), "shared macOS system and per-user roots");
 Check(Roots(FontPlatform.Linux).SequenceEqual(new[] { "/usr/share/fonts", "/usr/local/share/fonts", "/home/사용자/.fonts", "/home/사용자/.local/share/fonts", "/run/host/fonts", "/run/host/user-fonts", "/home/한글/custom data/fonts", "/opt/shared/fonts", "/srv/fonts-data/fonts" }), "shared Linux user, system, host and XDG roots");
 Check(!SystemFontRoots.Get(FontPlatform.Windows, "", "", "", _ => null).Any(), "missing Windows special folders cannot introduce relative scan roots");
-if (args.Length > 0) FontDistributionValidation.Validate(args[0], Check);
+if (args.Length > 0)
+{
+    FontDistributionValidation.Validate(args[0], Check);
+    FontPackExampleValidation.Run(Path.Combine(Path.GetFullPath(args[0]), "..", "Examples", "ABeeZeeFontPack"), Check);
+}
 Console.WriteLine($"PASS: {assertions} font metadata, CJK coverage, Unicode and path assertions");
 
 sealed class CountingStream : MemoryStream

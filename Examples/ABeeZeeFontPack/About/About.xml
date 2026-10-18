@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>Custom Fonts - ABeeZee Example</name>
+  <author>zcubekr / ABeeZee Project Authors</author>
+  <packageId>zcubekr.customfonts.example.abeezee</packageId>
+  <supportedVersions>
+    <li>1.4</li><li>1.5</li><li>1.6</li><li>1.7</li>
+  </supportedVersions>
+  <modDependencies>
+    <li>
+      <packageId>zcubekr.customfonts</packageId>
+      <displayName>Custom Fonts - Forked</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/3231727915</steamWorkshopUrl>
+      <downloadUrl>https://github.com/ZCube/rw-customfonts</downloadUrl>
+    </li>
+  </modDependencies>
+  <loadAfter><li>zcubekr.customfonts</li></loadAfter>
+  <description>Font-only example pack for Custom Fonts. Includes unmodified ABeeZee Regular and Italic under SIL OFL 1.1. Activate after Custom Fonts - Forked. Fonts do not cover Hangul.</description>
+</ModMetaData>

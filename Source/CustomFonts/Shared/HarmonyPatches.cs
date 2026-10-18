@@ -58,6 +58,7 @@ namespace CustomFonts
                 mod.EnsureUniformFonts();
                 mod.RecalcTextMetricsIfNeeded();
                 mod.TickFontSizeVerification();
+                mod.TickFontPackVerification();
                 mod.TickFontStressTest();
                 mod.TickWorldFontTest();
                 mod.ProcessPendingDestroy();

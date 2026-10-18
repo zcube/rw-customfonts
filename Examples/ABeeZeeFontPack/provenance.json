@@ -1,0 +1,25 @@
+{
+  "repository": "https://github.com/google/fonts",
+  "commit": "47d54ca1ebb14fd864695f1d39dc734f39017c33",
+  "license": "SIL Open Font License 1.1",
+  "files": [
+    {
+      "file": "Fonts/ABeeZee-Regular.ttf",
+      "bytes": 46016,
+      "sha256": "2901c8df256648cc2bb2e3afb381cb8d28e65ed3dbe11de20695ae4d5ffdeda9",
+      "url": "https://raw.githubusercontent.com/google/fonts/47d54ca1ebb14fd864695f1d39dc734f39017c33/ofl/abeezee/ABeeZee-Regular.ttf"
+    },
+    {
+      "file": "Fonts/ABeeZee-Italic.ttf",
+      "bytes": 47012,
+      "sha256": "3892bb74578207ed6edae040a0869e54dcae13a466d005460570947062137dd8",
+      "url": "https://raw.githubusercontent.com/google/fonts/47d54ca1ebb14fd864695f1d39dc734f39017c33/ofl/abeezee/ABeeZee-Italic.ttf"
+    },
+    {
+      "file": "Fonts/OFL.txt",
+      "bytes": 4516,
+      "sha256": "f0376d04eb58fb19e9f1690a99a1eb37380ad0246f7d503f2abd8e8a74ed12be",
+      "url": "https://raw.githubusercontent.com/google/fonts/47d54ca1ebb14fd864695f1d39dc734f39017c33/ofl/abeezee/OFL.txt"
+    }
+  ]
+}

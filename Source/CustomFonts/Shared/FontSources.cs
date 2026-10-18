@@ -16,7 +16,12 @@ namespace CustomFonts
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             Environment.GetFolderPath(Environment.SpecialFolder.Windows),
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Environment.GetEnvironmentVariable).ToArray());
-        private static string DisplayFontName(string name) => FontSourceCatalog.DisplayName(name);
+        private string DisplayFontName(string name)
+        {
+            if (name != null && _bundledFontSources.TryGetValue(name, out var data) && data.SourceModName != null)
+                return "(Bundled) " + data.FaceName + " [" + data.SourceModName + "]";
+            return FontSourceCatalog.DisplayName(name);
+        }
         private string CanonicalFontSelection(string selection)
         {
             if (selection == FontSettings.DefaultFontName || selection.StartsWith("(Bundled) ", StringComparison.Ordinal)) return selection;
@@ -67,6 +72,11 @@ namespace CustomFonts
             _hasOSFontAssets = false;
             _systemFontSearchRoots = null;
             OSFontPaths.Clear();
+            _hasBundledFonts = false;
+            foreach (Font font in _bundledFontVariants.Values.Distinct()) QueueDestroy(font);
+            _bundledFontVariants.Clear();
+            _bundledFontSources.Clear();
+            BundledFonts.Clear();
             ReleaseWorldFontAsset();
             foreach (Font font in _osFontCache.Values.Distinct()) QueueDestroy(font);
             _osFontCache.Clear();
@@ -74,6 +84,7 @@ namespace CustomFonts
             _fileFontCache.Invalidate();
             _fallbackConfiguration = null;
             SetupOSInstalledFontNames();
+            SetupBundledFonts();
             UpdateFont();
             RefreshWorldFeatureTexts();
             WriteSettings();

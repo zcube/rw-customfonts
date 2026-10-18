@@ -102,6 +102,14 @@ tasks:
     cmds:
       - '"{{.DOTNET}}" run --project Tests/WaylithFonts.Tests/WaylithFonts.Tests.csproj -- Fonts'
 
+  test_font_pack_game:
+    desc: test the font-only example in a real isolated game (requires a desktop, Harmony and installed Custom Fonts)
+    vars:
+      VERSION: '{{default "1.7" .VERSION}}'
+      MAC_ARCH: '{{default "native" .MAC_ARCH}}'
+    cmds:
+      - 'python3 Tests/run_font_pack_integration.py --game-root "{{.STEAM_APPS}}/common/RimWorld" --version "{{.VERSION}}" --mac-arch "{{.MAC_ARCH}}"'
+
   benchmark:
     desc: measure loose-font startup reads and OS name caching on this machine
     cmds:

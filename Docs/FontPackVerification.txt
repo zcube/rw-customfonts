@@ -1,0 +1,84 @@
+Font-only expansion example verification (2026-10-18)
+===================================================
+
+Example: Examples/ABeeZeeFontPack
+Package: zcubekr.customfonts.example.abeezee
+Payloads: unmodified ABeeZee Regular and Italic; SIL OFL 1.1.
+Original copyright, full OFL and pinned upstream hashes ship with the example.
+
+Build and non-game tests
+-----------------------
+PASS: task build, all four release configurations (1.4, 1.5, 1.6, 1.7).
+1.4 retains three existing obsolete Widgets.HorizontalSlider warnings.
+PASS: task test, 177 assertions, including the actual example payloads.
+The example checks dependency/loadAfter XML, no assemblies, supported versions,
+fixed upstream revision/hashes/notice text, two style registrations, Unity primary/
+fallback import bytes and file content cache reuse. Synthetic cases also check
+content-root priority, recursive TTC discovery, corrupt siblings, duplicate faces,
+package separation and stable selections after a display-name change.
+
+Live-game tests
+---------------
+Host: Apple M4 Max, macOS 27.0. The game profiles are disposable savedatafolder
+overrides; ordinary mod settings and saves were not changed.
+Each runner temporarily installed and registered the example in the actual Mods
+directory, then removed that temporary example installation.
+
+Waylith: RimWorld 1.7.4981 rev136, native Apple Silicon.
+Harmony Mod 3.0.1.0 / Harmony library 3.0.0.0-rc.3.
+Evidence folder on the verification machine:
+  /tmp/customfonts-pack-verified-1.7
+
+Unity: RimWorld 1.6.4498 rev165, x86_64 through installed Rosetta.
+The archived Unity/Harmony setup throws NotImplementedException while patching
+under native ARM; the integration runner supports --mac-arch x86_64 (Task:
+MAC_ARCH=x86_64) to run this setup successfully without changing mod code.
+Evidence folder on the verification machine:
+  /tmp/customfonts-pack-verified-1.6-rosetta
+
+Runtime assertions
+------------------
+- Actual LoadedModManager order, two package-scoped bundle keys, both styles.
+- Font-only packs count as loaded content without dummy Defs or a DLL.
+- Display label includes the actual pack name.
+- Unselected styles stay unloaded; manual/OS discovery and folder recursion can
+  all be disabled without hiding the pack.
+- Native UI glyph rasterization in Tiny/Small/Medium for Regular and Italic.
+- TMP glyph quads and the selected font binding on visible live world labels.
+- All four target fallback lists resolve the actual example font bytes.
+- Refresh retains choices and a consistent catalog; restart retains primary and
+  fallback settings and renders the same example fonts.
+- An active pack before Custom Fonts and a disabled pack register no pack fonts.
+
+Limitations
+-----------
+Live 1.4/1.5, Windows and Linux were not run here; those are not claimed as
+live-game passes. 1.4/1.5 compile successfully and use the same Unity adapter.
+ABeeZee is a Latin font, not a Hangul/CJK coverage test. The fallback checks
+verify source bytes, renderer setup and rendering, not every missing-codepoint
+fallback choice. GUI integration requires a desktop and installed game/Harmony.
+Wrong-order negative runs can produce the expected empty-content diagnostic:
+these packs are deliberately outside the supported load order.
+Large raw engine logs and test profiles stay outside Git; pass markers are
+recorded below. Rerun with a fresh --output directory to obtain new raw evidence.
+
+Built DLL SHA-256
+----------------
+1.4 3748d95c17c8228044bce7574de95c4bbcce3032712a12a5830c7a6cc88ab6a3
+1.5 a145203e2169e6581a90fbfe14e855ac1765392c02dfc73dacf7ae4cb07bba0a
+1.6 3baac130e23e83384a79ce8abbb295598c4dd5c6b3739132c53a47003594d204
+1.7 5a3a6ef881f5757e68837f2ace499b53fce3a7c967361f72030fa93e93ac57fd
+
+1.7 recorded pass markers
+---------------------------
+active: [Custom Fonts][pack-verify] PASS: actual mod order, lazy style discovery, mod-name labels, Regular/Italic UI/world rasterization, pack fallbacks and refresh; restart profile saved
+restart: [Custom Fonts][pack-verify] PASS: restart retains package keys, mod labels, primary/fallback settings and rendered UI/world glyphs
+before: [Custom Fonts][pack-verify] PASS: before pack excluded by actual mod registration
+disabled: [Custom Fonts][pack-verify] PASS: disabled pack excluded by actual mod registration
+
+1.6 recorded pass markers
+---------------------------
+active: [Custom Fonts][pack-verify] PASS: actual mod order, lazy style discovery, mod-name labels, Regular/Italic UI/world rasterization, pack fallbacks and refresh; restart profile saved
+restart: [Custom Fonts][pack-verify] PASS: restart retains package keys, mod labels, primary/fallback settings and rendered UI/world glyphs
+before: [Custom Fonts][pack-verify] PASS: before pack excluded by actual mod registration
+disabled: [Custom Fonts][pack-verify] PASS: disabled pack excluded by actual mod registration

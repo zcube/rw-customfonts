@@ -8,6 +8,7 @@ namespace CustomFonts
     internal sealed class BundledFontData
     {
         internal string Name, FaceName, Path, Sha256;
+        internal string SelectionKey, SourceModName;
         internal float Size;
         internal int RenderingMode, Length;
     }
