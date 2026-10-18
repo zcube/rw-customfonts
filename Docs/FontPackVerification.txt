@@ -30,11 +30,24 @@ Evidence folder on the verification machine:
   /tmp/customfonts-pack-verified-1.7
 
 Unity: RimWorld 1.6.4498 rev165, x86_64 through installed Rosetta.
-The archived Unity/Harmony setup throws NotImplementedException while patching
-under native ARM; the integration runner supports --mac-arch x86_64 (Task:
-MAC_ARCH=x86_64) to run this setup successfully without changing mod code.
+This archived test used Harmony library 2.3.6 from packages/HarmonyMod/Current
+(the package metadata reports mod version 2.3.4). That old library throws NotImplementedException while patching under native ARM. This is
+not a current Harmony limitation: Harmony 2.4 added Apple Silicon ARM64 support
+on 2025-08-17 (https://github.com/pardeike/Harmony/releases/tag/v2.4.0.0).
+--mac-arch x86_64 (Task: MAC_ARCH=x86_64) remains available for legacy testing.
+The earlier result must not be read as evidence against native support in 2.4+.
 Evidence folder on the verification machine:
   /tmp/customfonts-pack-verified-1.6-rosetta
+
+Native ARM64 recheck (same day): RimWorld 1.6.4498 rev165, Harmony 2.4.3.
+The runner used the default --mac-arch native and launched the universal Unity
+executable directly on Apple Silicon, without arch -x86_64 or Rosetta.
+PASS: active, restart, before and disabled scenarios, including real UI/world
+rasterization and primary/fallback settings. Active and restart logs contain
+neither a mod-instantiation error nor an empty-content error.
+Harmony 2.4.3 DLL SHA-256: 8ac54fdf0fab257148d68bc744d67609b74554ee72a4f3452e32030eaad009c6
+Evidence: /tmp/customfonts-pack-verified-1.6-arm64-harmony243
+Harmony 2.4.3 release: https://github.com/pardeike/Harmony/releases/tag/v2.4.3
 
 Runtime assertions
 ------------------
@@ -78,6 +91,13 @@ disabled: [Custom Fonts][pack-verify] PASS: disabled pack excluded by actual mod
 
 1.6 recorded pass markers
 ---------------------------
+active: [Custom Fonts][pack-verify] PASS: actual mod order, lazy style discovery, mod-name labels, Regular/Italic UI/world rasterization, pack fallbacks and refresh; restart profile saved
+restart: [Custom Fonts][pack-verify] PASS: restart retains package keys, mod labels, primary/fallback settings and rendered UI/world glyphs
+before: [Custom Fonts][pack-verify] PASS: before pack excluded by actual mod registration
+disabled: [Custom Fonts][pack-verify] PASS: disabled pack excluded by actual mod registration
+
+1.6 native ARM64 / Harmony 2.4.3 recorded pass markers
+-----------------------------------------------------
 active: [Custom Fonts][pack-verify] PASS: actual mod order, lazy style discovery, mod-name labels, Regular/Italic UI/world rasterization, pack fallbacks and refresh; restart profile saved
 restart: [Custom Fonts][pack-verify] PASS: restart retains package keys, mod labels, primary/fallback settings and rendered UI/world glyphs
 before: [Custom Fonts][pack-verify] PASS: before pack excluded by actual mod registration

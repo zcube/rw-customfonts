@@ -179,8 +179,9 @@ catalog and Unity import bytes. With Harmony and the matching Custom Fonts build
 installed, `task test_font_pack_game` temporarily registers the example in isolated
 profiles and checks actual UI/world glyph rendering, pack fallbacks, refresh, restart,
 wrong order and disabled-pack behavior. It requires Python 3 and a graphical desktop.
-Set `VERSION` and `STEAM_APPS` for another installation; on macOS Unity, `MAC_ARCH=x86_64`
-can select installed Rosetta when native Harmony patching is unavailable.
+Set `VERSION` and `STEAM_APPS` for another installation. Harmony 2.4 and newer support
+Apple Silicon natively; use an up-to-date Harmony for macOS Unity. `MAC_ARCH=x86_64`
+selects installed Rosetta only when deliberately testing a legacy Harmony setup.
 See [recorded results and limits](Docs/FontPackVerification.txt).
 
 ## Font sources (1.4–1.7)
