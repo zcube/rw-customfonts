@@ -21,6 +21,16 @@ namespace CustomFonts
         // StartOfOnGUI runs for every GUI event, so the mod lookup is resolved only once.
         private static CustomFonts Mod => _mod ?? (_mod = LoadedModManager.GetMod<CustomFonts>());
 
+        [HarmonyPatch(typeof(Dialog_ModSettings), nameof(Dialog_ModSettings.PreClose))]
+        class ModSettingsClosePatcher
+        {
+            [HarmonyPostfix]
+            private static void Postfix(Mod ___mod)
+            {
+                if (___mod is CustomFonts fonts) fonts.ReleaseFontPreviewMemory();
+            }
+        }
+
         [HarmonyPatch(typeof(Text), nameof(Text.StartOfOnGUI))]
         class StartOfOnGUIPatcher
         {
@@ -68,6 +78,7 @@ namespace CustomFonts
                 mod.TickScopedFallbackVerification();
                 mod.TickFontMemoryVerification();
                 mod.TickFontVisualVerification();
+                mod.TickFontPreviewVerification();
             }
         }
 

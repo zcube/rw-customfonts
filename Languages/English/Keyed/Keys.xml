@@ -56,4 +56,12 @@
     <CustomFonts.FallbackEmpty>No defined fallback fonts</CustomFonts.FallbackEmpty>
     <CustomFonts.UnionFallbacks>Merge another tab (union)</CustomFonts.UnionFallbacks>
     <CustomFonts.AllTabs>All tabs</CustomFonts.AllTabs>
+  <CustomFonts.PreviewProgress>Creating font previews: {0} / {1}</CustomFonts.PreviewProgress>
+  <CustomFonts.ShowFontNamePreviews>Preview font names in their own font</CustomFonts.ShowFontNamePreviews>
+  <CustomFonts.ShowFontNamePreviewsHelp>Render visible names at a fixed size and reuse their disk cache. Memory previews are released when this window closes. Default: off.</CustomFonts.ShowFontNamePreviewsHelp>
+  <CustomFonts.PreviewSize>Font name preview size: {0}px</CustomFonts.PreviewSize>
+  <CustomFonts.PreviewSizeHelp>Applying a different size deletes all font preview caches.</CustomFonts.PreviewSizeHelp>
+  <CustomFonts.Favorites>Favorites</CustomFonts.Favorites>
+  <CustomFonts.AddFavorite>Add to favorites</CustomFonts.AddFavorite>
+  <CustomFonts.RemoveFavorite>Remove from favorites</CustomFonts.RemoveFavorite>
 </LanguageData>

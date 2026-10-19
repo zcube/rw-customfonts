@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CustomFonts
 {
-    // Use the same stable names for both engines; TTC files use their first face.
+    // Keep stable loading names separate from localized UI names; TTC uses its first face.
     internal static class OpenTypeNames
     {
         // Mac Roman's upper half. Decode without a platform-specific code-page provider,
@@ -19,6 +19,14 @@ namespace CustomFonts
         // Read only the SFNT directory and name table. origin also allows a font embedded
         // in a bundle to be inspected without allocating its complete m_FontData array.
         internal static string Read(Stream stream, long origin, long fontLength)
+            => Read(stream, origin, fontLength, -1);
+
+        // Windows language IDs identify localized Unicode records. A requested language
+        // takes precedence over typographic/legacy name IDs only for the UI.
+        internal static string ReadDisplayName(Stream stream, long origin, long fontLength, int language)
+            => Read(stream, origin, fontLength, language);
+
+        private static string Read(Stream stream, long origin, long fontLength, int displayLanguage)
         {
             if (!stream.CanSeek || origin < 0 || fontLength < 0 || origin > stream.Length - fontLength)
                 throw new InvalidDataException("Invalid font stream bounds.");
@@ -57,13 +65,13 @@ namespace CustomFonts
                 int names = U16(table, 2), strings = U16(table, 4);
                 if (6 + names * 12 > length || strings > length)
                     throw new InvalidDataException("Invalid name records.");
-                string family = null, style = null;
-                int familyRank = -1, styleRank = -1;
+                string family = null, style = null, fullName = null;
+                int familyRank = -1, styleRank = -1, fullRank = -1;
                 for (int n = 0; n < names; n++)
                 {
                     int entry = 6 + n * 12;
                     int platform = U16(table, entry), encoding = U16(table, entry + 2), language = U16(table, entry + 4), id = U16(table, entry + 6);
-                    if (id != 1 && id != 2 && id != 16 && id != 17) continue;
+                    if (id != 1 && id != 2 && id != 16 && id != 17 && !(displayLanguage >= 0 && id == 4)) continue;
                     if (platform != 0 && platform != 1 && platform != 3) continue;
                     if (platform == 1 && encoding != 0) continue;
                     if (platform == 3 && encoding != 0 && encoding != 1 && encoding != 10) continue;
@@ -74,10 +82,17 @@ namespace CustomFonts
                     if (value.Length == 0) continue;
                     int rank = (platform == 1 ? 0 : 1000) + (id >= 16 ? 100 : 0) + (language == 0x409 ? 20 : language == 0 ? 10 : 0)
                         + (platform == 3 ? 3 : platform == 0 ? 2 : 1);
+                    if (displayLanguage >= 0 && platform == 3)
+                        rank += language == displayLanguage ? 10000 : language == 0x409 ? 5000 : 0;
+                    if (id == 4 && rank > fullRank) { fullName = value; fullRank = rank; }
                     if ((id == 1 || id == 16) && rank > familyRank) { family = value; familyRank = rank; }
                     if ((id == 2 || id == 17) && rank > styleRank) { style = value; styleRank = rank; }
                 }
                 if (family == null) throw new InvalidDataException("Font has no family name.");
+                // Prefer a full display name in the selected language. If that record
+                // is absent, use its localized family rather than an English full name.
+                if (displayLanguage >= 0) return fullName != null && fullRank >= familyRank - 100
+                    ? fullName : family;
                 return family + " (" + (style ?? "Regular") + ")";
             }
             throw new InvalidDataException("Font has no name table.");

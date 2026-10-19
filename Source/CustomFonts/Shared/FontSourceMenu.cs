@@ -8,6 +8,7 @@ namespace CustomFonts
     {
         private string _newFontSource = "";
         private string _sourceInputError;
+        private float _previewSizeDraft;
         private Vector2 _sourceScroll;
         private float _sourceContentHeight = 500f;
 
@@ -22,6 +23,21 @@ namespace CustomFonts
             // Listing starts a new column when it reaches its bounds. Measure all rows
             // in one tall column; the scroll view supplies the visible clipping bounds.
             list.Begin(new Rect(0, 0, view.width, 1000000f));
+            bool previews = _settings.ShowFontNamePreviews;
+            list.CheckboxLabeled("CustomFonts.ShowFontNamePreviews".Translate(), ref previews,
+                "CustomFonts.ShowFontNamePreviewsHelp".Translate());
+            if (previews != _settings.ShowFontNamePreviews) SetFontNamePreviewsEnabled(previews);
+            if (_previewSizeDraft <= 0) _previewSizeDraft = FontPreviewPixelSize;
+            list.Label("CustomFonts.PreviewSize".Translate((int)_previewSizeDraft));
+            _previewSizeDraft = Widgets.HorizontalSlider(list.GetRect(24f), _previewSizeDraft,
+                FontPreviewImage.MinPixelSize, FontPreviewImage.MaxPixelSize, true, roundTo: 1f);
+            list.Label("CustomFonts.PreviewSizeHelp".Translate());
+            if (list.ButtonText("CustomFonts.Apply".Translate()))
+            {
+                try { SetFontNamePreviewSize((int)Math.Round(_previewSizeDraft)); }
+                catch (Exception ex) { _sourceInputError = ex.Message; }
+            }
+            list.GapLine();
             list.Label("CustomFonts.FontSources".Translate());
             list.Label("CustomFonts.FontSourcesHelp".Translate());
             list.CheckboxLabeled("CustomFonts.IncludeSystemFonts".Translate(), ref _settings.IncludeSystemFonts);

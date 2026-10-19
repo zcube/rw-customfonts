@@ -128,7 +128,7 @@ for compatibility, and both engines read/write them, preserving paths when switc
 
 Activate a separate font pack **after Custom Fonts - Forked** in the mod list.
 Its `Fonts/` directory is discovered automatically, without a DLL or a manually
-configured search path. Fonts appear as `(Bundled) Face (Style) [Mod name]` in the
+configured search path. Fonts appear as `(Bundled) Display name [Mod name]` in the
 UI, world and fallback lists. Search also matches the providing mod's name.
 They use the same lazy loading and resource lifecycle as the built-in bundles.
 The etc tab lists scanned external mods and each mod's selectable font count,
@@ -225,6 +225,51 @@ values are ignored as required by the [XDG Base Directory specification](https:/
 Nonstandard directories can be added manually. File/folder sources include font-file
 symlinks, but do not descend into directory symlinks, preventing recursive link loops.
 
+Font labels follow the language selected in RimWorld, independently of the OS language.
+The font's localized full display name is preferred, then its localized family name;
+English names are used when that language is unavailable. Korean, Japanese, Simplified
+Chinese and Traditional Chinese use their own name records. Display labels are separate
+from the stable OpenType family/style names used for saved selections and loading.
+Search matches both the current localized label and the original family name, ignoring
+case. This also applies to font packs, world fonts and fallback choices.
+
+Use the ☆/★ button beside a font to add or remove a favorite. Favorites are shared
+between UI and world font pickers and appear after Default, before bundled fonts.
+A favorite appears only in that section, with the same search, preview, selection and
+fallback-add controls. Settings store the original selection key, so changing game
+language does not lose favorites. Missing fonts stay saved and return to the favorites
+section when available again.
+
+The **Etc** tab's **Preview font names in their own font** option is off by default.
+When enabled, visible font choices show a cached image of the display name rendered in that font
+at a size set separately in **Etc** (12–40px, default 20px), independently of UI/world
+font scaling. The plain loading label uses the same size. Click **Apply** after
+adjusting the preview-size slider; applying a different size deletes every existing
+preview image, across all languages and renderers, and clears memory previews.
+Only subsequently visible rows are regenerated. Preview work starts only for
+visible rows in the settings window; startup and interface preparation do not bake
+previews. Unseen rows are not loaded. Pending visible previews show a progress bar in a permanently reserved bottom area,
+so progress appearing or completing cannot shift the list.
+Images persist under `Config/CustomFontsCache/Previews` and are reused after restarting.
+Cache identity includes the source file's path/size/modification time, game language,
+display name and renderer version. Language changes and source revisions get a new
+image without changing saved font selections. Textures use a 64-entry LRU (at most
+15 MiB of RGBA pixels at the maximum 40px preview size), with the current viewport pinned to prevent repeated texture
+replacement. Excess visible rows use plain labels. The disk cache stores the entire
+visited font catalog, with no file-count/total-size cap or automatic eviction. Memory
+eviction reloads the saved mask without rerasterizing the font or deleting its file.
+Restarting the game preserves all disk previews. Turning the option off or closing
+the mod settings immediately clears jobs, queues and memory cache references; GPU
+textures are destroyed after the existing two-frame draw safety delay. Reopening
+settings reloads visible images from disk. One temporary font is rasterized per three frames and released after
+use. Sources above 32 MiB or unavailable glyphs retain the plain label. Long names
+stop at whole glyphs at the raster limit and are clipped to the list column without
+scaling; the tooltip contains the full name. Raster placement measures the actual ink
+bounds, including italic overhangs, ascenders and descenders, then anchors them at
+the top left with padding. Tall glyph runs still produce a preview: the bottom is
+clipped to the fixed row height, without scaling or replacing the image with a plain
+label. TextCore uses a bounded scratch buffer before cropping the top of the raster.
+
 System and configured file fonts appear once per OpenType family in the UI, world and
 fallback lists. Selections save the family name, without the font file's path. The
 current search roots resolve that family on each machine, so the same installed or
@@ -292,9 +337,10 @@ fallbacks must release every custom import/registration and its cache aliases. P
 game resources and allocator reserves; font resource counters identify the owned allocations.
 
 Font discovery reads only the OpenType directory and name table, rather than allocating
-each complete file. The bundled-file index holds metadata only; opening/searching its
-list does not load the 48,741,212 bytes of font source data (about 46 MiB). Selecting
-a primary/fallback reads that file only. There is no archive decompression or disk
+each complete file. The bundled-file index holds metadata only. Visible, uncached
+preview labels temporarily rasterize one source at a time and release it; cached
+labels load only their small masks. Selecting a primary/fallback reads that file only.
+There is no archive decompression or disk
 payload cache. Existing obsolete bundle/cache files are never read.
 
 Default startup skips font discovery; file selections scan only their configured sources,
@@ -355,8 +401,9 @@ cached locale lists. Fonts with different ordered fallback contents have differe
 registration identities; matching active policies reuse the same content font.
 World glyphs use that same merged source chain.
 Only explicitly defined fallback source bytes are loaded in addition to the primary;
-opening or searching the candidate list does not load the other bundled fonts. Fallback definitions
-therefore have their own memory cost. The distributed TTF bytes remain unchanged.
+unseen candidate fonts are not loaded. A visible uncached label uses a temporary
+preview face, which is released after rasterization. Fallback definitions therefore
+have their own memory cost. The distributed TTF bytes remain unchanged.
 
 In an isolated Windows profile, add `-customfonts-fallback-verify="<two Hangul font folder>"`
 with `-quicktest` to exercise Arial with private fonts in both priority orders, removal,

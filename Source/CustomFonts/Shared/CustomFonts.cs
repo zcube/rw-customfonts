@@ -120,6 +120,8 @@ namespace CustomFonts
         {
             SetupOSInstalledFontNames();
             SetupBundledFonts();
+            Rect previewFooter = ReserveFontPreviewFooter(ref inRect);
+            if (_settings.ShowFontNamePreviews) EnsureFontPreviews();
 
             tabs[0].label = "CustomFonts.FontTiny".Translate(DisplayFontName(_settings.GetCurrentUIFontName(GameFont.Tiny)));
             tabs[1].label = "CustomFonts.FontSmall".Translate(DisplayFontName(_settings.GetCurrentUIFontName(GameFont.Small)));
@@ -267,6 +269,8 @@ namespace CustomFonts
             listingStandard.End();
 
             base.DoSettingsWindowContents(inRect);
+            DrawFontPreviewProgress(previewFooter);
+            ProcessFontPreviews();
         }
 
         private static readonly GameFont[] PreviewFonts = { GameFont.Tiny, GameFont.Small, GameFont.Medium };
@@ -313,132 +317,17 @@ namespace CustomFonts
 
         public void DrawFontSettings(GameFont fontIndex, Rect inRect)
         {
-            var fontListScrollOuter = new Rect(inRect.x, inRect.y,
-                inRect.width - 10f, inRect.height);
-            float choiceWidth = fontListScrollOuter.width - 24f;
-            float contentHeight = FontChoiceHeight(FontSettings.DefaultFontName, choiceWidth) + 24f;
-            foreach (var name in BundledFonts.Keys)
+            DrawFontPicker((FontTarget)fontIndex, inRect, _settings.GetCurrentUIFontName(fontIndex), name =>
             {
-                if (DisplayFontName(name).ToLower().Contains(searchText.ToLower()))
-                {
-                    contentHeight += FontChoiceHeight(name, choiceWidth);
-                }
-            }
-            foreach (var name in _fontNames)
-            {
-                if (DisplayFontName(name).ToLower().Contains(searchText.ToLower()))
-                {
-                    contentHeight += FontChoiceHeight(name, choiceWidth);
-                }
-            }
-            var fontListScrollInner = new Rect(0, 0, choiceWidth,
-                Math.Max(fontListScrollOuter.height, contentHeight));
-            // Use the same wrapped row heights for drawing and the scrollable bounds.
-            // Clamp after filtering or switching tabs so old scroll offsets cannot show empty space.
-            scrollPosition.x = 0f;
-            scrollPosition.y = Mathf.Clamp(scrollPosition.y, 0f,
-                Math.Max(0f, fontListScrollInner.height - fontListScrollOuter.height));
-            Widgets.BeginScrollView(fontListScrollOuter, ref scrollPosition, fontListScrollInner);
-            var listingStandard = new Listing_Standard();
-            listingStandard.Begin(new Rect(0, 0, choiceWidth, 1000000f));
-            listingStandard.ColumnWidth = choiceWidth;
-
-            if (DrawFontChoice(listingStandard, (FontTarget)fontIndex, FontSettings.DefaultFontName, _settings.GetCurrentUIFontName(fontIndex) == FontSettings.DefaultFontName))
-            {
-                if (_settings.UniformUIfonts)
-                    SaveFontAll(FontSettings.DefaultFontName);
-                else
-                    SaveFont(fontIndex, FontSettings.DefaultFontName);
-            }
-            listingStandard.GapLine();
-            foreach (var name in BundledFonts.Keys.OrderBy(x => x))
-            {
-                if (DisplayFontName(name).ToLower().Contains(searchText.ToLower()))
-                {
-                    if (DrawFontChoice(listingStandard, (FontTarget)fontIndex, name, _settings.GetCurrentUIFontName(fontIndex) == name))
-                    {
-                        if (_settings.UniformUIfonts)
-                            SaveFontAll(name);
-                        else
-                            SaveFont(fontIndex, name);
-                    }
-                }
-            }
-            listingStandard.GapLine();
-            foreach (var name in _fontNames)
-            {
-                if (DisplayFontName(name).ToLower().Contains(searchText.ToLower()))
-                {
-                    if (DrawFontChoice(listingStandard, (FontTarget)fontIndex, name, _settings.GetCurrentUIFontName(fontIndex) == name))
-                    {
-                        if (_settings.UniformUIfonts)
-                            SaveFontAll(name);
-                        else
-                            SaveFont(fontIndex, name);
-                    }
-                }
-            }
-
-            listingStandard.End();
-            Widgets.EndScrollView();
+                if (_settings.UniformUIfonts) SaveFontAll(name);
+                else SaveFont(fontIndex, name);
+            });
         }
 
         public void DrawWorldFontSettings(Rect inRect)
         {
             SetupOSFontPaths();
-            var fontListScrollOuter = new Rect(inRect.x, inRect.y,
-                inRect.width - 10f, inRect.height);
-            float choiceWidth = fontListScrollOuter.width - 24f;
-            float contentHeight = FontChoiceHeight(FontSettings.DefaultFontName, choiceWidth) + 24f;
-            foreach (var name in BundledFonts.Keys)
-            {
-                if (DisplayFontName(name).ToLower().Contains(searchText.ToLower()))
-                {
-                    contentHeight += FontChoiceHeight(name, choiceWidth);
-                }
-            }
-            foreach (var name in OSFontPaths.Keys)
-            {
-                if (DisplayFontName(name).ToLower().Contains(searchText.ToLower()))
-                {
-                    contentHeight += FontChoiceHeight(name, choiceWidth);
-                }
-            }
-            var fontListScrollInner = new Rect(0, 0, choiceWidth,
-                Math.Max(fontListScrollOuter.height, contentHeight));
-            // Use the same wrapped row heights for drawing and the scrollable bounds.
-            // Clamp after filtering or switching tabs so old scroll offsets cannot show empty space.
-            scrollPosition.x = 0f;
-            scrollPosition.y = Mathf.Clamp(scrollPosition.y, 0f,
-                Math.Max(0f, fontListScrollInner.height - fontListScrollOuter.height));
-            Widgets.BeginScrollView(fontListScrollOuter, ref scrollPosition, fontListScrollInner);
-            var listingStandard = new Listing_Standard();
-            listingStandard.Begin(new Rect(0, 0, choiceWidth, 1000000f));
-            listingStandard.ColumnWidth = choiceWidth;
-
-            if (DrawFontChoice(listingStandard, FontTarget.World, FontSettings.DefaultFontName, _settings.CurrentWorldFontName == FontSettings.DefaultFontName))
-                SaveWorldFont(FontSettings.DefaultFontName);
-            listingStandard.GapLine();
-            foreach (var name in BundledFonts.Keys.OrderBy(x => x))
-            {
-                if (DisplayFontName(name).ToLower().Contains(searchText.ToLower()))
-                {
-                    if (DrawFontChoice(listingStandard, FontTarget.World, name, _settings.CurrentWorldFontName == name))
-                        SaveWorldFont(name);
-                }
-            }
-            listingStandard.GapLine();
-            foreach (var name in OSFontPaths.Keys.OrderBy(x => x))
-            {
-                if (DisplayFontName(name).ToLower().Contains(searchText.ToLower()))
-                {
-                    if (DrawFontChoice(listingStandard, FontTarget.World, name, _settings.CurrentWorldFontName == name))
-                        SaveWorldFont(name);
-                }
-            }
-
-            listingStandard.End();
-            Widgets.EndScrollView();
+            DrawFontPicker(FontTarget.World, inRect, _settings.CurrentWorldFontName, SaveWorldFont);
         }
 
         public void DrawPropertySettings(int toolbarInt, Rect inRect)

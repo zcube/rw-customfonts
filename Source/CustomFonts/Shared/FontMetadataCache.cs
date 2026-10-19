@@ -10,6 +10,7 @@ namespace CustomFonts
     {
         private sealed class Entry { internal long Length, Modified; internal string Name; }
         private readonly Dictionary<string, Entry> _names = new Dictionary<string, Entry>(FontSourceCatalog.PathComparer);
+        private readonly Dictionary<string, string> _displayNames = new Dictionary<string, string>();
         private readonly string _root;
         private bool _dirty;
         internal int Hits, Misses;
@@ -36,6 +37,18 @@ namespace CustomFonts
             catch { _names.Clear(); }
         }
 
+        internal void ClearDisplayNames() => _displayNames.Clear();
+
+        internal string ReadDisplayName(string path, int language, string fallback)
+        {
+            string key = language + ":" + path;
+            if (_displayNames.TryGetValue(key, out string name)) return name;
+            try { name = FontFiles.ReadDisplayName(path, language); }
+            catch { name = fallback; }
+            _displayNames[key] = name;
+            return name;
+        }
+
         internal string ReadName(string path)
         {
             path = Path.GetFullPath(path);
@@ -43,6 +56,7 @@ namespace CustomFonts
             if (_names.TryGetValue(path, out Entry entry) && entry.Length == file.Length && entry.Modified == file.LastWriteTimeUtc.Ticks)
             { Hits++; return entry.Name; }
             Misses++;
+            ClearDisplayNames();
             string name = FontFiles.ReadName(path);
             _names[path] = new Entry { Length = file.Length, Modified = file.LastWriteTimeUtc.Ticks, Name = name };
             _dirty = true;

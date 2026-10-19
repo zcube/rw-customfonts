@@ -56,4 +56,12 @@
     <CustomFonts.FallbackEmpty>정의된 fallback 없음</CustomFonts.FallbackEmpty>
     <CustomFonts.UnionFallbacks>다른 탭 목록 합치기 (union)</CustomFonts.UnionFallbacks>
     <CustomFonts.AllTabs>모든 탭</CustomFonts.AllTabs>
+  <CustomFonts.PreviewProgress>폰트 미리보기 생성 중: {0} / {1}</CustomFonts.PreviewProgress>
+  <CustomFonts.ShowFontNamePreviews>폰트명 글꼴 미리보기</CustomFonts.ShowFontNamePreviews>
+  <CustomFonts.ShowFontNamePreviewsHelp>보이는 폰트명을 고정 크기로 렌더링하고 디스크 캐시를 재사용합니다. 설정 창을 닫으면 메모리에서 해제됩니다. 기본값: 끔.</CustomFonts.ShowFontNamePreviewsHelp>
+  <CustomFonts.PreviewSize>폰트명 미리보기 크기: {0}px</CustomFonts.PreviewSize>
+  <CustomFonts.PreviewSizeHelp>다른 크기를 적용하면 기존 폰트 미리보기 캐시를 모두 삭제합니다.</CustomFonts.PreviewSizeHelp>
+  <CustomFonts.Favorites>즐겨찾기</CustomFonts.Favorites>
+  <CustomFonts.AddFavorite>즐겨찾기에 추가</CustomFonts.AddFavorite>
+  <CustomFonts.RemoveFavorite>즐겨찾기에서 제거</CustomFonts.RemoveFavorite>
 </LanguageData>

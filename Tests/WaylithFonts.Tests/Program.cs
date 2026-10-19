@@ -57,6 +57,76 @@ byte[] Font(bool collection = false)
     }
     return b;
 }
+byte[] LocalizedFont(params (int Language, int Id, string Value)[] records)
+{
+    var text = records.Select(r => Encoding.BigEndianUnicode.GetBytes(r.Value)).ToArray();
+    int strings = 6 + 12 * records.Length;
+    var b = new byte[28 + strings + text.Sum(t => t.Length)];
+    U32(b, 0, 0x00010000); U16(b, 4, 1);
+    U32(b, 12, 0x6e616d65); U32(b, 20, 28); U32(b, 24, (uint)(b.Length - 28));
+    U16(b, 30, records.Length); U16(b, 32, strings);
+    int cursor = 0;
+    for (int i = 0; i < records.Length; i++)
+    {
+        int at = 34 + i * 12;
+        U16(b, at, 3); U16(b, at + 2, 1); U16(b, at + 4, records[i].Language);
+        U16(b, at + 6, records[i].Id); U16(b, at + 8, text[i].Length); U16(b, at + 10, cursor);
+        text[i].CopyTo(b, 28 + strings + cursor); cursor += text[i].Length;
+    }
+    return b;
+}
+Check(FontFavoriteLists.Normalize(new[] { "", "Default", "default", "NanumGothic", "nanumgothic", "日本語フォント" })
+    .SequenceEqual(new[] { "NanumGothic", "日本語フォント" }), "favorites normalize invalid/default/duplicate selections");
+var favorites = FontFavoriteLists.Toggle(null, "NanumGothic");
+favorites = FontFavoriteLists.Toggle(favorites, "(Bundled) Sarasa UI K (Regular)");
+var favoriteGroups = FontFavoriteLists.Create(favorites,
+    new[] { "(Bundled) Sarasa UI J (Regular)", "(Bundled) Sarasa UI K (Regular)" }, new[] { "NanumGothic", "Arial" });
+Check(favoriteGroups.Favorites.SequenceEqual(favorites), "favorite system and bundled fonts appear together in saved addition order");
+Check(favoriteGroups.Bundled.SequenceEqual(new[] { "(Bundled) Sarasa UI J (Regular)" })
+    && favoriteGroups.Installed.SequenceEqual(new[] { "Arial" }), "favorites are not duplicated in later bundled/system sections");
+favorites = FontFavoriteLists.Toggle(favorites, "nanumgothic");
+Check(favorites.SequenceEqual(new[] { "(Bundled) Sarasa UI K (Regular)" }), "star toggle removes favorites ignoring case");
+var unavailableFavorites = new[] { "Missing Font", "nanumgothic" };
+favoriteGroups = FontFavoriteLists.Create(unavailableFavorites, Array.Empty<string>(), new[] { "NanumGothic" });
+Check(favoriteGroups.Favorites.SequenceEqual(new[] { "NanumGothic" }) && unavailableFavorites[0] == "Missing Font",
+    "unavailable favorites remain saved while visible favorites use actual catalog keys");
+Check(FontFavoriteLists.Create(unavailableFavorites, Array.Empty<string>(), new[] { "Missing Font", "NanumGothic" }).Favorites.Length == 2,
+    "favorites return when their source becomes available again");
+Check(FontSourceCatalog.MatchesSearch("NanumGothic", "나눔고딕", "나눔")
+    && FontSourceCatalog.MatchesSearch("NanumGothic", "나눔고딕", "nanum"), "favorite rows support display-name and family searches");
+
+var localized = LocalizedFont((0x409, 16, "NanumGothic"), (0x409, 17, "Regular"),
+    (0x409, 4, "NanumGothic Regular"), (0x412, 1, "나눔고딕"), (0x412, 4, "나눔고딕 보통"),
+    (0x411, 1, "日本語ファミリー"), (0x411, 4, "日本語表示名"),
+    (0x804, 1, "简体字体"), (0x804, 4, "简体显示名"),
+    (0x404, 1, "繁體字體"), (0x404, 4, "繁體顯示名"));
+string Display(byte[] bytes, int language)
+{
+    using var stream = new MemoryStream(bytes);
+    return OpenTypeNames.ReadDisplayName(stream, 0, bytes.Length, language);
+}
+Check(OpenTypeNames.Read(localized) == "NanumGothic (Regular)", "localized display records never change canonical family/style");
+foreach (var test in new[] { ("Korean", 0x412, "나눔고딕 보통"), ("Japanese", 0x411, "日本語表示名"),
+    ("ChineseSimplified", 0x804, "简体显示名"), ("ChineseTraditional", 0x404, "繁體顯示名"),
+    ("English", 0x409, "NanumGothic Regular") })
+{
+    Check(FontSourceCatalog.DisplayLanguage(test.Item1) == test.Item2, "game language mapping: " + test.Item1);
+    Check(FontSourceCatalog.DisplayLanguage(test.Item1 + " (" + test.Item3 + ")") == test.Item2,
+        "installed game language folder with native label: " + test.Item1);
+    string display = Display(localized, test.Item2);
+    Check(display == test.Item3, "localized full name: " + test.Item1);
+    Check(FontSourceCatalog.MatchesSearch("NanumGothic", display, test.Item3), "search localized display: " + test.Item1);
+    Check(FontSourceCatalog.MatchesSearch("NanumGothic", display, "nanumgothic"), "search canonical family: " + test.Item1);
+    Check(!FontSourceCatalog.MatchesSearch("NanumGothic", display, "missing font"), "unmatched search: " + test.Item1);
+}
+Check(Display(localized, 0x407) == "NanumGothic Regular", "missing game language falls back to English");
+Check(Display(LocalizedFont((0x409, 16, "NanumGothic"), (0x409, 4, "NanumGothic Regular"),
+    (0x412, 1, "나눔고딕")), 0x412) == "나눔고딕", "localized legacy family beats English typographic/full name");
+Check(Display(LocalizedFont((0x409, 1, "English Family"), (0x412, 16, "한국어 패밀리")), 0x411)
+    == "English Family", "English family beats unrelated localized typographic family");
+Check(FontSourceCatalog.DisplayLanguage("German") == 0x407, "other game languages resolve independently of OS culture");
+Check(FontSourceCatalog.DisplayLanguage("UnknownLanguage") == 0x409, "unknown game language falls back to English");
+
 Check(OpenTypeNames.Read(Font()) == "테스트 Font (Regular)", "Unicode typographic names");
 Check(OpenTypeNames.Read(Font(true)) == "테스트 Font (Regular)", "TTC first face and absolute table offsets");
 foreach (bool collection in new[] { false, true })
@@ -368,9 +438,90 @@ try
     byte[] revision = Font(); revision[^1] ^= 1;
     File.WriteAllBytes(imported, UnityFontBundle.Create(revision));
     Check(UnityFontInspection.Read(imported).Single().Bytes.SequenceEqual(revision), "Unity import uses replacement font content");
+    var inkLayout = new FontPreviewLayout();
+    var inkRectangles = new[] { new FontPreviewRectangle(-8, -30, 12, 20), new FontPreviewRectangle(5, -13, 22, 18) };
+    foreach (var glyph in inkRectangles) Check(inkLayout.TryAdd(glyph), "accept negative bearing / tall ascender / descender bounds");
+    Check(inkLayout.TryPlace(40, out int inkX, out int inkY, out int inkWidth), "fit actual ink into fixed preview row");
+    Check(inkWidth == 39 && inkRectangles.All(g => g.X + inkX >= 2 && g.X + inkX + g.Width <= inkWidth - 2
+        && g.Y + inkY >= 2 && g.Y + inkY + g.Height <= 38), "all ink including right overhang retains two-pixel padding");
+    var shiftedInk = new FontPreviewLayout(); shiftedInk.TryAdd(new FontPreviewRectangle(100, 900, 20, 24));
+    Check(shiftedInk.TryPlace(40, out int shiftedX, out int shiftedY, out int shiftedWidth)
+        && shiftedX + 100 == 2 && shiftedY + 900 == 2 && shiftedWidth == 24,
+        "font baseline offsets do not crop ink or create a huge empty texture");
+    var tallInk = new FontPreviewLayout(); tallInk.TryAdd(new FontPreviewRectangle(0, -80, 20, 100));
+    Check(tallInk.TryPlace(40, out _, out int tallOffset, out _) && tallOffset - 80 == 2 && tallInk.RequiredHeight == 104,
+        "oversized ink remains top aligned and may extend below the fixed viewport");
+    Check(tallInk.TryPlace(104, out _, out int bottomUpOffset, out _, bottomUp: true) && bottomUpOffset + 20 == 102,
+        "bottom-up rasterizer places the glyph top two pixels below the scratch-buffer top");
+    Check(!inkLayout.TryAdd(new FontPreviewRectangle(1000, 0, 20, 20))
+        && inkLayout.TryPlace(40, out _, out _, out int retainedWidth) && retainedWidth == inkWidth,
+        "long names stop before a whole glyph exceeds the raster limit");
+    var borderedImage = new FontPreviewImage { Width = 10, Height = 40, Alpha = new byte[400] };
+    borderedImage.Alpha[202] = 255;
+    Check(FontPreviewLayout.HasClearBorder(borderedImage), "ordinary raster keeps clear canvas edges");
+    borderedImage.Alpha[0] = 255;
+    Check(!FontPreviewLayout.HasClearBorder(borderedImage), "raster validation detects ink touching a crop boundary");
+    string previewRoot = Path.Combine(root, "preview-cache");
+    var previews = new FontPreviewCache(previewRoot);
+    string PreviewKey(string language = "Korean", string label = "나눔고딕", long modified = 1)
+        => FontPreviewCache.Key(path, 1234, modified, language, label, "Unity");
+    string previewKey = PreviewKey();
+    Check(previews.Read(previewKey) == null, "first preview cache lookup misses");
+    var previewImage = new FontPreviewImage { Width = 70, Alpha = Enumerable.Range(0, 70 * 40).Select(i => (byte)(i % 256)).ToArray() };
+    previews.Write(previewKey, previewImage);
+    var reopenedPreviews = new FontPreviewCache(previewRoot);
+    var persistedPreview = reopenedPreviews.Read(previewKey);
+    Check(persistedPreview.Width == 70 && persistedPreview.Alpha.SequenceEqual(previewImage.Alpha), "raster cache survives restart without font loading");
+    Check(PreviewKey("Japanese") != previewKey && PreviewKey(label: "別名") != previewKey && PreviewKey(modified: 2) != previewKey,
+        "preview identity includes language, display name and source revision");
+    Check(FontPreviewCache.Key(path, 1234, 1, "Korean", "나눔고딕", "Waylith") != previewKey, "different rasterizers use separate caches");
+    previews.Write(previewKey, new FontPreviewImage { Width = 100000, Alpha = new byte[0] });
+    Check(previews.Read(previewKey).Width == 70, "oversized preview cannot replace valid cache");
+    Check(previews.Read("../../invalid") == null, "preview keys cannot escape cache directory");
+    File.WriteAllBytes(Path.Combine(previewRoot, previewKey + ".preview"), new byte[] { 1, 2, 3 });
+    Check(previews.Read(previewKey) == null, "corrupt preview falls back to regeneration");
+    using (var writer = new BinaryWriter(File.Create(Path.Combine(previewRoot, previewKey + ".preview"))))
+    { writer.Write(1); writer.Write(int.MaxValue); writer.Write(40); }
+    Check(previews.Read(previewKey) == null, "cache dimensions checked before allocating");
+    previews.Write(previewKey, previewImage);
+    for (int i = 0; i < 4100; i++) File.WriteAllBytes(Path.Combine(previewRoot, i + ".preview"), new byte[0]);
+    var wholeCatalogPreviews = new FontPreviewCache(previewRoot);
+    Check(Directory.EnumerateFiles(previewRoot, "*.preview").Count() == 4101,
+        "disk cache preserves the entire catalog beyond the old 4096-entry limit");
+    string extraPreviewKey = PreviewKey(label: "Another Font");
+    wholeCatalogPreviews.Write(extraPreviewKey, previewImage);
+    Check(Directory.EnumerateFiles(previewRoot, "*.preview").Count() == 4102
+        && wholeCatalogPreviews.Read(previewKey).Alpha.SequenceEqual(previewImage.Alpha),
+        "adding previews never evicts earlier font images");
+    var wholeCatalogRestart = new FontPreviewCache(previewRoot);
+    Check(Directory.EnumerateFiles(previewRoot, "*.preview").Count() == 4102
+        && wholeCatalogRestart.Read(extraPreviewKey).Alpha.SequenceEqual(previewImage.Alpha),
+        "restart keeps all cached font previews without capacity trimming");
+    string largerKey = FontPreviewCache.Key(path, 1234, 1, "Korean", "나눔고딕", "Unity", 32);
+    Check(largerKey != previewKey, "preview size participates in raster cache identity");
+    var largerImage = new FontPreviewImage { Width = 70, Height = FontPreviewImage.HeightFor(32), Alpha = new byte[70 * FontPreviewImage.HeightFor(32)] };
+    wholeCatalogPreviews.Write(largerKey, largerImage);
+    Check(wholeCatalogPreviews.Read(largerKey).Height == 64, "custom-size raster dimensions survive cache round trip");
+    Check(FontPreviewImage.ClampSize(-1) == 12 && FontPreviewImage.ClampSize(999) == 40, "preview size is bounded independently of game font scaling");
+    string previewTemporary = Path.Combine(previewRoot, "incomplete.preview.tmp");
+    File.WriteAllBytes(previewTemporary, new byte[] { 1 });
+    string otherCache = Path.Combine(root, "metadata-to-keep.bin"); File.WriteAllBytes(otherCache, new byte[] { 2 });
+    wholeCatalogPreviews.Clear();
+    Check(!Directory.EnumerateFiles(previewRoot).Any() && File.Exists(otherCache),
+        "size invalidation clears every preview and incomplete mask without removing other caches");
     string metadataRoot = Path.Combine(root, "metadata-cache");
     var metadata = new FontMetadataCache(metadataRoot);
     Check(metadata.ReadName(path) == FontFiles.ReadName(path) && metadata.Misses == 1, "metadata cache reads source on first lookup");
+    var displayMetadata = new FontMetadataCache(Path.Combine(root, "display-cache"));
+    string localizedPath = Path.Combine(root, "localized.ttf");
+    File.WriteAllBytes(localizedPath, localized);
+    Check(displayMetadata.ReadDisplayName(localizedPath, 0x412, "fallback") == "나눔고딕 보통", "display cache reads Korean name");
+    Check(displayMetadata.ReadDisplayName(localizedPath, 0x411, "fallback") == "日本語表示名", "display cache separates game languages");
+    Check(displayMetadata.ReadName(localizedPath) == "NanumGothic (Regular)", "display cache leaves loading identity unchanged");
+    Check(displayMetadata.ReadDisplayName(Path.Combine(root, "missing.ttf"), 0x412, "Missing Family") == "Missing Family", "unreadable display metadata preserves selection label");
+    File.WriteAllBytes(localizedPath, LocalizedFont((0x409, 1, "Other Family"), (0x412, 4, "변경된 표시명")));
+    displayMetadata.ClearDisplayNames();
+    Check(displayMetadata.ReadDisplayName(localizedPath, 0x412, "fallback") == "변경된 표시명", "refresh invalidates localized name cache");
     metadata.Save();
     metadata = new FontMetadataCache(metadataRoot);
     Check(metadata.ReadName(path) == FontFiles.ReadName(path) && metadata.Hits == 1 && metadata.Misses == 0, "metadata cache survives game restart");

@@ -56,4 +56,12 @@
     <CustomFonts.FallbackEmpty>未定义后备字体</CustomFonts.FallbackEmpty>
     <CustomFonts.UnionFallbacks>合并其他标签页 (union)</CustomFonts.UnionFallbacks>
     <CustomFonts.AllTabs>所有标签页</CustomFonts.AllTabs>
+  <CustomFonts.PreviewProgress>正在生成字体预览：{0} / {1}</CustomFonts.PreviewProgress>
+  <CustomFonts.ShowFontNamePreviews>使用字体自身预览字体名称</CustomFonts.ShowFontNamePreviews>
+  <CustomFonts.ShowFontNamePreviewsHelp>以固定大小渲染可见名称并复用磁盘缓存。关闭设置窗口时释放内存。默认关闭。</CustomFonts.ShowFontNamePreviewsHelp>
+  <CustomFonts.PreviewSize>字体名称预览大小：{0}px</CustomFonts.PreviewSize>
+  <CustomFonts.PreviewSizeHelp>应用不同大小会删除所有现有字体预览缓存。</CustomFonts.PreviewSizeHelp>
+  <CustomFonts.Favorites>收藏字体</CustomFonts.Favorites>
+  <CustomFonts.AddFavorite>添加到收藏</CustomFonts.AddFavorite>
+  <CustomFonts.RemoveFavorite>取消收藏</CustomFonts.RemoveFavorite>
 </LanguageData>

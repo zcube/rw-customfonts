@@ -137,10 +137,9 @@ namespace CustomFonts
             if (names.Count > 0)
             {
                 // Keep long fallback policies inside their own viewport. Reserve space
-                // for the union button, and measure wrapped names with scrollbar space.
+                // for the union button. Preview row heights stay fixed at every UI scale.
                 float contentWidth = Math.Max(1f, width - 20f);
-                var heights = names.Select((name, i) => Math.Max(30f,
-                    Text.CalcHeight((i + 1) + ". " + DisplayFontName(name), Math.Max(1f, contentWidth - 105f)) + 6f)).ToArray();
+                var heights = names.Select(name => (float)FontPreviewHeight + 4f).ToArray();
                 float contentHeight = heights.Sum();
                 float viewportHeight = Math.Min(contentHeight,
                     Math.Max(90f, Math.Min(240f, availableHeight - list.CurHeight - 54f)));
@@ -155,13 +154,15 @@ namespace CustomFonts
                     float y = 0f;
                     for (int i = 0; i < names.Count; i++)
                     {
-                        string name = names[i], label = (i + 1) + ". " + DisplayFontName(name);
+                        string name = names[i];
                         var row = new Rect(0f, y, contentWidth, heights[i]);
-                        Widgets.Label(new Rect(row.x, row.y, row.width - 105f, row.height), label);
-                        TooltipHandler.TipRegion(row, name);
-                        if (i > 0 && Widgets.ButtonText(new Rect(row.xMax - 100, row.y, 28, 26), "↑")) { move = i; direction = -1; }
-                        if (i + 1 < names.Count && Widgets.ButtonText(new Rect(row.xMax - 70, row.y, 28, 26), "↓")) { move = i; direction = 1; }
-                        if (Widgets.ButtonText(new Rect(row.xMax - 40, row.y, 40, 26), "×")) remove = i;
+                        GUI.Label(new Rect(row.x, row.y, 28, row.height), (i + 1) + ".", PreviewLabelStyle);
+                        if (row.yMax >= _fallbackScroll[tab].y && row.y <= _fallbackScroll[tab].y + viewportHeight)
+                            DrawFontPreviewLabel(new Rect(row.x + 28, row.y, Math.Max(1, row.width - 133f), row.height), name);
+                        TooltipHandler.TipRegion(row, DisplayFontName(name) + "\n" + name);
+                        if (i > 0 && FixedPreviewButton(new Rect(row.xMax - 100, row.y, 28, 26), "↑")) { move = i; direction = -1; }
+                        if (i + 1 < names.Count && FixedPreviewButton(new Rect(row.xMax - 70, row.y, 28, 26), "↓")) { move = i; direction = 1; }
+                        if (FixedPreviewButton(new Rect(row.xMax - 40, row.y, 40, 26), "×")) remove = i;
                         y += heights[i];
                     }
                 }
@@ -194,21 +195,28 @@ namespace CustomFonts
             => (target == FontTarget.World ? "CustomFonts.FontWorld" : "CustomFonts.Font" + target).Translate("");
         private float FontChoiceHeight(string name, float width)
         {
-            // Leave room for the fallback button (36px) and the radio control (24px).
-            float labelWidth = Math.Max(1f, width - 60f);
-            return Math.Max(Text.LineHeight, Text.CalcHeight(DisplayFontName(name), labelWidth)) + 4f;
+            return FontPreviewHeight + 4f;
         }
         private bool DrawFontChoice(Listing_Standard list, FontTarget target, string name, bool selected)
         {
             Rect row = list.GetRect(FontChoiceHeight(name, list.ColumnWidth));
-            Rect choose = new Rect(row.x, row.y, row.width - 36, row.height);
-            TooltipHandler.TipRegion(choose, name);
-            bool result = Widgets.RadioButtonLabeled(choose, DisplayFontName(name), selected);
+            if (row.yMax < _choiceVisibleTop || row.y > _choiceVisibleBottom) return false;
+            Rect choose = new Rect(row.x, row.y, Math.Max(1, row.width - 72), row.height);
+            TooltipHandler.TipRegion(choose, DisplayFontName(name) + "\n" + name);
+            bool result = Widgets.RadioButtonLabeled(choose, "", selected);
+            DrawFontPreviewLabel(new Rect(choose.x, choose.y, Math.Max(1, choose.width - 28), choose.height), name);
+            float buttonHeight = Math.Min(28f, row.height);
+            if (name != FontSettings.DefaultFontName)
+            {
+                bool favorite = IsFavoriteFont(name);
+                Rect star = new Rect(row.xMax - 67, row.y + (row.height - buttonHeight) / 2f, 28, buttonHeight);
+                if (FixedPreviewButton(star, favorite ? "★" : "☆")) ToggleFavoriteFont(name);
+                TooltipHandler.TipRegion(star, (favorite ? "CustomFonts.RemoveFavorite" : "CustomFonts.AddFavorite").Translate());
+            }
             bool available = name != FontSettings.DefaultFontName && !selected && !_settings.GetFallbackFonts(target).Contains(name);
             bool previous = GUI.enabled; GUI.enabled = previous && available;
-            float buttonHeight = Math.Min(28f, row.height);
             Rect add = new Rect(row.xMax - 31, row.y + (row.height - buttonHeight) / 2f, 28, buttonHeight);
-            if (Widgets.ButtonText(add, "+")) AddFallbackFont(target, name);
+            if (FixedPreviewButton(add, "+")) AddFallbackFont(target, name);
             TooltipHandler.TipRegion(add, "CustomFonts.AddFallbackFont".Translate());
             GUI.enabled = previous;
             return result;

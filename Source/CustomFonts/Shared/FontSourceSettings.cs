@@ -11,6 +11,9 @@ namespace CustomFonts
         public List<string> FontSourcePaths = new List<string>();
         public bool IncludeSystemFonts = true;
         public bool RecursiveFontFolders = true;
+        public bool ShowFontNamePreviews;
+        public int FontNamePreviewSize = FontPreviewImage.DefaultPixelSize;
+        public List<string> FavoriteFontNames = new List<string>();
         public List<string> FallbackFontNames = new List<string>();
         public List<string> FallbackFontsTiny;
         public List<string> FallbackFontsSmall;
@@ -46,8 +49,13 @@ namespace CustomFonts
             Scribe_Collections.Look(ref FontSourcePaths, "WaylithFontSourcePaths", LookMode.Value);
             Scribe_Values.Look(ref IncludeSystemFonts, "WaylithIncludeSystemFonts", true);
             Scribe_Values.Look(ref RecursiveFontFolders, "WaylithRecursiveFontFolders", true);
+            Scribe_Values.Look(ref ShowFontNamePreviews, "ShowFontNamePreviews", false);
+            Scribe_Values.Look(ref FontNamePreviewSize, "FontNamePreviewSize", FontPreviewImage.DefaultPixelSize);
+            FontNamePreviewSize = FontPreviewImage.ClampSize(FontNamePreviewSize);
             if (Scribe.mode == LoadSaveMode.LoadingVars)
                 Scribe_Collections.Look(ref FallbackFontNames, "FallbackFontNames", LookMode.Value);
+            Scribe_Collections.Look(ref FavoriteFontNames, "FavoriteFontNames", LookMode.Value);
+            FavoriteFontNames = FontFavoriteLists.Normalize(FavoriteFontNames);
             Scribe_Collections.Look(ref FallbackFontsTiny, "FallbackFontsTiny", LookMode.Value);
             Scribe_Collections.Look(ref FallbackFontsSmall, "FallbackFontsSmall", LookMode.Value);
             Scribe_Collections.Look(ref FallbackFontsMedium, "FallbackFontsMedium", LookMode.Value);

@@ -54,6 +54,37 @@ namespace CustomFonts
             return null;
         }
 
+        internal static bool MatchesSearch(string selection, string display, string query)
+            => string.IsNullOrEmpty(query)
+                || (display != null && display.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
+                || (selection != null && selection.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0);
+
+        // RimWorld language folders are independent of the OS/.NET current culture.
+        internal static int DisplayLanguage(string folder)
+        {
+            // Installed folders include native labels, e.g. "Korean (한국어)".
+            folder = (folder ?? "English").Split('(')[0].Trim();
+            switch (folder)
+            {
+                case "Korean": return 0x412;
+                case "Japanese": return 0x411;
+                case "ChineseSimplified": return 0x804;
+                case "ChineseTraditional": return 0x404;
+                case "PortugueseBrazilian": return 0x416;
+                case "Portuguese": return 0x816;
+                case "SpanishLatin": return 0x80a;
+                case "Spanish": return 0xc0a;
+                case "English": return 0x409;
+            }
+            // Most other game folders use the English culture name (German, French,
+            // Russian, etc.). Resolve deterministically without consulting OS culture.
+            foreach (var culture in System.Globalization.CultureInfo.GetCultures(System.Globalization.CultureTypes.SpecificCultures)
+                .OrderBy(c => c.LCID))
+                if (string.Equals(culture.EnglishName.Split('(')[0].Trim().Replace(" ", ""), folder,
+                    StringComparison.OrdinalIgnoreCase)) return culture.LCID;
+            return 0x409;
+        }
+
         internal static string DisplayName(string name)
         {
             return IsLegacyFile(name) ? SelectionFamily(name) : name;

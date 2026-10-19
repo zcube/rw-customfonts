@@ -6,6 +6,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../../Source/CustomFonts/Shared/OpenTypeNames.cs" Link="OpenTypeNames.cs" />
+    <Compile Include="../../Source/CustomFonts/Shared/FontFavoriteLists.cs" Link="FontFavoriteLists.cs" />
+    <Compile Include="../../Source/CustomFonts/Shared/FontPreviewLayout.cs" Link="FontPreviewLayout.cs" />
+    <Compile Include="../../Source/CustomFonts/Shared/FontPreviewCache.cs" Link="FontPreviewCache.cs" />
     <Compile Include="../../Source/CustomFonts/Shared/FontFiles.cs" Link="FontFiles.cs" />
     <Compile Include="../../Source/CustomFonts/Shared/AdditionalFontRoots.cs" Link="AdditionalFontRoots.cs" />
     <Compile Include="../../Source/CustomFonts/Shared/FontSourceCatalog.cs" Link="FontSourceCatalog.cs" />

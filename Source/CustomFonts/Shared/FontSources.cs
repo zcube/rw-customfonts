@@ -16,12 +16,27 @@ namespace CustomFonts
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             Environment.GetFolderPath(Environment.SpecialFolder.Windows),
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Environment.GetEnvironmentVariable).ToArray());
+        private string _displayLanguageFolder;
+        private int _displayLanguage = 0x409;
         private string DisplayFontName(string name)
         {
-            if (name != null && _bundledFontSources.TryGetValue(name, out var data) && data.SourceModName != null)
-                return "(Bundled) " + data.FaceName + " [" + data.SourceModName + "]";
-            return FontSourceCatalog.DisplayName(name);
+            string folder = LanguageDatabase.activeLanguage?.folderName ?? "English";
+            if (_displayLanguageFolder != folder)
+            {
+                _displayLanguageFolder = folder;
+                _displayLanguage = FontSourceCatalog.DisplayLanguage(folder);
+            }
+            int language = _displayLanguage;
+            if (name != null && _bundledFontSources.TryGetValue(name, out var data))
+            {
+                string display = MetadataCache.ReadDisplayName(data.Path, language, data.FaceName);
+                return "(Bundled) " + display + (data.SourceModName == null ? "" : " [" + data.SourceModName + "]");
+            }
+            string key = name != null && OSFontPaths.ContainsKey(name) ? name : FontSourceCatalog.FindKey(OSFontPaths, name);
+            return key == null ? FontSourceCatalog.DisplayName(name)
+                : MetadataCache.ReadDisplayName(OSFontPaths[key], language, key);
         }
+
         private string CanonicalFontSelection(string selection)
         {
             if (selection == FontSettings.DefaultFontName || selection.StartsWith("(Bundled) ", StringComparison.Ordinal)) return selection;
@@ -43,6 +58,7 @@ namespace CustomFonts
             var timer = Stopwatch.StartNew();
             _hasOSFontAssets = true;
             _fontSourceErrors.Clear();
+            MetadataCache.ClearDisplayNames();
             var systemFiles = new HashSet<string>(FontSourceCatalog.PathComparer);
             if (_settings.IncludeSystemFonts)
             {
@@ -68,6 +84,7 @@ namespace CustomFonts
 
         private void RefreshFontSources()
         {
+            ResetFontPreviews();
             _hasInstalledFontNames = false;
             _hasOSFontAssets = false;
             _systemFontSearchRoots = null;

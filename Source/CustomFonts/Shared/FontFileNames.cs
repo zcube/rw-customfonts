@@ -4,6 +4,15 @@ namespace CustomFonts
 {
     internal static partial class FontFiles
     {
+        internal static string ReadDisplayName(string path, int language)
+        {
+            using (var stream = File.OpenRead(path))
+            {
+                if (stream.Length > 128 * 1024 * 1024) throw new InvalidDataException("Font exceeds 128 MiB.");
+                return OpenTypeNames.ReadDisplayName(stream, 0, stream.Length, language);
+            }
+        }
+
         internal static string ReadName(string path)
         {
             using (var stream = File.OpenRead(path))

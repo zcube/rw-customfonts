@@ -56,4 +56,12 @@
     <CustomFonts.FallbackEmpty>未定義後備字型</CustomFonts.FallbackEmpty>
     <CustomFonts.UnionFallbacks>合併其他分頁 (union)</CustomFonts.UnionFallbacks>
     <CustomFonts.AllTabs>所有分頁</CustomFonts.AllTabs>
+  <CustomFonts.PreviewProgress>正在產生字型預覽：{0} / {1}</CustomFonts.PreviewProgress>
+  <CustomFonts.ShowFontNamePreviews>使用字型本身預覽字型名稱</CustomFonts.ShowFontNamePreviews>
+  <CustomFonts.ShowFontNamePreviewsHelp>以固定大小繪製可見名稱並重用磁碟快取。關閉設定視窗時釋放記憶體。預設關閉。</CustomFonts.ShowFontNamePreviewsHelp>
+  <CustomFonts.PreviewSize>字型名稱預覽大小：{0}px</CustomFonts.PreviewSize>
+  <CustomFonts.PreviewSizeHelp>套用不同大小會刪除所有現有字型預覽快取。</CustomFonts.PreviewSizeHelp>
+  <CustomFonts.Favorites>收藏字型</CustomFonts.Favorites>
+  <CustomFonts.AddFavorite>加入收藏</CustomFonts.AddFavorite>
+  <CustomFonts.RemoveFavorite>取消收藏</CustomFonts.RemoveFavorite>
 </LanguageData>

@@ -55,4 +55,12 @@
     <CustomFonts.FallbackEmpty>フォールバック未設定</CustomFonts.FallbackEmpty>
     <CustomFonts.UnionFallbacks>他のタブと統合 (union)</CustomFonts.UnionFallbacks>
     <CustomFonts.AllTabs>すべてのタブ</CustomFonts.AllTabs>
+  <CustomFonts.PreviewProgress>フォントプレビューを作成中: {0} / {1}</CustomFonts.PreviewProgress>
+  <CustomFonts.ShowFontNamePreviews>フォント名をそのフォントでプレビュー</CustomFonts.ShowFontNamePreviews>
+  <CustomFonts.ShowFontNamePreviewsHelp>表示中の名前を固定サイズで描画し、ディスクキャッシュを再利用します。設定画面を閉じるとメモリを解放します。初期値：オフ。</CustomFonts.ShowFontNamePreviewsHelp>
+  <CustomFonts.PreviewSize>フォント名プレビューのサイズ：{0}px</CustomFonts.PreviewSize>
+  <CustomFonts.PreviewSizeHelp>異なるサイズを適用すると、既存のフォントプレビューキャッシュをすべて削除します。</CustomFonts.PreviewSizeHelp>
+  <CustomFonts.Favorites>お気に入り</CustomFonts.Favorites>
+  <CustomFonts.AddFavorite>お気に入りに追加</CustomFonts.AddFavorite>
+  <CustomFonts.RemoveFavorite>お気に入りから削除</CustomFonts.RemoveFavorite>
 </LanguageData>
