@@ -85,7 +85,7 @@ export async function run({sky, root, startAtSettings = false, report = () => {}
   }
   for (const [name, title, x] of tabs) {
     await click(x, 265);
-    await capture(name, title, [], name === '01-ui-tiny' || name === '04-world' ? 10000 : -10000);
+    await capture(name, title, [], name === '01-ui-tiny' || name === '03-ui-medium' ? 10000 : -10000);
   }
   await click(897, 265);
   await scroll(-10000);

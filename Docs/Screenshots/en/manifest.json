@@ -5,14 +5,15 @@
     1200
   ],
   "ui_scale": 0.75,
-  "capture_id": "7059053f03c84786957c720c9ec7e638",
-  "started_utc": "2026-10-24T04:36:43.0171832Z",
+  "preview_size_px": 13,
+  "capture_id": "6895c939f42345f98c14d69122e40d58",
+  "started_utc": "2026-10-24T05:47:33.356620+00:00",
   "game_version": "1.7.4985 rev1269",
-  "mod_dll_sha256": "99cf6c14221e1c3edbe549b768b1f4c5da9b45ee59e21fcec555db56242d780b",
+  "mod_dll_sha256": "7daf7d5d48d59d080cbebc3a0afd95473e23906a97dc04d0bf2dbe52b16d9ae0",
   "resized": false,
   "scripts_sha256": {
-    "capture_workshop.py": "646e593fd9d503ad6b551ea7e15b579538047ab60e023b5b97692759eeffc8fc",
-    "capture_workshop.mjs": "ec1c341e55650f9be86e06065688a6b08d9ae9cda6e4adb8fbd722aa584f7b2c",
+    "capture_workshop.py": "fe3008503c3adc46871226a16c2c698dba9137de31cf5aea90f89d537665f2f4",
+    "capture_workshop.mjs": "60d3321259b83b0bfadc799785fff2f5ab88ce4b25da84a87800dcf809f0fd63",
     "cleanup_workshop_capture.ps1": "bd92085bf6433a9390559389cc6bacb4d18b3a6510053fe2db62c301e0916472"
   },
   "method": "Real RimWorld window captures via computer-use; settings-window crop only.",
@@ -22,7 +23,7 @@
       "title": "UI: Tiny",
       "width": 675,
       "height": 525,
-      "sha256": "8205a9fb7dc3ca4687f47e9f5d5cfbc987727329345549fbb5e71c4fc001a16d",
+      "sha256": "c259de451346f7d8224a097aaeb6f59886e3f33c5ea5db4ccf56990c5b5a70e8",
       "redactions": []
     },
     {
@@ -30,7 +31,7 @@
       "title": "UI: Small",
       "width": 675,
       "height": 525,
-      "sha256": "a4825abceece5d31569829b410fde216739ec74793c1bf8077caf19549da38e0",
+      "sha256": "e71f399e23f28547922b976333e1a72e64fa3bb15f707c03d5a57becf5254f79",
       "redactions": []
     },
     {
@@ -38,7 +39,7 @@
       "title": "UI: Medium",
       "width": 675,
       "height": 525,
-      "sha256": "04a3d1248e36de19d66303c96eac1297c0c0935f5189c3cec321d1b3b53236c4",
+      "sha256": "14086e8b12bd6fb0130d09131b6d615ce1326dd3253c0d332feedce983b6c225",
       "redactions": []
     },
     {
@@ -46,7 +47,7 @@
       "title": "World",
       "width": 675,
       "height": 525,
-      "sha256": "049dea11aa9e8e8b202e7046087ccc9749c12736f8521df370b9733dc321e931",
+      "sha256": "7c52b4ec1524ef6973f40217fd64932167c42be2f9a19b3a41d621571fa18ce7",
       "redactions": []
     },
     {
@@ -54,7 +55,7 @@
       "title": "etc: Preview and font sources",
       "width": 675,
       "height": 525,
-      "sha256": "f3439e27792366337bec0bf270cb096cb2556d5871657499a62416a15b07f438",
+      "sha256": "b3d6b2d816a3474ef58835c03fd1181330b0f1f757de34b1f76507fc5a1407c7",
       "redactions": [
         {
           "box": [

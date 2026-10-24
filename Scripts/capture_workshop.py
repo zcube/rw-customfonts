@@ -88,8 +88,7 @@ def prepare(game):
             raise SystemExit(f'The screenshot scenario requires {name}.')
         ET.SubElement(sources, 'li').text = '%WINDIR%/Fonts/' + name
     favorites = ET.SubElement(settings, 'FavoriteFontNames')
-    for name in ['(Bundled) Sarasa UI J (Regular)', '(Bundled) Sarasa UI K (Regular)',
-                 f'(Bundled) [{PACK_ID}] ABeeZee (Regular)', f'(Bundled) [{PACK_ID}] ABeeZee (Italic)']:
+    for name in ['(Bundled) Sarasa UI K (Regular)', f'(Bundled) [{PACK_ID}] ABeeZee (Italic)']:
         ET.SubElement(favorites, 'li').text = name
     for target in ['Tiny', 'Small', 'Medium', 'World']:
         ET.SubElement(ET.SubElement(settings, 'FallbackFonts' + target), 'li').text = '(Bundled) Sarasa UI K (Regular)'
@@ -152,7 +151,7 @@ def finish():
     sheet.save(OUT / 'contact-sheet.jpg', quality=92)
     log = (WORK / 'game.log').read_text(encoding='utf-8', errors='replace')
     version = re.search(r'RimWorld\s+(1\.7\.[\w. ]+)', log)
-    manifest = {'language': 'English', 'screen': [1920, 1200], 'ui_scale': 0.75,
+    manifest = {'language': 'English', 'screen': [1920, 1200], 'ui_scale': 0.75, 'preview_size_px': 13,
                 'capture_id': session['capture_id'], 'started_utc': session['started_utc'],
                 'game_version': version.group(1).strip() if version else '1.7',
                 'mod_dll_sha256': session['dll_sha256'], 'resized': False,
