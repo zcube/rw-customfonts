@@ -62,6 +62,9 @@
   <CustomFonts.PreviewSize>字型名稱預覽大小：{0}px</CustomFonts.PreviewSize>
   <CustomFonts.PreviewSizeHelp>套用不同大小會刪除所有現有字型預覽快取。</CustomFonts.PreviewSizeHelp>
   <CustomFonts.Favorites>收藏字型</CustomFonts.Favorites>
+  <CustomFonts.ModFonts>模組字型</CustomFonts.ModFonts>
+  <CustomFonts.SystemAndCustomFonts>系統與自訂字型</CustomFonts.SystemAndCustomFonts>
+  <CustomFonts.ClearSearch>清除搜尋</CustomFonts.ClearSearch>
   <CustomFonts.AddFavorite>加入收藏</CustomFonts.AddFavorite>
   <CustomFonts.RemoveFavorite>取消收藏</CustomFonts.RemoveFavorite>
   <CustomFonts.AllStyles>所有樣式</CustomFonts.AllStyles>

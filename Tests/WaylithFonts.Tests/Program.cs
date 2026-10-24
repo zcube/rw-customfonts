@@ -106,6 +106,19 @@ string Display(byte[] bytes, int language)
     return OpenTypeNames.ReadDisplayName(stream, 0, bytes.Length, language);
 }
 Check(OpenTypeNames.Read(localized) == "NanumGothic (Regular)", "localized display records never change canonical family/style");
+var malgun = LocalizedFont((0x409, 16, "Malgun Gothic"), (0x409, 17, "Regular"),
+    (0x412, 1, "맑은 고딕"), (0x412, 2, "Regular"), (0x412, 4, "맑은 고딕"));
+Check(Display(malgun, 0x412) == "맑은 고딕", "family-only display omits the redundant Regular suffix");
+Check(OpenTypeNames.Read(malgun) == "Malgun Gothic (Regular)"
+    && FontSourceCatalog.MatchesSearch(OpenTypeNames.Read(malgun), Display(malgun, 0x412), "Regular")
+    && FontSourceCatalog.MatchesStyle(OpenTypeNames.Read(malgun), "Regular"),
+    "hidden Regular style retains canonical selections, text search and style filtering");
+Check(Display(LocalizedFont((0x409, 16, "Malgun Gothic"), (0x409, 17, "Bold"),
+    (0x412, 1, "맑은 고딕"), (0x412, 4, "맑은 고딕 Bold")), 0x412) == "맑은 고딕 Bold",
+    "font-provided Bold display name remains unchanged");
+Check(FontSourceCatalog.DisplayName("(Bundled) Sarasa UI K (Regular)") == "Sarasa UI K"
+    && FontSourceCatalog.DisplayName("(Bundled) [author.pack] ABeeZee (Italic)") == "ABeeZee (Italic)",
+    "bundled labels omit source markers and Regular while preserving non-default styles");
 foreach (var test in new[] { ("Korean", 0x412, "나눔고딕 보통"), ("Japanese", 0x411, "日本語表示名"),
     ("ChineseSimplified", 0x804, "简体显示名"), ("ChineseTraditional", 0x404, "繁體顯示名"),
     ("English", 0x409, "NanumGothic Regular") })
@@ -302,7 +315,7 @@ try
     Populate(new[] { path, path }, new[] { folder, nestedFont, folder }, true);
     Check(catalog.Count == 1 && sourceErrors.Count == 0, "duplicate system and configured faces collapse to one portable family/style");
     Check(catalog["테스트 Font (Regular)"] == path, "equivalent configured faces use source order and sorted paths");
-    Check(FontSourceCatalog.DisplayName("(File) 테스트 Font (Regular) [" + path + "]") == "테스트 Font (Regular)", "legacy file label retains family and style without its machine path");
+    Check(FontSourceCatalog.DisplayName("(File) 테스트 Font (Regular) [" + path + "]") == "테스트 Font", "legacy file label omits its machine path and redundant Regular suffix");
     Check(FontSourceCatalog.DisplayName("Legacy OS family") == "Legacy OS family", "existing family selection remains unchanged");
     Check(FontSourceCatalog.Family("Family (Example) (Regular)") == "Family (Example)", "metadata preserves parentheses in family names");
     Check(FontSourceCatalog.FindKey(catalog, "테스트 Font") == "테스트 Font (Regular)", "legacy Unity family retains its identity");
@@ -512,11 +525,11 @@ try
         => FontPreviewCache.Key(path, 1234, modified, language, label, "Unity");
     string previewKey = PreviewKey();
     Check(previews.Read(previewKey) == null, "first preview cache lookup misses");
-    var previewImage = new FontPreviewImage { Width = 70, Alpha = Enumerable.Range(0, 70 * 40).Select(i => (byte)(i % 256)).ToArray() };
+    var previewImage = new FontPreviewImage { Width = 70, Alpha = Enumerable.Range(0, 70 * FontPreviewImage.HeightFor(FontPreviewImage.DefaultPixelSize)).Select(i => (byte)(i % 256)).ToArray() };
     previews.Write(previewKey, previewImage);
     var reopenedPreviews = new FontPreviewCache(previewRoot);
     var persistedPreview = reopenedPreviews.Read(previewKey);
-    Check(persistedPreview.Width == 70 && persistedPreview.Alpha.SequenceEqual(previewImage.Alpha), "raster cache survives restart without font loading");
+    Check(persistedPreview.Width == 70 && persistedPreview.Height == 26 && persistedPreview.Alpha.SequenceEqual(previewImage.Alpha), "default 13px raster cache survives restart without font loading");
     Check(PreviewKey("Japanese") != previewKey && PreviewKey(label: "別名") != previewKey && PreviewKey(modified: 2) != previewKey,
         "preview identity includes language, display name and source revision");
     Check(FontPreviewCache.Key(path, 1234, 1, "Korean", "나눔고딕", "Waylith") != previewKey, "different rasterizers use separate caches");
@@ -542,6 +555,10 @@ try
     Check(Directory.EnumerateFiles(previewRoot, "*.preview").Count() == 4102
         && wholeCatalogRestart.Read(extraPreviewKey).Alpha.SequenceEqual(previewImage.Alpha),
         "restart keeps all cached font previews without capacity trimming");
+    string oldSizeKey = FontPreviewCache.Key(path, 1234, 1, "Korean", "나눔고딕", "Unity", 20);
+    previews.Write(oldSizeKey, new FontPreviewImage { Width = 70, Height = 40, Alpha = new byte[70 * 40] });
+    Check(oldSizeKey != previewKey && reopenedPreviews.Read(oldSizeKey).Height == 40,
+        "previous 20px previews remain readable and cannot replace the new default preview");
     string largerKey = FontPreviewCache.Key(path, 1234, 1, "Korean", "나눔고딕", "Unity", 32);
     Check(largerKey != previewKey, "preview size participates in raster cache identity");
     var largerImage = new FontPreviewImage { Width = 70, Height = FontPreviewImage.HeightFor(32), Alpha = new byte[70 * FontPreviewImage.HeightFor(32)] };

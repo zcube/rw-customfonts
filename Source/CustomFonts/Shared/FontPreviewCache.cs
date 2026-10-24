@@ -11,10 +11,10 @@ namespace CustomFonts
     // atlas pointer or texture. Bounds apply before allocating or decompressing data.
     internal sealed class FontPreviewImage
     {
-        internal const int DefaultPixelSize = 20, MinPixelSize = 12, MaxPixelSize = 40, MaxWidth = 768, MaxHeight = 2048;
+        internal const int DefaultPixelSize = 13, MinPixelSize = 12, MaxPixelSize = 40, MaxWidth = 768, MaxHeight = 2048;
         internal static int ClampSize(int pixels) => Math.Max(MinPixelSize, Math.Min(MaxPixelSize, pixels));
         internal static int HeightFor(int pixels) => ClampSize(pixels) * 2;
-        internal int Width, Height = 40;
+        internal int Width, Height = HeightFor(DefaultPixelSize);
         internal byte[] Alpha;
     }
 

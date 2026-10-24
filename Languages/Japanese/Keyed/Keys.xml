@@ -61,6 +61,9 @@
   <CustomFonts.PreviewSize>フォント名プレビューのサイズ：{0}px</CustomFonts.PreviewSize>
   <CustomFonts.PreviewSizeHelp>異なるサイズを適用すると、既存のフォントプレビューキャッシュをすべて削除します。</CustomFonts.PreviewSizeHelp>
   <CustomFonts.Favorites>お気に入り</CustomFonts.Favorites>
+  <CustomFonts.ModFonts>Modのフォント</CustomFonts.ModFonts>
+  <CustomFonts.SystemAndCustomFonts>システムとカスタムフォント</CustomFonts.SystemAndCustomFonts>
+  <CustomFonts.ClearSearch>検索をクリア</CustomFonts.ClearSearch>
   <CustomFonts.AddFavorite>お気に入りに追加</CustomFonts.AddFavorite>
   <CustomFonts.RemoveFavorite>お気に入りから削除</CustomFonts.RemoveFavorite>
   <CustomFonts.AllStyles>すべてのスタイル</CustomFonts.AllStyles>

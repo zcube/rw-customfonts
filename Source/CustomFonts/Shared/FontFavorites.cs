@@ -13,8 +13,11 @@ namespace CustomFonts
             Rect searchRow = list.GetRect(30f);
             Widgets.Label(new Rect(searchRow.x, searchRow.y, 52f, 28f), "CustomFonts.Search".Translate());
             string query = Widgets.TextField(new Rect(searchRow.x + 54f, searchRow.y,
-                Math.Max(1f, searchRow.width - 54f), 28f), searchText).Trim();
+                Math.Max(1f, searchRow.width - 86f), 28f), searchText).Trim();
             if (query != searchText) { searchText = query; scrollPosition.y = 0f; }
+            var clearRect = new Rect(searchRow.xMax - 28f, searchRow.y, 28f, 28f);
+            if (Widgets.ButtonText(clearRect, "×")) { searchText = ""; scrollPosition.y = 0f; GUI.FocusControl(null); }
+            TooltipHandler.TipRegion(clearRect, "CustomFonts.ClearSearch".Translate());
             Rect styleRow = list.GetRect(30f);
             Widgets.Label(new Rect(styleRow.x, styleRow.y, 52f, 28f), "CustomFonts.Style".Translate());
             var styleRect = new Rect(styleRow.x + 54f, styleRow.y, Math.Max(1f, styleRow.width - 54f), 28f);
@@ -50,7 +53,8 @@ namespace CustomFonts
             var outer = new Rect(inRect.x, inRect.y, inRect.width - 10f, inRect.height);
             float width = Math.Max(1f, outer.width - 24f);
             float contentHeight = FontChoiceHeight(FontSettings.DefaultFontName, width) + 24f
-                + (favorites.Length > 0 ? 36f : 0f);
+                + (favorites.Length > 0 ? 36f : 0f) + (bundled.Length > 0 ? 36f : 0f)
+                + (installed.Length > 0 ? 36f : 0f);
             foreach (string name in favorites.Concat(bundled).Concat(installed)) contentHeight += FontChoiceHeight(name, width);
             var view = new Rect(0, 0, width, Math.Max(outer.height, contentHeight));
             scrollPosition.x = 0;
@@ -62,21 +66,20 @@ namespace CustomFonts
             list.Begin(new Rect(0, 0, width, 1000000f)); list.ColumnWidth = width;
             try
             {
-                void Choices(string[] names)
+                void Section(string[] names, string title)
                 {
+                    if (names.Length == 0) return;
+                    GUI.Label(list.GetRect(24f), title.Translate(), PreviewProgressStyle);
                     foreach (string name in names)
                         if (DrawFontChoice(list, target, name, current == name)) select(name);
+                    list.GapLine();
                 }
                 if (DrawFontChoice(list, target, FontSettings.DefaultFontName, current == FontSettings.DefaultFontName))
                     select(FontSettings.DefaultFontName);
                 list.GapLine();
-                if (favorites.Length > 0)
-                {
-                    GUI.Label(list.GetRect(24f), "CustomFonts.Favorites".Translate(), PreviewProgressStyle);
-                    Choices(favorites); list.GapLine();
-                }
-                Choices(bundled); list.GapLine();
-                Choices(installed);
+                Section(favorites, "CustomFonts.Favorites");
+                Section(bundled, "CustomFonts.ModFonts");
+                Section(installed, "CustomFonts.SystemAndCustomFonts");
             }
             finally { list.End(); Widgets.EndScrollView(); }
         }

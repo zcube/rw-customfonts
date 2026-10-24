@@ -96,7 +96,8 @@ namespace CustomFonts
                     string display = fullName != null && fullRank >= familyRank - 100 ? fullName : family;
                     // Some fonts have only a localized family (or repeat that family as
                     // the full name). Keep the style visible so distinct faces stay clear.
-                    if (style != null && (display == family || fullName == null)) return display + " (" + style + ")";
+                    if (style != null && !string.Equals(style, "Regular", StringComparison.OrdinalIgnoreCase)
+                        && (display == family || fullName == null)) return display + " (" + style + ")";
                     return display;
                 }
                 return family + " (" + (style ?? "Regular") + ")";

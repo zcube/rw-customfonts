@@ -62,6 +62,9 @@
   <CustomFonts.PreviewSize>Font name preview size: {0}px</CustomFonts.PreviewSize>
   <CustomFonts.PreviewSizeHelp>Applying a different size deletes all font preview caches.</CustomFonts.PreviewSizeHelp>
   <CustomFonts.Favorites>Favorites</CustomFonts.Favorites>
+  <CustomFonts.ModFonts>Mod fonts</CustomFonts.ModFonts>
+  <CustomFonts.SystemAndCustomFonts>System and custom fonts</CustomFonts.SystemAndCustomFonts>
+  <CustomFonts.ClearSearch>Clear search</CustomFonts.ClearSearch>
   <CustomFonts.AddFavorite>Add to favorites</CustomFonts.AddFavorite>
   <CustomFonts.RemoveFavorite>Remove from favorites</CustomFonts.RemoveFavorite>
   <CustomFonts.AllStyles>All styles</CustomFonts.AllStyles>

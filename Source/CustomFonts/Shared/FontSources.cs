@@ -29,18 +29,21 @@ namespace CustomFonts
             int language = _displayLanguage;
             if (name != null && _bundledFontSources.TryGetValue(name, out var data))
             {
-                string display = MetadataCache.ReadDisplayName(data.Path, language, data.FaceName);
-                return "(Bundled) " + display + (data.SourceModName == null ? "" : " [" + data.SourceModName + "]");
+                string display = FontSourceCatalog.DisplayName(MetadataCache.ReadDisplayName(data.Path, language, data.FaceName));
+                return display + (data.SourceModName == null ? "" : " [" + data.SourceModName + "]");
             }
             string key = name != null && OSFontPaths.ContainsKey(name) ? name : FontSourceCatalog.FindKey(OSFontPaths, name);
             return key == null ? FontSourceCatalog.DisplayName(name)
-                : MetadataCache.ReadDisplayName(OSFontPaths[key], language, key);
+                : FontSourceCatalog.DisplayName(MetadataCache.ReadDisplayName(OSFontPaths[key], language, key));
         }
 
         private string FontNameTooltip(string name)
         {
             string display = DisplayFontName(name);
-            return string.Equals(display, name, StringComparison.Ordinal) ? display : display + "\n" + name;
+            string face = FontSourceCatalog.DisplayName(name);
+            string localizedFace = name != null && _bundledFontSources.TryGetValue(name, out var data)
+                && data.SourceModName != null ? display.Substring(0, display.Length - data.SourceModName.Length - 3) : display;
+            return string.Equals(localizedFace, face, StringComparison.Ordinal) ? display : display + "\n" + face;
         }
 
         private string CanonicalFontSelection(string selection)

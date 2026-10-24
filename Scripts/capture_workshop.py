@@ -80,7 +80,7 @@ def prepare(game):
                        'CurrentUISmallFontName': 'Default', 'CurrentUIFontName': '(Bundled) Sarasa UI J (Regular)',
                        'CurrentWorldFontName': f'(Bundled) [{PACK_ID}] ABeeZee (Italic)',
                        'WaylithIncludeSystemFonts': 'False', 'ShowFontNamePreviews': 'True',
-                       'FontNamePreviewSize': '20'}.items():
+                       'FontNamePreviewSize': '13'}.items():
         ET.SubElement(settings, key).text = value
     sources = ET.SubElement(settings, 'WaylithFontSourcePaths')
     for name in ['segoeui.ttf', 'arialbi.ttf']:

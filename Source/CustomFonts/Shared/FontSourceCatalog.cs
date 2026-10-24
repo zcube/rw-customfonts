@@ -111,7 +111,19 @@ namespace CustomFonts
 
         internal static string DisplayName(string name)
         {
-            return SelectionFace(name);
+            string face = SelectionFace(name);
+            if (face == null) return null;
+            if (face.StartsWith("(Bundled) ", StringComparison.Ordinal))
+            {
+                face = face.Substring(10);
+                if (face.StartsWith("[", StringComparison.Ordinal))
+                {
+                    int end = face.IndexOf("] ", StringComparison.Ordinal);
+                    if (end >= 0) face = face.Substring(end + 2);
+                }
+            }
+            return face.EndsWith(" (Regular)", StringComparison.OrdinalIgnoreCase)
+                ? face.Substring(0, face.Length - 10) : face;
         }
 
         internal static string PortableSelection(IDictionary<string, string> catalog, string selection)

@@ -44,7 +44,7 @@ namespace CustomFonts
                     Require(pack != null && mods.IndexOf(pack) > mods.IndexOf(_content) && count == 2,
                         "actual active mod after Custom Fonts registers both example styles");
                     Require(pack.AnyContentLoaded(), "game recognizes a font-only pack as loaded content");
-                    Require(DisplayFontName(ExamplePackRegular) == "(Bundled) ABeeZee Regular [" + pack.Name + "]",
+                    Require(DisplayFontName(ExamplePackRegular) == "ABeeZee Regular [" + pack.Name + "]",
                         "font label includes the actual mod display name");
                     if (mode == "restart")
                     {

@@ -128,7 +128,7 @@ for compatibility, and both engines read/write them, preserving paths when switc
 
 Activate a separate font pack **after Custom Fonts - Forked** in the mod list.
 Its `Fonts/` directory is discovered automatically, without a DLL or a manually
-configured search path. Fonts appear as `(Bundled) Display name [Mod name]` in the
+configured search path. Fonts appear as `Display name [Mod name]` in the
 UI, world and fallback lists. Search also matches the providing mod's name.
 They use the same lazy loading and resource lifecycle as the built-in bundles.
 The etc tab lists scanned external mods and each mod's selectable font count,
@@ -237,7 +237,10 @@ Search matches both the current localized label and the original family name, ig
 case. This also applies to font packs, world fonts and fallback choices.
 
 Use the ☆/★ button beside a font to add or remove a favorite. Favorites are shared
-between UI and world font pickers and appear after Default, before bundled fonts.
+between UI and world font pickers and appear after Default, before the **Mod fonts**
+and **System and custom fonts** sections. Names omit `(Bundled)` and redundant
+`(Regular)` suffixes; the original family/style keys remain searchable and saved.
+The × button beside Search clears only the text query, preserving the style filter.
 A favorite appears only in that section, with the same search, preview, selection and
 fallback-add controls. Settings store the original selection key, so changing game
 language does not lose favorites. Missing fonts stay saved and return to the favorites
@@ -245,7 +248,7 @@ section when available again.
 
 The **Etc** tab's **Preview font names in their own font** option is off by default.
 When enabled, visible font choices show a cached image of the display name rendered in that font
-at a size set separately in **Etc** (12–40px, default 20px), independently of UI/world
+at a size set separately in **Etc** (12–40px, default 13px), independently of UI/world
 font scaling. Both plain labels and rendered previews wrap long names at the actual
 list-column width using that size. Row heights and scrolling include every line.
 The plain loading label uses the same size. Click **Apply** after
