@@ -48,16 +48,11 @@ namespace CustomFonts
             if (_hasBundledFonts) return;
             var timer = Stopwatch.StartNew();
             _hasBundledFonts = true;
+            _bundledSourceSnapshot = FontSourceSnapshot.Capture(BundledSourceLocations());
             try
             {
                 // Only packs after this mod participate; content discovery happens after mod loading.
-                var packs = LoadedModManager.RunningModsListForReading
-                    .SkipWhile(mod => mod != _content).Skip(1)
-                    .Select(mod => new FontPackSource
-                    {
-                        PackageId = mod.PackageId, Name = mod.Name,
-                        ContentRoots = mod.foldersToLoadDescendingOrder
-                    });
+                var packs = ActiveFontPacks();
                 var catalog = BundledFontCatalog.Read(Path.Combine(_content.RootDir, "Fonts"))
                     .Concat(FontPackCatalog.Read(packs, MetadataCache.ReadName, SourceError,
                         (pack, count) => _fontPackScans.Add(new FontPackScan

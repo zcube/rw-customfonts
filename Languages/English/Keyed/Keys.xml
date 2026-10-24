@@ -38,7 +38,7 @@
     <CustomFonts.FontPackSearchHelp>Searches the Fonts folders of active mods after Custom Fonts. Counts include selectable font faces and styles. Hover over a mod to see its package ID.</CustomFonts.FontPackSearchHelp>
     <CustomFonts.FontPackSearchEntry>{0} — {1} fonts</CustomFonts.FontPackSearchEntry>
     <CustomFonts.FontPackSearchEmpty>No active external mods follow Custom Fonts.</CustomFonts.FontPackSearchEmpty>
-    <CustomFonts.FontSourcesHelp>Add a TTF, OTF or TTC file, or a folder. Relative paths start in this mod folder; environment variables and ~ are supported. TTC uses its first face. Apply search options with Refresh. Selections save family names instead of file paths and prefer regular faces.</CustomFonts.FontSourcesHelp>
+    <CustomFonts.FontSourcesHelp>Add a TTF, OTF or TTC file, or a folder. Relative paths start in this mod folder; environment variables and ~ are supported. TTC uses its first face. Apply search options with Refresh. Selections save family and style names instead of file paths.</CustomFonts.FontSourcesHelp>
     <CustomFonts.IncludeSystemFonts>Include system fonts</CustomFonts.IncludeSystemFonts>
     <CustomFonts.SystemFontDirectories>Default system font directories ({0})</CustomFonts.SystemFontDirectories>
     <CustomFonts.SystemFontDirectoriesHelp>Searched when system fonts are included. Missing directories are skipped.</CustomFonts.SystemFontDirectoriesHelp>
@@ -48,7 +48,7 @@
     <CustomFonts.EmptyFontPath>Enter a font file or folder path.</CustomFonts.EmptyFontPath>
     <CustomFonts.RemoveFontPath>Remove</CustomFonts.RemoveFontPath>
     <CustomFonts.RefreshFontSources>Refresh font list / apply search options</CustomFonts.RefreshFontSources>
-    <CustomFonts.FontSourceCount>{0} font families, {1} skipped sources (details in log)</CustomFonts.FontSourceCount>
+    <CustomFonts.FontSourceCount>{0} font faces, {1} skipped sources (details in log)</CustomFonts.FontSourceCount>
     <CustomFonts.FallbackFonts>Fallback fonts</CustomFonts.FallbackFonts>
     <CustomFonts.FallbackFontsHelp>Missing characters use these fonts from top to bottom. Applies to UI and world text.</CustomFonts.FallbackFontsHelp>
     <CustomFonts.AddFallbackFont>Add fallback font</CustomFonts.AddFallbackFont>
@@ -64,4 +64,6 @@
   <CustomFonts.Favorites>Favorites</CustomFonts.Favorites>
   <CustomFonts.AddFavorite>Add to favorites</CustomFonts.AddFavorite>
   <CustomFonts.RemoveFavorite>Remove from favorites</CustomFonts.RemoveFavorite>
+  <CustomFonts.AllStyles>All styles</CustomFonts.AllStyles>
+  <CustomFonts.StyleFilterHelp>Filter styles without changing the applied font. All styles removes the filter.</CustomFonts.StyleFilterHelp>
 </LanguageData>

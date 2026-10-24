@@ -46,11 +46,11 @@ namespace CustomFonts
                         Require(_fallbackTestKeys.Length == 2, "two private fallback faces available");
                         string arial = FontSourceCatalog.FindKey(OSFontPaths, "Arial");
                         Require(arial != null, "Latin primary face available");
-                        SaveFontAll(arial + " (Regular)");
-                        SaveWorldFont("(File) " + arial + " (Regular) [/former-machine/arial.ttf]");
+                        SaveFontAll(arial);
+                        SaveWorldFont("(File) " + arial + " [/former-machine/arial.ttf]");
                         Require(PreviewFonts.All(f => _settings.GetCurrentUIFontName(f) == arial)
                             && _settings.CurrentWorldFontName == arial, "UI/world face and moved-file selections migrate to family");
-                        VerificationFallbackNames.AddRange(_fallbackTestKeys.Select(k => "(File) " + k + " (Regular) [/former-machine/" + k + ".ttf]"));
+                        VerificationFallbackNames.AddRange(_fallbackTestKeys.Select(k => "(File) " + k + " [/former-machine/" + k + ".ttf]"));
                         ApplyFallbackChanges();
                         Require(VerificationFallbackNames.SequenceEqual(_fallbackTestKeys), "fallback moved-file selections migrate to portable families");
                         ShowFallbackTestWorld();

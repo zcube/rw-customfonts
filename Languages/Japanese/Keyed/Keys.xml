@@ -34,7 +34,7 @@
     <CustomFonts.DebugWorldFontTestRun>ワールドテスト実行</CustomFonts.DebugWorldFontTestRun>
     <CustomFonts.EmptyFontPath>フォントファイルまたはフォルダーのパスを入力してください。</CustomFonts.EmptyFontPath>
     <CustomFonts.AddFontPath>パスを追加</CustomFonts.AddFontPath>
-    <CustomFonts.FontSourcesHelp>TTF、OTF、TTC ファイルまたはフォルダーを追加します。相対パスは MOD フォルダーが基準で、環境変数と ~ に対応します。TTC は最初の書体を使用します。検索設定は更新ボタンで適用します。 選択はファイルパスではなくファミリー名で保存し、標準の書体を優先します。</CustomFonts.FontSourcesHelp>
+    <CustomFonts.FontSourcesHelp>TTF、OTF、TTC ファイルまたはフォルダーを追加します。相対パスは MOD フォルダーが基準で、環境変数と ~ に対応します。TTC は最初の書体を使用します。検索設定は更新ボタンで適用します。 選択はファイルパスではなくファミリー名とスタイル名で保存します。</CustomFonts.FontSourcesHelp>
     <CustomFonts.FontPath>ファイルまたはフォルダーのパス</CustomFonts.FontPath>
     <CustomFonts.RecursiveFolders>サブフォルダーを検索</CustomFonts.RecursiveFolders>
     <CustomFonts.FontSources>フォントファイルとフォルダー</CustomFonts.FontSources>
@@ -42,7 +42,7 @@
     <CustomFonts.FontPackSearchHelp>Custom Fonts より後に有効な MOD の Fonts フォルダーを検索します。件数は選択可能な書体とスタイルの数です。MOD にマウスを重ねるとパッケージ ID を確認できます。</CustomFonts.FontPackSearchHelp>
     <CustomFonts.FontPackSearchEntry>{0} — フォント {1} 件</CustomFonts.FontPackSearchEntry>
     <CustomFonts.FontPackSearchEmpty>Custom Fonts より後に有効な外部 MOD はありません。</CustomFonts.FontPackSearchEmpty>
-    <CustomFonts.FontSourceCount>フォントファミリー {0} 件、スキップした読み込み元 {1} 件（詳細はログ）</CustomFonts.FontSourceCount>
+    <CustomFonts.FontSourceCount>フォントスタイル {0} 件、スキップした読み込み元 {1} 件（詳細はログ）</CustomFonts.FontSourceCount>
     <CustomFonts.RefreshFontSources>フォント一覧を更新 / 検索設定を適用</CustomFonts.RefreshFontSources>
     <CustomFonts.RemoveFontPath>削除</CustomFonts.RemoveFontPath>
     <CustomFonts.IncludeSystemFonts>システムフォントを含める</CustomFonts.IncludeSystemFonts>
@@ -63,4 +63,6 @@
   <CustomFonts.Favorites>お気に入り</CustomFonts.Favorites>
   <CustomFonts.AddFavorite>お気に入りに追加</CustomFonts.AddFavorite>
   <CustomFonts.RemoveFavorite>お気に入りから削除</CustomFonts.RemoveFavorite>
+  <CustomFonts.AllStyles>すべてのスタイル</CustomFonts.AllStyles>
+  <CustomFonts.StyleFilterHelp>適用中のフォントを変更せずにスタイルを絞り込みます。すべてのスタイルで解除します。</CustomFonts.StyleFilterHelp>
 </LanguageData>

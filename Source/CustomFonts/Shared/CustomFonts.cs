@@ -120,6 +120,7 @@ namespace CustomFonts
         {
             SetupOSInstalledFontNames();
             SetupBundledFonts();
+            RefreshChangedFontsOnSettingsOpen();
             Rect previewFooter = ReserveFontPreviewFooter(ref inRect);
             if (_settings.ShowFontNamePreviews) EnsureFontPreviews();
 
@@ -217,7 +218,7 @@ namespace CustomFonts
                     listRect = Padding(listRect, 10);
                     propertyRect = Padding(propertyRect, 10);
                     leftListingStandard.Begin(listRect);
-                    searchText = leftListingStandard.TextEntryLabeled("CustomFonts.Search".Translate(), searchText).Trim();
+                    DrawFontSearch(leftListingStandard);
                     remainRect = leftListingStandard.GetRect(0);
                     listScrollRect = new Rect(listRect.x, remainRect.y, listRect.width, listRect.height - remainRect.y);
                     DrawFontSettings(GameFont.Tiny, listScrollRect);
@@ -229,7 +230,7 @@ namespace CustomFonts
                     listRect = Padding(listRect, 10);
                     propertyRect = Padding(propertyRect, 10);
                     leftListingStandard.Begin(listRect);
-                    searchText = leftListingStandard.TextEntryLabeled("CustomFonts.Search".Translate(), searchText).Trim();
+                    DrawFontSearch(leftListingStandard);
                     remainRect = leftListingStandard.GetRect(0);
                     listScrollRect = new Rect(listRect.x, remainRect.y, listRect.width, listRect.height - remainRect.y);
                     DrawFontSettings(GameFont.Small, listScrollRect);
@@ -241,7 +242,7 @@ namespace CustomFonts
                     listRect = Padding(listRect, 10);
                     propertyRect = Padding(propertyRect, 10);
                     leftListingStandard.Begin(listRect);
-                    searchText = leftListingStandard.TextEntryLabeled("CustomFonts.Search".Translate(), searchText).Trim();
+                    DrawFontSearch(leftListingStandard);
                     remainRect = leftListingStandard.GetRect(0);
                     listScrollRect = new Rect(listRect.x, remainRect.y, listRect.width, listRect.height - remainRect.y);
                     DrawFontSettings(GameFont.Medium, listScrollRect);
@@ -253,7 +254,7 @@ namespace CustomFonts
                     listRect = Padding(listRect, 10);
                     propertyRect = Padding(propertyRect, 10);
                     leftListingStandard.Begin(listRect);
-                    searchText = leftListingStandard.TextEntryLabeled("CustomFonts.Search".Translate(), searchText).Trim();
+                    DrawFontSearch(leftListingStandard);
                     remainRect = leftListingStandard.GetRect(0);
                     listScrollRect = new Rect(listRect.x, remainRect.y, listRect.width, listRect.height - remainRect.y);
                     DrawWorldFontSettings(listScrollRect);

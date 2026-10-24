@@ -38,7 +38,7 @@
     <CustomFonts.FontPackSearchHelp>搜索加载顺序在 Custom Fonts 之后的已启用模组的 Fonts 文件夹。数量为可选字体及样式的数量。将鼠标悬停在模组上可查看其包 ID。</CustomFonts.FontPackSearchHelp>
     <CustomFonts.FontPackSearchEntry>{0} — {1} 个字体</CustomFonts.FontPackSearchEntry>
     <CustomFonts.FontPackSearchEmpty>Custom Fonts 之后没有已启用的外部模组。</CustomFonts.FontPackSearchEmpty>
-    <CustomFonts.FontSourcesHelp>添加 TTF、OTF、TTC 文件或文件夹。相对路径以模组目录为起点，支持环境变量和 ~。TTC 使用第一个字体。点击刷新以应用搜索设置。 选择按字体族名称保存，不保存文件路径，并优先使用常规字形。</CustomFonts.FontSourcesHelp>
+    <CustomFonts.FontSourcesHelp>添加 TTF、OTF、TTC 文件或文件夹。相对路径以模组目录为起点，支持环境变量和 ~。TTC 使用第一个字体。点击刷新以应用搜索设置。 选择按字体族和样式名称保存，不保存文件路径。</CustomFonts.FontSourcesHelp>
     <CustomFonts.IncludeSystemFonts>包含系统字体</CustomFonts.IncludeSystemFonts>
     <CustomFonts.SystemFontDirectories>系统默认字体目录 ({0})</CustomFonts.SystemFontDirectories>
     <CustomFonts.SystemFontDirectoriesHelp>包含系统字体时搜索这些目录。不存在的目录会被跳过。</CustomFonts.SystemFontDirectoriesHelp>
@@ -48,7 +48,7 @@
     <CustomFonts.EmptyFontPath>请输入字体文件或文件夹路径。</CustomFonts.EmptyFontPath>
     <CustomFonts.RemoveFontPath>移除</CustomFonts.RemoveFontPath>
     <CustomFonts.RefreshFontSources>刷新字体列表 / 应用搜索设置</CustomFonts.RefreshFontSources>
-    <CustomFonts.FontSourceCount>{0} 个字体族，跳过 {1} 个来源（详见日志）</CustomFonts.FontSourceCount>
+    <CustomFonts.FontSourceCount>{0} 个字体样式，跳过 {1} 个来源（详见日志）</CustomFonts.FontSourceCount>
     <CustomFonts.FallbackFonts>后备字体</CustomFonts.FallbackFonts>
     <CustomFonts.FallbackFontsHelp>按从上到下的顺序补充当前字体缺失的字符。适用于界面和世界地图文字。</CustomFonts.FallbackFontsHelp>
     <CustomFonts.AddFallbackFont>添加后备字体</CustomFonts.AddFallbackFont>
@@ -64,4 +64,6 @@
   <CustomFonts.Favorites>收藏字体</CustomFonts.Favorites>
   <CustomFonts.AddFavorite>添加到收藏</CustomFonts.AddFavorite>
   <CustomFonts.RemoveFavorite>取消收藏</CustomFonts.RemoveFavorite>
+  <CustomFonts.AllStyles>所有样式</CustomFonts.AllStyles>
+  <CustomFonts.StyleFilterHelp>筛选样式而不更改已应用的字体。选择所有样式可取消筛选。</CustomFonts.StyleFilterHelp>
 </LanguageData>

@@ -181,8 +181,8 @@ redistribution, together with their required license and copyright notices.
   or moving its installation preserves selections. Keep packageId and face names stable.
   Existing built-in bundle selections keep their current keys.
 * Disabled packs and packs before Custom Fonts are excluded. Restart after changing
-  active mods. Use **Refresh font list / apply search options** after changing pack
-  font files during development. Invalid files are logged and skipped individually.
+  active mods. Reopening mod settings automatically refreshes changed pack font files.
+  Invalid files are logged and skipped individually.
 
 `task test` validates the real example's metadata, upstream hashes, notices, style
 catalog and Unity import bytes. With Harmony and the matching Custom Fonts build
@@ -204,8 +204,11 @@ custom search folders still need to exist there (environment variables or `~` he
 Open **Mod settings → Custom Fonts → etc** to add a `.ttf`, `.otf` or `.ttc` file,
 or a folder. Absolute paths, paths relative to the installed mod folder, environment
 variables such as `%LOCALAPPDATA%`, `$HOME` or `${HOME}`, and `~` are supported. Folder recursion and system
-font discovery can be enabled separately. Click **Refresh font list / apply search
-options** after changing these options or replacing a font file.
+font discovery can be enabled separately. Opening mod settings checks font paths,
+sizes and modification times across system, configured and active mod sources, and
+refreshes the catalogs only when they change. This check runs once per opening,
+not every frame. Use **Refresh font list / apply search options** to apply changes
+while the settings window is already open.
 
 Saved source lists may be shared across Windows, macOS and Linux. Missing or
 inaccessible locations are skipped without stopping other sources. Windows drive/UNC
@@ -243,7 +246,9 @@ section when available again.
 The **Etc** tab's **Preview font names in their own font** option is off by default.
 When enabled, visible font choices show a cached image of the display name rendered in that font
 at a size set separately in **Etc** (12–40px, default 20px), independently of UI/world
-font scaling. The plain loading label uses the same size. Click **Apply** after
+font scaling. Both plain labels and rendered previews wrap long names at the actual
+list-column width using that size. Row heights and scrolling include every line.
+The plain loading label uses the same size. Click **Apply** after
 adjusting the preview-size slider; applying a different size deletes every existing
 preview image, across all languages and renderers, and clears memory previews.
 Only subsequently visible rows are regenerated. Preview work starts only for
@@ -252,9 +257,9 @@ previews. Unseen rows are not loaded. Pending visible previews show a progress b
 so progress appearing or completing cannot shift the list.
 Images persist under `Config/CustomFontsCache/Previews` and are reused after restarting.
 Cache identity includes the source file's path/size/modification time, game language,
-display name and renderer version. Language changes and source revisions get a new
+display name, list-column width and renderer version. Language changes and source revisions get a new
 image without changing saved font selections. Textures use a 64-entry LRU (at most
-15 MiB of RGBA pixels at the maximum 40px preview size), with the current viewport pinned to prevent repeated texture
+15 MiB of resident RGBA pixels, including multiline images), with the current viewport pinned to prevent repeated texture
 replacement. Excess visible rows use plain labels. The disk cache stores the entire
 visited font catalog, with no file-count/total-size cap or automatic eviction. Memory
 eviction reloads the saved mask without rerasterizing the font or deleting its file.
@@ -262,22 +267,27 @@ Restarting the game preserves all disk previews. Turning the option off or closi
 the mod settings immediately clears jobs, queues and memory cache references; GPU
 textures are destroyed after the existing two-frame draw safety delay. Reopening
 settings reloads visible images from disk. One temporary font is rasterized per three frames and released after
-use. Sources above 32 MiB or unavailable glyphs retain the plain label. Long names
-stop at whole glyphs at the raster limit and are clipped to the list column without
-scaling; the tooltip contains the full name. Raster placement measures the actual ink
-bounds, including italic overhangs, ascenders and descenders, then anchors them at
-the top left with padding. Tall glyph runs still produce a preview: the bottom is
-clipped to the fixed row height, without scaling or replacing the image with a plain
+use. Sources above 32 MiB or previews exceeding the bounded raster dimensions retain
+the wrapped plain label. Preview lines break at spaces where possible, otherwise at
+whole glyphs, without scaling the requested font size. Changing the column width uses
+a separate cache entry. The tooltip contains the full name. Raster placement measures the actual ink
+bounds, including italic overhangs, ascenders and descenders. Fitting text is vertically
+centered in each line and in the row, while keeping left padding. Tall glyph runs
+remain top aligned and still produce a preview: the bottom is
+clipped to each line's fixed raster height, without scaling or replacing the image with a plain
 label. TextCore uses a bounded scratch buffer before cropping the top of the raster.
 
-System and configured file fonts appear once per OpenType family in the UI, world and
-fallback lists. Selections save the family name, without the font file's path. The
-current search roots resolve that family on each machine, so the same installed or
-configured family remains selectable after moving files or changing OS. A Regular,
-Normal, Roman or Book face is preferred; if none exists, the first available face is
-used. Equally suitable configured faces precede OS faces, then configured source order
-and sorted file paths break ties. Bundled choices retain their explicit family/style
-names, which are already independent of filesystem paths. Fonts do not have to be
+System and configured file fonts appear once per OpenType family/style in the UI, world
+and fallback lists. Regular, Bold, Italic, Bold Italic and other styles remain separate
+choices. Selections save the family and style without the font file's path. The current
+search roots resolve that exact face on each machine after moving files or changing OS.
+The style combo beside Search filters the discovered styles alongside the text query;
+**All styles** clears the style filter. Filtering never changes the applied font.
+Duplicate configured faces precede OS faces, then source order and sorted paths break
+ties. Existing family-only selections resolve to Regular, Normal, Roman or Book when
+available, otherwise the first sorted face. An unavailable explicit style keeps its
+saved identity instead of silently switching to Regular. Bundled choices retain their
+package-scoped family/style names, independent of filesystem paths. Fonts do not have to be
 installed in the OS. Missing or invalid sources are skipped and reported
 in settings and the game log. TTC collections currently use their first face, repacked
 in memory as a standalone font for both engines.
@@ -304,9 +314,9 @@ Unity shares dynamic fonts across UI sizes and world text; Waylith also keys reg
 by their pixel size, sharing the original source buffer across variants. Refresh invalidates path revisions and reuses unchanged
 content. Unity unloads unreferenced imports, including dependent materials and atlases;
 it keeps sources still bound to either UI or world text. Removed or unreadable selections
-render with Default while retaining the saved family for a later refresh or another OS.
-Old Unity family-only selections remain valid; old face and `(File)` selections migrate
-to family names, even when their former paths no longer exist. Unknown old engine names
+render with Default while retaining the saved face for a later refresh or another OS.
+Old Unity family-only selections resolve to a default face; old face and `(File)` selections
+retain family/style identities, even when their former paths no longer exist. Unknown old engine names
 can also migrate through a still-configured path. Unity's OS-font APIs
 and the UnityPlayer binary patch are no longer used. Flatpak host paths are scanned directly.
 
@@ -410,7 +420,7 @@ with `-quicktest` to exercise Arial with private fonts in both priority orders, 
 Default, bundled Sarasa UI K and system Malgun Gothic fallbacks. The test compares actual
 glyphs in all three UI sizes, checks mixed-script meshes and actual visible world labels,
 and verifies Default and restored text again after 1,200 frames of resource cleanup.
-It migrates old face and moved-file selections to family identities and leaves the
+It migrates old face and moved-file selections to family/style identities and leaves the
 private list saved. `-customfonts-fallback-restart-verify=1 -quicktest` verifies those saved
 definitions and rendered glyphs, including visible world labels, on the next launch. These checks do not run normally.
 The implementation passes all four builds and 149 assertions with the real bundle,
@@ -500,7 +510,7 @@ window; they never run in normal play.
 
 ## Verification
 
-`task test` checks shared catalog behavior (overlapping sources, family deduplication, Regular/source precedence and moved file selections, explicit nested files, missing/invalid sources and removal), OpenType names, invalid tables, Unicode paths, environment expansion,
+`task test` checks shared catalog behavior (overlapping sources, face deduplication, style preservation/filtering, legacy family resolution, source precedence and moved file selections, explicit nested files, missing/invalid sources and removal), OpenType names, invalid tables, Unicode paths, environment expansion,
 explicit files, recursive/non-recursive folders, supplementary Unicode decoding and
 empty CJK glyph coverage without starting RimWorld.
 It also verifies Unity imports preserve exact primary/fallback bytes, deduplicate sources,

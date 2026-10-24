@@ -38,6 +38,16 @@ internal static class FontPackExampleValidation
         check(catalog.Select(f => f.FaceName).Order().SequenceEqual(new[] { "ABeeZee (Italic)", "ABeeZee (Regular)" }), "real OpenType metadata preserves Regular and Italic");
         check(catalog.All(f => f.SourceModName == name && f.SelectionKey.StartsWith("(Bundled) [" + id + "] ")),
             "real pack provides mod-name labels and stable package-scoped selection keys");
+        var fileCatalog = new Dictionary<string, string>();
+        FontSourceCatalog.Populate(fileCatalog, catalog.Select(f => f.Path), Array.Empty<string>(), root, false,
+            FontFiles.ReadName, (file, ex) => errors.Add(file + ex));
+        check(fileCatalog.Count == 2 && FontSourceCatalog.FindKey(fileCatalog, "ABeeZee") == "ABeeZee (Regular)"
+            && Path.GetFileName(fileCatalog["ABeeZee (Italic)"]) == "ABeeZee-Italic.ttf",
+            "real installed/configured files keep separate Regular and Italic sources with legacy family migration");
+        check(FontSourceCatalog.Styles(fileCatalog.Keys).SequenceEqual(new[] { "Regular", "Italic" })
+            && fileCatalog.Keys.Where(k => FontSourceCatalog.MatchesStyle(k, "Italic")
+                && FontSourceCatalog.MatchesSearch(k, k, "ABeeZee")).Single() == "ABeeZee (Italic)",
+            "real style choices combine with a text query and keep the italic face selectable");
         string temporary = Path.Combine(Path.GetTempPath(), "CustomFonts-example-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(temporary);
         try

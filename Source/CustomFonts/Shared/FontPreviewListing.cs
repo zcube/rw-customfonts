@@ -10,9 +10,10 @@ namespace CustomFonts
 {
     public partial class CustomFonts
     {
-        private sealed class PreviewJob { internal string Name, Path, Key; internal bool Done; internal int RequestedFrame; }
-        private sealed class PreviewTexture { internal Texture2D Texture; internal int Used, Frame; }
+        private sealed class PreviewJob { internal string Name, Path, Key; internal bool Done; internal int RequestedFrame, Height; }
+        private sealed class PreviewTexture { internal Texture2D Texture; internal int Used, Frame, Pixels; }
         private const int PreviewTextureLimit = 64;
+        private const int PreviewPixelLimit = FontPreviewImage.MaxWidth * 80 * PreviewTextureLimit;
         private Dictionary<string, PreviewJob> _previewJobs = new Dictionary<string, PreviewJob>();
         private Dictionary<string, PreviewTexture> _previewTextures = new Dictionary<string, PreviewTexture>();
         private Queue<PreviewJob> _previewPriority = new Queue<PreviewJob>();
@@ -23,17 +24,26 @@ namespace CustomFonts
         private int _previewUploads;
         private GUIStyle _previewLabelStyle;
         private float _choiceVisibleTop, _choiceVisibleBottom = float.MaxValue;
+        private int _previewWrapWidth;
 
         private GUIStyle PreviewLabelStyle => _previewLabelStyle ?? (_previewLabelStyle = new GUIStyle
         {
             font = DefaultFonts[GameFont.Small], fontSize = FontPreviewPixelSize, richText = false,
-            alignment = TextAnchor.UpperLeft, wordWrap = false,
+            alignment = TextAnchor.UpperLeft, wordWrap = true,
             normal = { textColor = Color.white }
         });
 
         private GUIStyle _previewProgressStyle, _previewButtonStyle;
-        private GUIStyle PreviewProgressStyle => _previewProgressStyle ?? (_previewProgressStyle = new GUIStyle(PreviewLabelStyle) { fontSize = 16 });
-        private GUIStyle PreviewButtonStyle => _previewButtonStyle ?? (_previewButtonStyle = new GUIStyle(PreviewLabelStyle) { alignment = TextAnchor.MiddleCenter, fontSize = 20 });
+        private GUIStyle PreviewProgressStyle => _previewProgressStyle ?? (_previewProgressStyle = new GUIStyle(PreviewLabelStyle) { fontSize = 16, wordWrap = false });
+        private GUIStyle PreviewButtonStyle => _previewButtonStyle ?? (_previewButtonStyle = new GUIStyle(PreviewLabelStyle) { alignment = TextAnchor.MiddleCenter, fontSize = 20, wordWrap = false });
+        private void EnsureFontPreviewWidth(float columnWidth)
+        {
+            // Favorite/fallback buttons and the radio control leave 100px outside the label.
+            int width = Math.Max(8, Math.Min(FontPreviewImage.MaxWidth, (int)Math.Floor(columnWidth - 100f)));
+            if (_previewWrapWidth == width) return;
+            ResetFontPreviews(); _previewWrapWidth = width;
+            if (_settings.ShowFontNamePreviews) EnsureFontPreviews();
+        }
         private bool FixedPreviewButton(Rect rect, string text)
         {
             bool clicked = Widgets.ButtonText(rect, "");
@@ -110,7 +120,8 @@ namespace CustomFonts
                 {
                     string label = DisplayFontName(job.Name);
                     var file = new FileInfo(job.Path);
-                    job.Key = FontPreviewCache.Key(job.Path, file.Length, file.LastWriteTimeUtc.Ticks, _previewLocale, label, PreviewEngine, FontPreviewPixelSize);
+                    job.Key = FontPreviewCache.Key(job.Path, file.Length, file.LastWriteTimeUtc.Ticks, _previewLocale, label,
+                        PreviewEngine, FontPreviewPixelSize, _previewWrapWidth);
                     var image = _previewDisk.Read(job.Key);
                     if (image == null)
                     {
@@ -121,13 +132,13 @@ namespace CustomFonts
                         _previewRasterFrame = Time.frameCount;
                         // An unusually large source still has a readable fixed-size label.
                         // Preview creation never needs to materialize a >32 MiB font.
-                        if (file.Length <= 32 * 1024 * 1024) image = RenderFontPreview(job.Path, label);
+                        if (file.Length <= 32 * 1024 * 1024) image = RenderFontPreview(job.Path, label, wrapWidth: _previewWrapWidth);
                         if (image != null) _previewDisk.Write(job.Key, image);
                         else job.Key = null;
-                        Complete(job);
+                        job.Height = image?.Height ?? 0; Complete(job);
                         break;
                     }
-                    Complete(job);
+                    job.Height = image.Height; Complete(job);
                 }
                 catch (Exception ex)
                 {
@@ -174,21 +185,19 @@ namespace CustomFonts
             if (Event.current.type != EventType.Repaint || _previewUploads >= 4) return null;
             // Keep the current/previous viewport pinned. If more than 64 rows
             // fit on screen, excess rows keep plain labels instead of thrashing.
-            string victim = null;
-            if (_previewTextures.Count >= PreviewTextureLimit)
-            {
-                victim = _previewTextures.Where(p => p.Value.Frame < Time.frameCount - 1)
-                    .OrderBy(p => p.Value.Used).Select(p => p.Key).FirstOrDefault();
-                if (victim == null) return null;
-            }
-            _previewUploads++;
             var image = _previewDisk.Read(job.Key);
             if (image == null) { job.Key = null; return null; }
-            if (victim != null)
+            int pixels = image.Width * image.Height;
+            int resident = _previewTextures.Values.Sum(p => p.Pixels);
+            while (_previewTextures.Count >= PreviewTextureLimit || resident + pixels > PreviewPixelLimit)
             {
-                var retired = _previewTextures[victim];
+                string victim = _previewTextures.Where(p => p.Value.Frame < Time.frameCount - 1)
+                    .OrderBy(p => p.Value.Used).Select(p => p.Key).FirstOrDefault();
+                if (victim == null) return null;
+                var retired = _previewTextures[victim]; resident -= retired.Pixels;
                 _previewTextures.Remove(victim); QueueDestroy(retired.Texture);
             }
+            _previewUploads++;
             var colors = new Color32[image.Alpha.Length];
             for (int y = 0; y < image.Height; y++)
                 for (int x = 0; x < image.Width; x++)
@@ -197,16 +206,23 @@ namespace CustomFonts
             var texture = new Texture2D(image.Width, image.Height, TextureFormat.RGBA32, false);
             texture.name = "CustomFonts preview";
             texture.SetPixels32(colors); texture.Apply(false, true);
-            _previewTextures[job.Key] = new PreviewTexture { Texture = texture, Used = ++_previewClock, Frame = Time.frameCount };
+            _previewTextures[job.Key] = new PreviewTexture { Texture = texture, Used = ++_previewClock, Frame = Time.frameCount, Pixels = pixels };
             return texture;
         }
         private void DrawFontPreviewLabel(Rect rect, string name)
         {
             var texture = FontPreviewTexture(name);
-            if (texture == null) { GUI.Label(rect, DisplayFontName(name), PreviewLabelStyle); return; }
-            // Clip long names; never scale the raster to the available row width.
+            if (texture == null)
+            {
+                var content = new GUIContent(DisplayFontName(name));
+                float inset = Math.Max(0f, (rect.height - PreviewLabelStyle.CalcHeight(content, rect.width)) / 2f);
+                rect.y += inset; rect.height -= inset;
+                GUI.Label(rect, content, PreviewLabelStyle);
+                return;
+            }
+            // The raster is wrapped at this label width and keeps the requested pixel size.
             GUI.BeginGroup(rect);
-            try { GUI.DrawTexture(new Rect(0, 0, texture.width, texture.height), texture); }
+            try { GUI.DrawTexture(new Rect(0, Math.Max(0f, (rect.height - texture.height) / 2f), texture.width, texture.height), texture); }
             finally { GUI.EndGroup(); }
         }
     }

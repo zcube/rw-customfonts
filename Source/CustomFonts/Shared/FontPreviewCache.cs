@@ -11,7 +11,7 @@ namespace CustomFonts
     // atlas pointer or texture. Bounds apply before allocating or decompressing data.
     internal sealed class FontPreviewImage
     {
-        internal const int DefaultPixelSize = 20, MinPixelSize = 12, MaxPixelSize = 40, MaxWidth = 768, MaxHeight = 80;
+        internal const int DefaultPixelSize = 20, MinPixelSize = 12, MaxPixelSize = 40, MaxWidth = 768, MaxHeight = 2048;
         internal static int ClampSize(int pixels) => Math.Max(MinPixelSize, Math.Min(MaxPixelSize, pixels));
         internal static int HeightFor(int pixels) => ClampSize(pixels) * 2;
         internal int Width, Height = 40;
@@ -28,10 +28,12 @@ namespace CustomFonts
             // a capacity limit: memory residency is controlled independently.
             try { Directory.CreateDirectory(root); } catch { }
         }
-        internal static string Key(string path, long length, long modified, string language, string label, string engine, int pixelSize = FontPreviewImage.DefaultPixelSize)
+        internal static string Key(string path, long length, long modified, string language, string label, string engine,
+            int pixelSize = FontPreviewImage.DefaultPixelSize, int wrapWidth = 0)
         {
-            string identity = "preview-v3-top-left-clipped\n" + engine + "\n" + path + "\n" + length + "\n" + modified
-                + "\n" + language + "\n" + label + "\n" + FontPreviewImage.ClampSize(pixelSize);
+            string identity = "preview-v5-centered\n" + engine + "\n" + path + "\n" + length + "\n" + modified
+                + "\n" + language + "\n" + label + "\n" + FontPreviewImage.ClampSize(pixelSize)
+                + "\n" + Math.Max(0, Math.Min(FontPreviewImage.MaxWidth, wrapWidth));
             using (var sha = SHA256.Create())
                 return BitConverter.ToString(sha.ComputeHash(Encoding.UTF8.GetBytes(identity))).Replace("-", "");
         }

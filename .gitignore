@@ -45,3 +45,4 @@ custom-fonts-files.txt
 .env
 .task/
 *.ps1
+!/Scripts/cleanup_workshop_capture.ps1

@@ -91,8 +91,14 @@ namespace CustomFonts
                 if (family == null) throw new InvalidDataException("Font has no family name.");
                 // Prefer a full display name in the selected language. If that record
                 // is absent, use its localized family rather than an English full name.
-                if (displayLanguage >= 0) return fullName != null && fullRank >= familyRank - 100
-                    ? fullName : family;
+                if (displayLanguage >= 0)
+                {
+                    string display = fullName != null && fullRank >= familyRank - 100 ? fullName : family;
+                    // Some fonts have only a localized family (or repeat that family as
+                    // the full name). Keep the style visible so distinct faces stay clear.
+                    if (style != null && (display == family || fullName == null)) return display + " (" + style + ")";
+                    return display;
+                }
                 return family + " (" + (style ?? "Regular") + ")";
             }
             throw new InvalidDataException("Font has no name table.");

@@ -159,7 +159,7 @@ namespace CustomFonts
                         GUI.Label(new Rect(row.x, row.y, 28, row.height), (i + 1) + ".", PreviewLabelStyle);
                         if (row.yMax >= _fallbackScroll[tab].y && row.y <= _fallbackScroll[tab].y + viewportHeight)
                             DrawFontPreviewLabel(new Rect(row.x + 28, row.y, Math.Max(1, row.width - 133f), row.height), name);
-                        TooltipHandler.TipRegion(row, DisplayFontName(name) + "\n" + name);
+                        TooltipHandler.TipRegion(row, FontNameTooltip(name));
                         if (i > 0 && FixedPreviewButton(new Rect(row.xMax - 100, row.y, 28, 26), "↑")) { move = i; direction = -1; }
                         if (i + 1 < names.Count && FixedPreviewButton(new Rect(row.xMax - 70, row.y, 28, 26), "↓")) { move = i; direction = 1; }
                         if (FixedPreviewButton(new Rect(row.xMax - 40, row.y, 40, 26), "×")) remove = i;
@@ -195,14 +195,19 @@ namespace CustomFonts
             => (target == FontTarget.World ? "CustomFonts.FontWorld" : "CustomFonts.Font" + target).Translate("");
         private float FontChoiceHeight(string name, float width)
         {
-            return FontPreviewHeight + 4f;
+            EnsureFontPreviewWidth(width);
+            float labelWidth = Math.Max(1f, width - 100f);
+            float height = Math.Max(FontPreviewHeight,
+                PreviewLabelStyle.CalcHeight(new GUIContent(DisplayFontName(name)), labelWidth));
+            if (_settings.ShowFontNamePreviews && _previewJobs.TryGetValue(name, out var job)) height = Math.Max(height, job.Height);
+            return height + 4f;
         }
         private bool DrawFontChoice(Listing_Standard list, FontTarget target, string name, bool selected)
         {
             Rect row = list.GetRect(FontChoiceHeight(name, list.ColumnWidth));
             if (row.yMax < _choiceVisibleTop || row.y > _choiceVisibleBottom) return false;
             Rect choose = new Rect(row.x, row.y, Math.Max(1, row.width - 72), row.height);
-            TooltipHandler.TipRegion(choose, DisplayFontName(name) + "\n" + name);
+            TooltipHandler.TipRegion(choose, FontNameTooltip(name));
             bool result = Widgets.RadioButtonLabeled(choose, "", selected);
             DrawFontPreviewLabel(new Rect(choose.x, choose.y, Math.Max(1, choose.width - 28), choose.height), name);
             float buttonHeight = Math.Min(28f, row.height);

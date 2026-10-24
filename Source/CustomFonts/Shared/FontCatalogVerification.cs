@@ -21,7 +21,7 @@ namespace CustomFonts
                 "UI and world use the same shared file catalog");
             if (CurrentFontPlatform() != FontPlatform.Windows) return;
             string regular = FontSourceCatalog.FindKey(OSFontPaths, "Malgun Gothic");
-            Require(regular != null && regular == "Malgun Gothic", "Windows catalog retains portable family identity");
+            Require(regular == "Malgun Gothic (Regular)", "legacy Windows family resolves to its portable Regular face");
             SaveFontAll("Malgun Gothic");
             Require(PreviewFonts.All(f => _settings.GetCurrentUIFontName(f) == regular), "UI selections persist canonical family");
             var font = CurrentFonts[GameFont.Medium];

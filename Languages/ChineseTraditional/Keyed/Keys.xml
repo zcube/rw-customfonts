@@ -38,7 +38,7 @@
     <CustomFonts.FontPackSearchHelp>搜尋載入順序在 Custom Fonts 之後的已啟用模組的 Fonts 資料夾。數量為可選字型及樣式的數量。將滑鼠停在模組上可查看其套件 ID。</CustomFonts.FontPackSearchHelp>
     <CustomFonts.FontPackSearchEntry>{0} — {1} 個字型</CustomFonts.FontPackSearchEntry>
     <CustomFonts.FontPackSearchEmpty>Custom Fonts 之後沒有已啟用的外部模組。</CustomFonts.FontPackSearchEmpty>
-    <CustomFonts.FontSourcesHelp>新增 TTF、OTF、TTC 檔案或資料夾。相對路徑以模組目錄為起點，支援環境變數和 ~。TTC 使用第一個字型。按下重新整理以套用搜尋設定。 選擇按字型家族名稱儲存，不儲存檔案路徑，並優先使用標準字形。</CustomFonts.FontSourcesHelp>
+    <CustomFonts.FontSourcesHelp>新增 TTF、OTF、TTC 檔案或資料夾。相對路徑以模組目錄為起點，支援環境變數和 ~。TTC 使用第一個字型。按下重新整理以套用搜尋設定。 選擇按字型家族和樣式名稱儲存，不儲存檔案路徑。</CustomFonts.FontSourcesHelp>
     <CustomFonts.IncludeSystemFonts>包含系統字型</CustomFonts.IncludeSystemFonts>
     <CustomFonts.SystemFontDirectories>系統預設字型目錄 ({0})</CustomFonts.SystemFontDirectories>
     <CustomFonts.SystemFontDirectoriesHelp>包含系統字型時搜尋這些目錄。不存在的目錄會被略過。</CustomFonts.SystemFontDirectoriesHelp>
@@ -48,7 +48,7 @@
     <CustomFonts.EmptyFontPath>請輸入字型檔案或資料夾路徑。</CustomFonts.EmptyFontPath>
     <CustomFonts.RemoveFontPath>移除</CustomFonts.RemoveFontPath>
     <CustomFonts.RefreshFontSources>重新整理字型清單 / 套用搜尋設定</CustomFonts.RefreshFontSources>
-    <CustomFonts.FontSourceCount>{0} 個字型家族，略過 {1} 個來源（詳見紀錄）</CustomFonts.FontSourceCount>
+    <CustomFonts.FontSourceCount>{0} 個字型樣式，略過 {1} 個來源（詳見紀錄）</CustomFonts.FontSourceCount>
     <CustomFonts.FallbackFonts>後備字型</CustomFonts.FallbackFonts>
     <CustomFonts.FallbackFontsHelp>按由上而下的順序補充目前字型缺少的字元。適用於介面和世界地圖文字。</CustomFonts.FallbackFontsHelp>
     <CustomFonts.AddFallbackFont>新增後備字型</CustomFonts.AddFallbackFont>
@@ -64,4 +64,6 @@
   <CustomFonts.Favorites>收藏字型</CustomFonts.Favorites>
   <CustomFonts.AddFavorite>加入收藏</CustomFonts.AddFavorite>
   <CustomFonts.RemoveFavorite>取消收藏</CustomFonts.RemoveFavorite>
+  <CustomFonts.AllStyles>所有樣式</CustomFonts.AllStyles>
+  <CustomFonts.StyleFilterHelp>篩選樣式而不變更已套用的字型。選擇所有樣式可取消篩選。</CustomFonts.StyleFilterHelp>
 </LanguageData>

@@ -12,6 +12,7 @@
     <Compile Include="../../Source/CustomFonts/Shared/FontFiles.cs" Link="FontFiles.cs" />
     <Compile Include="../../Source/CustomFonts/Shared/AdditionalFontRoots.cs" Link="AdditionalFontRoots.cs" />
     <Compile Include="../../Source/CustomFonts/Shared/FontSourceCatalog.cs" Link="FontSourceCatalog.cs" />
+    <Compile Include="../../Source/CustomFonts/Shared/FontSourceSnapshot.cs" Link="FontSourceSnapshot.cs" />
     <Compile Include="../../Source/CustomFonts/Shared/FontVerificationOptions.cs" Link="FontVerificationOptions.cs" />
     <Compile Include="../../Source/CustomFonts/Shared/FontFileNames.cs" Link="FontFileNames.cs" />
     <Compile Include="../../Source/CustomFonts/Shared/SystemFontRoots.cs" Link="SystemFontRoots.cs" />

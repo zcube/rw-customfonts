@@ -29,6 +29,8 @@ namespace CustomFonts
                     _settings.FontSourcePaths.Clear(); _settings.FontSourcePaths.Add(folder);
                     RefreshFontSources(); EnsureFontPreviews();
                     Require(OSFontPaths.Count >= 3, "preview verification has real font sources");
+                    VerifyFontStyleChoices(folder);
+                    VerifyAutomaticFontRefresh(folder);
                     VerifyFontFavoriteControls();
                     _previewReviewWindow = new PreviewReviewWindow(this);
                     Find.WindowStack.Add(_previewReviewWindow);
@@ -65,17 +67,43 @@ namespace CustomFonts
                         var probe = RenderFontPreview(italic, "jÁgypQ ÇÅÉ");
                         Require(probe != null && FontPreviewLayout.HasClearBorder(probe),
                             "italic overhangs, accents and descenders retain padding when they fit");
+                        int inkTop = 0, inkBottom = probe.Height - 1;
+                        while (inkTop < probe.Height && !probe.Alpha.Skip(inkTop * probe.Width).Take(probe.Width).Any(a => a > 0)) inkTop++;
+                        while (inkBottom >= 0 && !probe.Alpha.Skip(inkBottom * probe.Width).Take(probe.Width).Any(a => a > 0)) inkBottom--;
+                        Require(inkTop <= inkBottom && Math.Abs(inkTop - (probe.Height - 1 - inkBottom)) <= 2,
+                            "fitting preview ink is vertically centered");
                         var clipped = RenderFontPreview(italic, "ÁjgypQ", 24);
                         Require(clipped != null && clipped.Height == 24 && clipped.Alpha.Any(a => a > 0)
                             && clipped.Alpha.Skip((clipped.Height - 1) * clipped.Width).Any(a => a > 0),
                             "oversized glyphs produce an actual top-left cropped image instead of a plain label");
+                        int savedSize = _settings.FontNamePreviewSize;
+                        try
+                        {
+                            foreach (int pixels in new[] { 12, 40 })
+                            {
+                                _settings.FontNamePreviewSize = pixels;
+                                const string longName = "ABeeZee Regular - A long external font mod name with wrapped preview lines";
+                                var narrow = RenderFontPreview(italic, longName, wrapWidth: 120);
+                                var wide = RenderFontPreview(italic, longName, wrapWidth: 240);
+                                Require(narrow != null && wide != null && narrow.Width <= 120 && wide.Width <= 240
+                                    && narrow.Height > FontPreviewHeight && wide.Height <= narrow.Height,
+                                    "actual raster wraps at the column width using preview size " + pixels);
+                                for (int line = 0; line < narrow.Height / FontPreviewHeight; line++)
+                                    Require(narrow.Alpha.Skip(line * FontPreviewHeight * narrow.Width)
+                                        .Take(FontPreviewHeight * narrow.Width).Any(a => a > 0), "wrapped raster line retains visible glyphs");
+                                File.WriteAllBytes(Path.Combine(folder, "wrapped-" + pixels + ".pgm"),
+                                    System.Text.Encoding.ASCII.GetBytes("P5\n" + narrow.Width + " " + narrow.Height + "\n255\n").Concat(narrow.Alpha).ToArray());
+                            }
+                        }
+                        finally { _settings.FontNamePreviewSize = savedSize; }
                     }
                     var first = _previewJobs.Values.First();
                     var original = FontPreviewTexture(first.Name);
                     Require(original != null, "cached image uploaded for listing");
-                    float height = FontChoiceHeight(first.Name, 200);
+                    float pickerWidth = _previewWrapWidth + 100f;
+                    float height = FontChoiceHeight(first.Name, pickerWidth);
                     _settings.SetScaleFactor(GameFont.Medium, 3f); RecalcCustomLineHeights();
-                    Require(FontChoiceHeight(first.Name, 200) == height && ReferenceEquals(original, FontPreviewTexture(first.Name))
+                    Require(FontChoiceHeight(first.Name, pickerWidth) == height && ReferenceEquals(original, FontPreviewTexture(first.Name))
                         && PreviewLabelStyle.fontSize == FontPreviewPixelSize, "listing raster and row size are independent of configured UI size");
                     // Simulate a new session: discard memory textures and re-scan disk cache.
                     ResetFontPreviews(); _previewDisk = null; EnsureFontPreviews();
@@ -128,7 +156,7 @@ namespace CustomFonts
                     SetFontNamePreviewsEnabled(false);
                     Require(FontPreviewTexture(OSFontPaths.Keys.First()) == null && _previewJobs.Count == 0 && _previewDisk == null,
                         "disabled previews never queue work or open a disk cache");
-                    string message = "[Custom Fonts][preview-verify] PASS: persisted favorites and UI/world picker controls; top-left alignment and oversized-glyph clipping; adjustable preview size and full cache invalidation; real raster pixels, persistent cache reuse, fixed listing size, transient font cleanup, viewport pinning, settings-close cleanup and disabled-preview bypass";
+                    string message = "[Custom Fonts][preview-verify] PASS: automatic source refresh on settings reopen; persisted styled UI/world selections and optional style filter; persisted favorites and picker controls; vertical centering and top-aligned oversized-glyph clipping; adjustable preview size and full cache invalidation; real raster pixels, persistent cache reuse, fixed listing size, transient font cleanup, viewport pinning, settings-close cleanup and disabled-preview bypass";
                     Log.Message(message);
                     if (FontVerificationOptions.TryGet("customfonts-preview-result", out string result)) File.WriteAllText(result, message);
                     _previewVerifyStage = -1;
@@ -142,6 +170,82 @@ namespace CustomFonts
                 if (FontVerificationOptions.TryGet("customfonts-preview-result", out string result)) File.WriteAllText(result, message);
             }
         }
+        private void VerifyAutomaticFontRefresh(string folder)
+        {
+            string path = Path.Combine(folder, "ABeeZee-Italic.ttf"), parked = path + ".autorefresh-test";
+            if (!File.Exists(path)) return;
+            Require(!File.Exists(parked), "automatic refresh fixture has no previous parked font");
+            DateTime stamp = File.GetLastWriteTimeUtc(path);
+            var previous = PreviewFonts.ToDictionary(size => size, size => _settings.GetCurrentUIFontName(size));
+            string previousWorld = _settings.CurrentWorldFontName;
+            var favorites = _settings.FavoriteFontNames.ToArray();
+            const string italic = "ABeeZee (Italic)";
+            try
+            {
+                SaveFontAll(italic); SaveWorldFont(italic);
+                if (!IsFavoriteFont(italic)) ToggleFavoriteFont(italic);
+                Require(!RefreshChangedFontsOnSettingsOpen(), "unchanged settings opening reuses the font catalogs");
+                File.Move(path, parked);
+                Require(!RefreshChangedFontsOnSettingsOpen() && OSFontPaths.ContainsKey(italic),
+                    "an open settings window does not repeatedly scan sources");
+                new RimWorld.Dialog_ModSettings(this).PreClose();
+                Require(RefreshChangedFontsOnSettingsOpen() && !OSFontPaths.ContainsKey(italic),
+                    "reopening settings detects removed fonts");
+                Require(PreviewFonts.All(size => _settings.GetCurrentUIFontName(size) == italic)
+                    && _settings.CurrentWorldFontName == italic && IsFavoriteFont(italic),
+                    "missing fonts retain saved styled selections and favorites");
+                File.Move(parked, path);
+                new RimWorld.Dialog_ModSettings(this).PreClose();
+                Require(RefreshChangedFontsOnSettingsOpen() && OSFontPaths.ContainsKey(italic)
+                    && CurrentFonts[GameFont.Medium].name.Contains("Italic"),
+                    "reopening settings detects added fonts and restores the actual styled face");
+                File.SetLastWriteTimeUtc(path, stamp.AddSeconds(2));
+                new RimWorld.Dialog_ModSettings(this).PreClose();
+                Require(RefreshChangedFontsOnSettingsOpen(), "reopening settings detects modified font files");
+                new RimWorld.Dialog_ModSettings(this).PreClose();
+                Require(!RefreshChangedFontsOnSettingsOpen(), "unchanged reopen does not refresh again");
+            }
+            finally
+            {
+                if (File.Exists(parked)) File.Move(parked, path);
+                File.SetLastWriteTimeUtc(path, stamp);
+                RefreshFontSources();
+                foreach (var choice in previous) SaveFont(choice.Key, choice.Value);
+                SaveWorldFont(previousWorld);
+                _settings.FavoriteFontNames.Clear(); _settings.FavoriteFontNames.AddRange(favorites);
+                new RimWorld.Dialog_ModSettings(this).PreClose();
+            }
+        }
+
+        private void VerifyFontStyleChoices(string folder)
+        {
+            if (!File.Exists(Path.Combine(folder, "ABeeZee-Italic.ttf"))) return;
+            string regular = FontSourceCatalog.FindKey(OSFontPaths, "ABeeZee");
+            string italic = FontSourceCatalog.FindKey(OSFontPaths, "ABeeZee (Italic)");
+            Require(regular == "ABeeZee (Regular)" && italic == "ABeeZee (Italic)"
+                && OSFontPaths[regular] != OSFontPaths[italic], "real styles have independent catalog sources");
+            var previous = PreviewFonts.ToDictionary(size => size, size => _settings.GetCurrentUIFontName(size));
+            string previousWorld = _settings.CurrentWorldFontName;
+            SaveFontAll(regular);
+            var regularFont = CurrentFonts[GameFont.Medium];
+            SaveFontAll(italic); SaveWorldFont(italic);
+            Require(PreviewFonts.All(size => _settings.GetCurrentUIFontName(size) == italic)
+                && _settings.CurrentWorldFontName == italic && !ReferenceEquals(regularFont, CurrentFonts[GameFont.Medium])
+                && CurrentFonts[GameFont.Medium].name.Contains("Italic")
+                && GetWorldFontAsset().sourceFontFile.name.Contains("Italic"), "UI and world load the actual italic font");
+            _fontStyleFilter = "Italic";
+            Require(OSFontPaths.Keys.Where(name => FontSourceCatalog.MatchesStyle(name, _fontStyleFilter)).SequenceEqual(new[] { italic }),
+                "style filter selects the actual italic face");
+            _fontStyleFilter = null;
+            Require(OSFontPaths.Keys.All(name => FontSourceCatalog.MatchesStyle(name, _fontStyleFilter))
+                && _settings.CurrentWorldFontName == italic, "clearing the filter restores all styles without changing selection");
+            WriteSettings();
+            Require(Directory.EnumerateFiles(GenFilePaths.ConfigFolderPath, "Mod_*_CustomFonts.xml")
+                .Any(path => File.ReadAllText(path).Contains(italic)), "styled selections persist in settings XML");
+            foreach (var choice in previous) SaveFont(choice.Key, choice.Value);
+            SaveWorldFont(previousWorld);
+        }
+
         private void VerifyFontFavoriteControls()
         {
             string file = OSFontPaths.Keys.First(), bundle = BundledFonts.Keys.First();

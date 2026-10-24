@@ -124,6 +124,9 @@ Check(Display(LocalizedFont((0x409, 16, "NanumGothic"), (0x409, 4, "NanumGothic 
     (0x412, 1, "나눔고딕")), 0x412) == "나눔고딕", "localized legacy family beats English typographic/full name");
 Check(Display(LocalizedFont((0x409, 1, "English Family"), (0x412, 16, "한국어 패밀리")), 0x411)
     == "English Family", "English family beats unrelated localized typographic family");
+Check(Display(LocalizedFont((0x409, 16, "Style Family"), (0x409, 17, "Bold Italic"),
+    (0x412, 1, "스타일 패밀리")), 0x412) == "스타일 패밀리 (Bold Italic)",
+    "localized family-only labels retain the combined face style");
 Check(FontSourceCatalog.DisplayLanguage("German") == 0x407, "other game languages resolve independently of OS culture");
 Check(FontSourceCatalog.DisplayLanguage("UnknownLanguage") == 0x409, "unknown game language falls back to English");
 
@@ -211,6 +214,7 @@ string root = Path.Combine(Path.GetTempPath(), "CustomFonts-tests-" + Guid.NewGu
 Directory.CreateDirectory(Path.Combine(root, "한글 Fonts", "nested"));
 try
 {
+    FontSourceSnapshotValidation.Run(root, Check);
     string packRoot = Path.Combine(root, "pack");
     string versionRoot = Path.Combine(packRoot, "1.7");
     Directory.CreateDirectory(Path.Combine(packRoot, "Fonts", "nested"));
@@ -296,22 +300,24 @@ try
             FontFiles.ReadName, (source, _) => sourceErrors.Add(source));
     }
     Populate(new[] { path, path }, new[] { folder, nestedFont, folder }, true);
-    Check(catalog.Count == 1 && sourceErrors.Count == 0, "system and configured files collapse to one portable family");
-    Check(catalog["테스트 Font"] == path, "equivalent configured faces use source order and sorted paths");
-    Check(FontSourceCatalog.DisplayName("(File) 테스트 Font (Regular) [" + path + "]") == "테스트 Font", "legacy file label displays portable family");
+    Check(catalog.Count == 1 && sourceErrors.Count == 0, "duplicate system and configured faces collapse to one portable family/style");
+    Check(catalog["테스트 Font (Regular)"] == path, "equivalent configured faces use source order and sorted paths");
+    Check(FontSourceCatalog.DisplayName("(File) 테스트 Font (Regular) [" + path + "]") == "테스트 Font (Regular)", "legacy file label retains family and style without its machine path");
     Check(FontSourceCatalog.DisplayName("Legacy OS family") == "Legacy OS family", "existing family selection remains unchanged");
     Check(FontSourceCatalog.Family("Family (Example) (Regular)") == "Family (Example)", "metadata preserves parentheses in family names");
-    Check(FontSourceCatalog.FindKey(catalog, "테스트 Font") == "테스트 Font", "legacy Unity family retains its identity");
-    Check(FontSourceCatalog.FindKey(catalog, "테스트 Font (Regular)") == "테스트 Font", "old face selection migrates to family");
-    Check(FontSourceCatalog.FindKey(catalog, "테스트 Font (Bold)") == "테스트 Font", "old styled face migrates to family default");
-    Check(FontSourceCatalog.FindKey(catalog, "테스트 font") == "테스트 Font", "family resolution ignores case");
+    Check(FontSourceCatalog.FindKey(catalog, "테스트 Font") == "테스트 Font (Regular)", "legacy Unity family retains its identity");
+    Check(FontSourceCatalog.FindKey(catalog, "테스트 Font (Regular)") == "테스트 Font (Regular)", "old face selection migrates to family");
+    Check(FontSourceCatalog.FindKey(catalog, "테스트 Font (Bold)") == null, "missing explicit style never silently selects Regular");
+    Check(FontSourceCatalog.FindKey(catalog, "(File) 테스트 Font (Italic) [" + path + "]") == null,
+        "legacy paths cannot replace an unavailable explicit style with Regular");
+    Check(FontSourceCatalog.FindKey(catalog, "테스트 font") == "테스트 Font (Regular)", "family resolution ignores case");
     string oldFileKey = "(File) Old engine name [" + path + "]";
-    Check(FontSourceCatalog.FindKey(catalog, oldFileKey) == "테스트 Font", "unknown old engine file name migrates through configured path");
+    Check(FontSourceCatalog.FindKey(catalog, oldFileKey) == "테스트 Font (Regular)", "unknown old engine file name migrates through configured path");
     string movedSelection = "(File) 테스트 Font (Regular) [/old/other-machine/font.ttf]";
-    Check(FontSourceCatalog.FindKey(catalog, movedSelection) == "테스트 Font", "private selection migrates by family despite moved file or OS");
+    Check(FontSourceCatalog.FindKey(catalog, movedSelection) == "테스트 Font (Regular)", "private selection migrates by family despite moved file or OS");
     Populate(Array.Empty<string>(), new[] { folder }, false);
-    Check(catalog.Count == 1 && catalog.Keys.Single() == "테스트 Font", "system exclusion retains configured families");
-    Check(FontSourceCatalog.FindKey(catalog, "테스트 Font") == "테스트 Font", "family can resolve from a configured folder without OS installation");
+    Check(catalog.Count == 1 && catalog.Keys.Single() == "테스트 Font (Regular)", "system exclusion retains configured families");
+    Check(FontSourceCatalog.FindKey(catalog, "테스트 Font") == "테스트 Font (Regular)", "family can resolve from a configured folder without OS installation");
     Populate(Array.Empty<string>(), new[] { folder, nestedFont }, false);
     Check(catalog.Count == 1, "explicit nested file deduplicates by family without recursion");
     string invalidFont = Path.Combine(folder, "invalid.ttf");
@@ -325,30 +331,50 @@ try
         .Concat(new[] { "another-machine-missing", @"한글 Fonts\custom font.TTF" }).ToArray();
     string[] savedSharedPaths = sharedPaths.ToArray();
     Populate(Array.Empty<string>(), sharedPaths, false);
-    Check(catalog.Count == 1 && catalog["테스트 Font"] == path && sourceErrors.Count == 4,
+    Check(catalog.Count == 1 && catalog["테스트 Font (Regular)"] == path && sourceErrors.Count == 4,
         "shared foreign/missing roots are skipped while valid backslash relative source is scanned");
     Check(sharedPaths.SequenceEqual(savedSharedPaths), "scanning preserves shared path expressions for other machines");
     FontSourceCatalog.Populate(catalog = new(), Array.Empty<string>(), new[] { nestedFont, path }, root, false,
         f => f == nestedFont ? throw new UnauthorizedAccessException("test unreadable font") : FontFiles.ReadName(f),
         (_, _) => { });
-    Check(catalog.Count == 1 && catalog["테스트 Font"] == path, "unreadable font does not prevent another source from resolving");
-    // The family resolver must choose Regular over lexically earlier Bold, regardless
-    // of source, and prefer configured sources when both contain a Regular face.
+    Check(catalog.Count == 1 && catalog["테스트 Font (Regular)"] == path, "unreadable font does not prevent another source from resolving");
+    // Style faces coexist; only legacy family selections choose a default face.
     FontSourceCatalog.Populate(catalog = new(), new[] { nestedFont }, new[] { path }, root, false,
-        f => f == path ? "테스트 Font (Bold)" : "테스트 Font (Regular)", (_, _) => { });
-    Check(catalog["테스트 Font"] == nestedFont, "OS Regular precedes configured Bold");
+        f => f == path ? "테스트 Font (Bold Italic)" : "테스트 Font (Regular)", (_, _) => { });
+    Check(catalog.Count == 2 && catalog["테스트 Font (Bold Italic)"] == path
+        && FontSourceCatalog.FindKey(catalog, "테스트 Font") == "테스트 Font (Regular)",
+        "configured Bold Italic stays selectable beside OS Regular while legacy family uses Regular");
+    Check(FontSourceCatalog.PortableSelection(catalog, "테스트 Font (Bold Italic)") == "테스트 Font (Bold Italic)"
+        && FontSourceCatalog.FindKey(catalog, "(File) 테스트 Font (Bold Italic) [/old/font.ttf]") == "테스트 Font (Bold Italic)",
+        "new and legacy explicit style selections survive persistence and moved files");
+    Check(FontSourceCatalog.Styles(catalog.Keys).SequenceEqual(new[] { "Regular", "Bold Italic" }),
+        "style combo lists actual combined styles with Regular first");
+    Check(FontSourceCatalog.Styles(new[] { "Family (Normal)", "Family (Regular)", "Family (Italic)" })
+        .SequenceEqual(new[] { "Regular", "Normal", "Italic" })
+        && FontSourceCatalog.FindKey(new Dictionary<string, string> { ["Family (Normal)"] = path,
+            ["Family (Regular)"] = nestedFont }, "Family") == "Family (Regular)",
+        "Regular precedes alternate normal faces in legacy resolution and style options");
+    Check(catalog.Keys.Count(k => FontSourceCatalog.MatchesStyle(k, null)) == 2
+        && catalog.Keys.Count(k => FontSourceCatalog.MatchesStyle(k, "bold italic")) == 1
+        && !catalog.Keys.Any(k => FontSourceCatalog.MatchesStyle(k, "Italic")),
+        "optional style filter clears fully and matches a whole combined style ignoring case");
+    Check(FontSourceCatalog.MatchesStyle("(Bundled) [mod.id] Family (ExtraBold)", "ExtraBold")
+        && FontSourceCatalog.Styles(new[] { "A (Italic)", "B (italic)", "C (Regular)" }).Length == 2,
+        "mod faces participate in style filtering without duplicate options");
     FontSourceCatalog.Populate(catalog = new(), new[] { path }, new[] { nestedFont }, root, false,
         _ => "테스트 Font (Regular)", (_, _) => { });
-    Check(catalog["테스트 Font"] == nestedFont, "configured Regular precedes OS Regular");
+    Check(catalog.Count == 1 && catalog["테스트 Font (Regular)"] == nestedFont, "duplicate configured face precedes OS face");
     FontSourceCatalog.Populate(catalog = new(), new[] { path, nestedFont }, Array.Empty<string>(), root, false,
         f => f == path ? "테스트 Font (Bold)" : "테스트 Font (Normal)", (_, _) => { });
-    Check(catalog["테스트 Font"] == nestedFont, "Normal is a regular family face");
+    Check(catalog.Count == 2 && FontSourceCatalog.FindKey(catalog, "테스트 Font") == "테스트 Font (Normal)",
+        "Normal is preferred for a legacy family without hiding Bold");
     FontSourceCatalog.Populate(catalog = new(), new[] { path, nestedFont }, Array.Empty<string>(), root, false,
         f => f == path ? "Family (Example) (Bold)" : "family (example) (Regular)", (_, _) => { });
-    Check(catalog.Count == 1 && FontSourceCatalog.FindKey(catalog, "Family (Example)") == "Family (Example)", "case-insensitive families preserve parenthesized names");
+    Check(catalog.Count == 2 && FontSourceCatalog.FindKey(catalog, "Family (Example)") == "family (example) (Regular)",
+        "legacy parenthesized family selects Regular without discarding a distinct style");
     Populate(Array.Empty<string>(), Array.Empty<string>(), true);
     Check(catalog.Count == 0, "removing sources clears selectable family choices");
-    Check(FontSourceCatalog.PortableSelection(catalog, movedSelection) == "테스트 Font", "unavailable old private selection drops machine path and retains family");
+    Check(FontSourceCatalog.PortableSelection(catalog, movedSelection) == "테스트 Font (Regular)", "unavailable old private selection drops machine path and retains family");
     Check(FontSourceCatalog.PortableSelection(catalog, "Missing family") == "Missing family", "unavailable family remains portable for another OS or refresh");
     Check(FontSourceCatalog.PortableSelection(catalog, "Family (Example)") == "Family (Example)", "unavailable new family with parentheses retains exact identity");
     Check(FontSourceCatalog.FindKey(catalog, oldFileKey) == null, "stale path is never opened outside configured sources");
@@ -446,8 +472,11 @@ try
         && g.Y + inkY >= 2 && g.Y + inkY + g.Height <= 38), "all ink including right overhang retains two-pixel padding");
     var shiftedInk = new FontPreviewLayout(); shiftedInk.TryAdd(new FontPreviewRectangle(100, 900, 20, 24));
     Check(shiftedInk.TryPlace(40, out int shiftedX, out int shiftedY, out int shiftedWidth)
-        && shiftedX + 100 == 2 && shiftedY + 900 == 2 && shiftedWidth == 24,
-        "font baseline offsets do not crop ink or create a huge empty texture");
+        && shiftedX + 100 == 2 && shiftedY + 900 == 8 && shiftedWidth == 24,
+        "fitting ink is vertically centered independently of its font baseline");
+    Check(shiftedInk.TryPlace(40, out _, out int centeredBottomUp, out _, bottomUp: true)
+        && centeredBottomUp + 900 == 8,
+        "bottom-up rasterizer centers fitting ink at the same vertical position");
     var tallInk = new FontPreviewLayout(); tallInk.TryAdd(new FontPreviewRectangle(0, -80, 20, 100));
     Check(tallInk.TryPlace(40, out _, out int tallOffset, out _) && tallOffset - 80 == 2 && tallInk.RequiredHeight == 104,
         "oversized ink remains top aligned and may extend below the fixed viewport");
@@ -461,6 +490,22 @@ try
     Check(FontPreviewLayout.HasClearBorder(borderedImage), "ordinary raster keeps clear canvas edges");
     borderedImage.Alpha[0] = 255;
     Check(!FontPreviewLayout.HasClearBorder(borderedImage), "raster validation detects ink touching a crop boundary");
+    FontPreviewGlyph[] PreviewGlyphs(string text, int size) => text.Select((c, index) => new FontPreviewGlyph {
+        Index = index, Scalar = c, Advance = size,
+        Bounds = new FontPreviewRectangle(-2, -size, c == ' ' ? 0 : size - 2, c == ' ' ? 0 : size)
+    }).ToArray();
+    var wrappedNames = FontPreviewLines.Create(PreviewGlyphs("AB CD EF", 10), 45);
+    Check(wrappedNames.Length == 3 && wrappedNames.Select(line => new string(line.Glyphs.Select(g => (char)g.Scalar).ToArray()))
+        .SequenceEqual(new[] { "AB", "CD", "EF" }), "preview wraps whole words at actual advance widths");
+    Check(wrappedNames.All(line => line.Layout.TryPlace(40, out _, out _, out int width) && width <= 45),
+        "each wrapped raster line retains ink padding inside its column");
+    var cjkPreview = PreviewGlyphs("한글폰트명", 20); cjkPreview[2].Scalar = 0x20000;
+    var cjkLines = FontPreviewLines.Create(cjkPreview, 50);
+    Check(cjkLines.Length == 3 && cjkLines.SelectMany(line => line.Glyphs).Select(g => g.Scalar).SequenceEqual(cjkPreview.Select(g => g.Scalar)),
+        "unspaced CJK and supplementary glyphs wrap without dropping or splitting characters");
+    Check(FontPreviewLines.Create(PreviewGlyphs("Long Font Name", 40), 130).Length
+        > FontPreviewLines.Create(PreviewGlyphs("Long Font Name", 12), 130).Length,
+        "changing preview size changes wrapping at the same list width");
     string previewRoot = Path.Combine(root, "preview-cache");
     var previews = new FontPreviewCache(previewRoot);
     string PreviewKey(string language = "Korean", string label = "나눔고딕", long modified = 1)
@@ -502,6 +547,13 @@ try
     var largerImage = new FontPreviewImage { Width = 70, Height = FontPreviewImage.HeightFor(32), Alpha = new byte[70 * FontPreviewImage.HeightFor(32)] };
     wholeCatalogPreviews.Write(largerKey, largerImage);
     Check(wholeCatalogPreviews.Read(largerKey).Height == 64, "custom-size raster dimensions survive cache round trip");
+    string narrowKey = FontPreviewCache.Key(path, 1234, 1, "Korean", "나눔고딕", "Unity", 32, 120);
+    Check(narrowKey != FontPreviewCache.Key(path, 1234, 1, "Korean", "나눔고딕", "Unity", 32, 240)
+        && narrowKey != largerKey, "column width invalidates cached previews independently of preview size");
+    var multilineImage = new FontPreviewImage { Width = 120, Height = 320, Alpha = new byte[120 * 320] };
+    multilineImage.Alpha[^1] = 255; wholeCatalogPreviews.Write(narrowKey, multilineImage);
+    Check(wholeCatalogPreviews.Read(narrowKey).Height == 320 && wholeCatalogPreviews.Read(narrowKey).Alpha[^1] == 255,
+        "multiline raster and final-line pixels survive persistent cache round trip");
     Check(FontPreviewImage.ClampSize(-1) == 12 && FontPreviewImage.ClampSize(999) == 40, "preview size is bounded independently of game font scaling");
     string previewTemporary = Path.Combine(previewRoot, "incomplete.preview.tmp");
     File.WriteAllBytes(previewTemporary, new byte[] { 1 });

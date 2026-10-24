@@ -37,6 +37,12 @@ namespace CustomFonts
                 : MetadataCache.ReadDisplayName(OSFontPaths[key], language, key);
         }
 
+        private string FontNameTooltip(string name)
+        {
+            string display = DisplayFontName(name);
+            return string.Equals(display, name, StringComparison.Ordinal) ? display : display + "\n" + name;
+        }
+
         private string CanonicalFontSelection(string selection)
         {
             if (selection == FontSettings.DefaultFontName || selection.StartsWith("(Bundled) ", StringComparison.Ordinal)) return selection;
@@ -57,6 +63,7 @@ namespace CustomFonts
             if (_hasOSFontAssets) return;
             var timer = Stopwatch.StartNew();
             _hasOSFontAssets = true;
+            _fileSourceSnapshot = FontSourceSnapshot.Capture(FileSourceLocations());
             _fontSourceErrors.Clear();
             MetadataCache.ClearDisplayNames();
             var systemFiles = new HashSet<string>(FontSourceCatalog.PathComparer);
@@ -71,6 +78,8 @@ namespace CustomFonts
             }
             FontSourceCatalog.Populate(OSFontPaths, systemFiles, _settings.FontSourcePaths, _content.RootDir,
                 _settings.RecursiveFontFolders, MetadataCache.ReadName, SourceError);
+            _settings.FavoriteFontNames = FontFavoriteLists.Normalize(_settings.FavoriteFontNames.Select(name =>
+                name.StartsWith("(Bundled) ", StringComparison.Ordinal) ? name : FontSourceCatalog.PortableSelection(OSFontPaths, name)));
             MetadataCache.Save();
             LogFontTiming("file catalog", timer, $"{OSFontPaths.Count} choices; name cache hits={MetadataCache.Hits}, misses={MetadataCache.Misses}");
             DebugLog($"Font catalog: {OSFontPaths.Count} files, {_fontSourceErrors.Count} skipped sources");

@@ -27,7 +27,7 @@ namespace CustomFonts
             [HarmonyPostfix]
             private static void Postfix(Mod ___mod)
             {
-                if (___mod is CustomFonts fonts) fonts.ReleaseFontPreviewMemory();
+                if (___mod is CustomFonts fonts) fonts.CloseFontSettings();
             }
         }
 

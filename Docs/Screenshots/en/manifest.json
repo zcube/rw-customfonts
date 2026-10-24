@@ -1,0 +1,89 @@
+{
+  "language": "English",
+  "screen": [
+    1920,
+    1200
+  ],
+  "ui_scale": 0.75,
+  "capture_id": "7059053f03c84786957c720c9ec7e638",
+  "started_utc": "2026-10-24T04:36:43.0171832Z",
+  "game_version": "1.7.4985 rev1269",
+  "mod_dll_sha256": "99cf6c14221e1c3edbe549b768b1f4c5da9b45ee59e21fcec555db56242d780b",
+  "resized": false,
+  "scripts_sha256": {
+    "capture_workshop.py": "646e593fd9d503ad6b551ea7e15b579538047ab60e023b5b97692759eeffc8fc",
+    "capture_workshop.mjs": "ec1c341e55650f9be86e06065688a6b08d9ae9cda6e4adb8fbd722aa584f7b2c",
+    "cleanup_workshop_capture.ps1": "bd92085bf6433a9390559389cc6bacb4d18b3a6510053fe2db62c301e0916472"
+  },
+  "method": "Real RimWorld window captures via computer-use; settings-window crop only.",
+  "images": [
+    {
+      "file": "01-ui-tiny.png",
+      "title": "UI: Tiny",
+      "width": 675,
+      "height": 525,
+      "sha256": "8205a9fb7dc3ca4687f47e9f5d5cfbc987727329345549fbb5e71c4fc001a16d",
+      "redactions": []
+    },
+    {
+      "file": "02-ui-small.png",
+      "title": "UI: Small",
+      "width": 675,
+      "height": 525,
+      "sha256": "a4825abceece5d31569829b410fde216739ec74793c1bf8077caf19549da38e0",
+      "redactions": []
+    },
+    {
+      "file": "03-ui-medium.png",
+      "title": "UI: Medium",
+      "width": 675,
+      "height": 525,
+      "sha256": "04a3d1248e36de19d66303c96eac1297c0c0935f5189c3cec321d1b3b53236c4",
+      "redactions": []
+    },
+    {
+      "file": "04-world.png",
+      "title": "World",
+      "width": 675,
+      "height": 525,
+      "sha256": "049dea11aa9e8e8b202e7046087ccc9749c12736f8521df370b9733dc321e931",
+      "redactions": []
+    },
+    {
+      "file": "05-etc-preview-and-sources.png",
+      "title": "etc: Preview and font sources",
+      "width": 675,
+      "height": 525,
+      "sha256": "f3439e27792366337bec0bf270cb096cb2556d5871657499a62416a15b07f438",
+      "redactions": [
+        {
+          "box": [
+            10,
+            386,
+            649,
+            407
+          ],
+          "label": "User font directory (profile path hidden)"
+        }
+      ]
+    },
+    {
+      "file": "06-etc-font-packs.png",
+      "title": "etc: Paths and external font packs",
+      "width": 675,
+      "height": 525,
+      "sha256": "0042404a9d736f701033390d59da6c15eeb17a55b9df1396d4bebba92dacd59e",
+      "redactions": [
+        {
+          "box": [
+            10,
+            184,
+            649,
+            202
+          ],
+          "label": "User font directory (profile path hidden)"
+        }
+      ]
+    }
+  ]
+}

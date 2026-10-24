@@ -22,18 +22,31 @@ namespace CustomFonts
 
         internal static string SelectionFamily(string selection)
         {
-            if (!IsLegacyFile(selection)) return Family(selection);
+            return Family(SelectionFace(selection));
+        }
+
+        private static string SelectionFace(string selection)
+        {
+            if (!IsLegacyFile(selection)) return selection;
             int at = selection.LastIndexOf(" [", StringComparison.Ordinal);
             string face = at >= 7 && selection.EndsWith("]", StringComparison.Ordinal)
                 ? selection.Substring(7, at - 7) : selection.Substring(7);
-            return Family(face);
+            return face;
+        }
+
+        internal static string Style(string face)
+        {
+            string family = Family(face);
+            return face != null && family != face ? face.Substring(family.Length + 2, face.Length - family.Length - 3) : "Regular";
         }
 
         private static int StyleRank(string face)
         {
-            string family = Family(face);
-            string style = face.Length > family.Length ? face.Substring(family.Length + 2).TrimEnd(')') : "Regular";
-            return new[] { "Regular", "Normal", "Roman", "Book" }.Any(s => string.Equals(s, style, StringComparison.OrdinalIgnoreCase)) ? 0 : 1;
+            string style = Style(face);
+            var defaults = new[] { "Regular", "Normal", "Roman", "Book" };
+            for (int i = 0; i < defaults.Length; i++)
+                if (string.Equals(defaults[i], style, StringComparison.OrdinalIgnoreCase)) return i;
+            return defaults.Length;
         }
 
         internal static string FindKey(IDictionary<string, string> catalog, string selection)
@@ -41,18 +54,29 @@ namespace CustomFonts
             if (selection == null) return null;
             string exact = catalog.Keys.FirstOrDefault(k => string.Equals(k, selection, StringComparison.OrdinalIgnoreCase));
             if (exact != null) return exact;
-            string family = SelectionFamily(selection);
-            string key = catalog.Keys.FirstOrDefault(k => string.Equals(k, family, StringComparison.OrdinalIgnoreCase));
+            string face = SelectionFace(selection);
+            string key = catalog.Keys.FirstOrDefault(k => string.Equals(k, face, StringComparison.OrdinalIgnoreCase));
             if (key != null) return key;
-            if (IsLegacyFile(selection))
+            if (IsLegacyFile(selection) && Family(face) == face)
             {
                 // Compatibility for old engine-generated names. Paths are considered
                 // only among configured candidates, never opened from saved selections.
                 var comparison = Path.DirectorySeparatorChar == '\\' ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-                return catalog.FirstOrDefault(p => selection.EndsWith(" [" + p.Value + "]", comparison)).Key;
+                key = catalog.FirstOrDefault(p => selection.EndsWith(" [" + p.Value + "]", comparison)).Key;
+                if (key != null) return key;
             }
-            return null;
+            // Old selections contain only a family. Resolve those deterministically,
+            // but never turn an unavailable explicit style into another face.
+            return catalog.Keys.Where(k => string.Equals(Family(k), face, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(StyleRank).ThenBy(k => k, StringComparer.OrdinalIgnoreCase).FirstOrDefault();
         }
+
+        internal static bool MatchesStyle(string name, string style)
+            => string.IsNullOrEmpty(style) || string.Equals(Style(name), style, StringComparison.OrdinalIgnoreCase);
+
+        internal static string[] Styles(IEnumerable<string> names) => names.Select(Style)
+            .Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(s => StyleRank("Font (" + s + ")"))
+            .ThenBy(s => s, StringComparer.OrdinalIgnoreCase).ToArray();
 
         internal static bool MatchesSearch(string selection, string display, string query)
             => string.IsNullOrEmpty(query)
@@ -87,19 +111,18 @@ namespace CustomFonts
 
         internal static string DisplayName(string name)
         {
-            return IsLegacyFile(name) ? SelectionFamily(name) : name;
+            return SelectionFace(name);
         }
 
         internal static string PortableSelection(IDictionary<string, string> catalog, string selection)
-            => FindKey(catalog, selection) ?? (IsLegacyFile(selection) ? SelectionFamily(selection) : selection);
+            => FindKey(catalog, selection) ?? SelectionFace(selection);
 
         internal static void Populate(IDictionary<string, string> catalog, IEnumerable<string> systemFiles,
             IEnumerable<string> sources, string modRoot, bool recursive, Func<string, string> readName,
             Action<string, Exception> error)
         {
             var seen = new HashSet<string>(PathComparer);
-            var ranks = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            var families = catalog.Keys.ToDictionary(k => k, k => k, StringComparer.OrdinalIgnoreCase);
+            var faces = new HashSet<string>(catalog.Keys, StringComparer.OrdinalIgnoreCase);
             void Add(string file)
             {
                 try
@@ -108,16 +131,12 @@ namespace CustomFonts
                     if (!seen.Add(file)) return;
                     string name = readName(file);
                     if (string.IsNullOrWhiteSpace(name)) throw new InvalidDataException("Font has no face name.");
-                    string family = Family(name);
-                    if (!families.TryGetValue(family, out string key)) families.Add(family, key = family);
-                    int rank = StyleRank(name);
-                    if (!catalog.ContainsKey(key) || (ranks.TryGetValue(key, out int previous) && rank < previous))
-                    { catalog[key] = file; ranks[key] = rank; }
+                    if (faces.Add(name)) catalog[name] = file;
                 }
                 catch (Exception ex) { error(file, ex); }
             }
-            // Regular faces take precedence; equally suitable configured faces precede
-            // OS faces. Source order and sorted paths break remaining ties deterministically.
+            // Keep every family/style. For duplicate faces, configured sources precede
+            // OS files; source order and sorted paths break remaining ties.
             foreach (string source in sources)
             {
                 try
