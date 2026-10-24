@@ -281,7 +281,7 @@ System and configured file fonts appear once per OpenType family/style in the UI
 and fallback lists. Regular, Bold, Italic, Bold Italic and other styles remain separate
 choices. Selections save the family and style without the font file's path. The current
 search roots resolve that exact face on each machine after moving files or changing OS.
-The style combo beside Search filters the discovered styles alongside the text query;
+The style combo on a separate row below Search filters the discovered styles alongside the text query;
 **All styles** clears the style filter. Filtering never changes the applied font.
 Duplicate configured faces precede OS faces, then source order and sorted paths break
 ties. Existing family-only selections resolve to Regular, Normal, Roman or Book when

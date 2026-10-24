@@ -64,5 +64,6 @@
   <CustomFonts.AddFavorite>お気に入りに追加</CustomFonts.AddFavorite>
   <CustomFonts.RemoveFavorite>お気に入りから削除</CustomFonts.RemoveFavorite>
   <CustomFonts.AllStyles>すべてのスタイル</CustomFonts.AllStyles>
+  <CustomFonts.Style>スタイル</CustomFonts.Style>
   <CustomFonts.StyleFilterHelp>適用中のフォントを変更せずにスタイルを絞り込みます。すべてのスタイルで解除します。</CustomFonts.StyleFilterHelp>
 </LanguageData>

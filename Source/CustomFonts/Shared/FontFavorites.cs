@@ -10,12 +10,14 @@ namespace CustomFonts
         private string _fontStyleFilter;
         private void DrawFontSearch(Listing_Standard list)
         {
-            Rect row = list.GetRect(30f);
-            float styleWidth = Math.Min(150f, row.width * 0.4f);
-            var styleRect = new Rect(row.xMax - styleWidth, row.y, styleWidth, 28f);
-            Widgets.Label(new Rect(row.x, row.y, 52f, 28f), "CustomFonts.Search".Translate());
-            string query = Widgets.TextField(new Rect(row.x + 54f, row.y, Math.Max(1f, row.width - styleWidth - 60f), 28f), searchText).Trim();
+            Rect searchRow = list.GetRect(30f);
+            Widgets.Label(new Rect(searchRow.x, searchRow.y, 52f, 28f), "CustomFonts.Search".Translate());
+            string query = Widgets.TextField(new Rect(searchRow.x + 54f, searchRow.y,
+                Math.Max(1f, searchRow.width - 54f), 28f), searchText).Trim();
             if (query != searchText) { searchText = query; scrollPosition.y = 0f; }
+            Rect styleRow = list.GetRect(30f);
+            Widgets.Label(new Rect(styleRow.x, styleRow.y, 52f, 28f), "CustomFonts.Style".Translate());
+            var styleRect = new Rect(styleRow.x + 54f, styleRow.y, Math.Max(1f, styleRow.width - 54f), 28f);
             string allStyles = "CustomFonts.AllStyles".Translate();
             if (Widgets.ButtonText(styleRect, _fontStyleFilter ?? allStyles))
             {

@@ -65,5 +65,6 @@
   <CustomFonts.AddFavorite>즐겨찾기에 추가</CustomFonts.AddFavorite>
   <CustomFonts.RemoveFavorite>즐겨찾기에서 제거</CustomFonts.RemoveFavorite>
   <CustomFonts.AllStyles>모든 스타일</CustomFonts.AllStyles>
+  <CustomFonts.Style>스타일</CustomFonts.Style>
   <CustomFonts.StyleFilterHelp>적용 중인 폰트를 바꾸지 않고 스타일을 검색합니다. 모든 스타일을 선택하면 필터를 해제합니다.</CustomFonts.StyleFilterHelp>
 </LanguageData>

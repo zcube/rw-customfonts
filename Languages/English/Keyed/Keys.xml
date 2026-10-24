@@ -65,5 +65,6 @@
   <CustomFonts.AddFavorite>Add to favorites</CustomFonts.AddFavorite>
   <CustomFonts.RemoveFavorite>Remove from favorites</CustomFonts.RemoveFavorite>
   <CustomFonts.AllStyles>All styles</CustomFonts.AllStyles>
+  <CustomFonts.Style>Style</CustomFonts.Style>
   <CustomFonts.StyleFilterHelp>Filter styles without changing the applied font. All styles removes the filter.</CustomFonts.StyleFilterHelp>
 </LanguageData>
